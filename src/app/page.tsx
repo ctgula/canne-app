@@ -47,15 +47,15 @@ export default function Home() {
           
           {/* CTA Button */}
           <div className="mb-16">
-            <Link 
-              href="#collection"
+            <button 
+              onClick={scrollToCollection}
               className="inline-flex items-center px-6 py-3 bg-pink-500 text-white font-medium rounded-full hover:bg-pink-600 transition-colors focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2"
             >
               Tap to unlock
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
               </svg>
-            </Link>
+            </button>
           </div>
           
           {/* Features */}
@@ -87,12 +87,12 @@ export default function Home() {
             </p>
             
             <div className="flex flex-wrap justify-center gap-4">
-              <Link 
-                href="#collection"
+              <button 
+                onClick={scrollToCollection}
                 className="px-6 py-3 bg-pink-500 text-white font-medium rounded-full hover:bg-pink-600 transition-colors focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2"
               >
                 Shop the Menu
-              </Link>
+              </button>
               <Link 
                 href="/how-it-works"
                 className="px-6 py-3 bg-white text-gray-900 font-medium rounded-full border border-gray-300 hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2"
@@ -102,10 +102,10 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </section>
+      </div>
       
       {/* Collection Section */}
-      <section id="collection" className="py-16 md:py-24 bg-gray-50">
+      <div id="collection" className="py-16 md:py-24 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Our Collection</h2>
@@ -120,108 +120,7 @@ export default function Home() {
             ))}
           </div>
         </div>
-      </section>
-    </div>
-  );
-}
-                <span className="hidden sm:inline text-xs text-gray-600">Premium selection</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-            {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Enhanced Footer */}
-      <footer className="bg-white border-t border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
-          {/* Main Footer Content */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 sm:gap-10 md:gap-12 mb-12">
-            {/* Brand Section */}
-            <div className="md:col-span-2">
-              <div className="flex items-center space-x-3 mb-6">
-                <div className="w-10 h-10 rounded-xl bg-gray-900 flex items-center justify-center shadow-lg">
-                  <span className="text-white text-lg font-bold">C</span>
-                </div>
-                <div className="text-3xl font-bold text-gray-900">Cannè</div>
-              </div>
-              <p className="text-gray-600 mb-8 max-w-md leading-relaxed">
-                Premium digital art platform offering carefully curated artwork with complimentary gifts. 
-                Fully compliant with Washington D.C. I-71 regulations.
-              </p>
-              
-              {/* Enhanced Social Media */}
-              <div className="flex space-x-4">
-                <a href="https://instagram.com/canne" target="_blank" rel="noopener noreferrer" className="p-3 bg-gray-100 rounded-xl hover:bg-gray-200 hover:scale-105 transition-all duration-200 group">
-                  <Instagram className="h-5 w-5 text-gray-600 group-hover:text-pink-600" />
-                </a>
-                <a href="https://twitter.com/canne" target="_blank" rel="noopener noreferrer" className="p-3 bg-gray-100 rounded-xl hover:bg-gray-200 hover:scale-105 transition-all duration-200 group">
-                  <Twitter className="h-5 w-5 text-gray-600 group-hover:text-blue-600" />
-                </a>
-                <a href="https://facebook.com/canne" target="_blank" rel="noopener noreferrer" className="p-3 bg-gray-100 rounded-xl hover:bg-gray-200 hover:scale-105 transition-all duration-200 group">
-                  <Facebook className="h-5 w-5 text-gray-600 group-hover:text-blue-700" />
-                </a>
-              </div>
-            </div>
-
-            {/* Quick Links */}
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-6 text-lg">Quick Links</h3>
-              <ul className="space-y-4 text-gray-600">
-                <li><button onClick={scrollToCollection} className="hover:text-gray-900 hover:translate-x-1 hover:underline transition-all duration-200 text-left">Collection</button></li>
-                <li><Link href="/about" className="hover:text-gray-900 hover:translate-x-1 hover:underline transition-all duration-200 block">About Us</Link></li>
-                <li><Link href="/faq" className="hover:text-gray-900 hover:translate-x-1 hover:underline transition-all duration-200 block">FAQ</Link></li>
-                <li><Link href="/admin/login" className="hover:text-gray-900 hover:translate-x-1 hover:underline transition-all duration-200 block">Admin</Link></li>
-              </ul>
-            </div>
-
-            {/* Legal & Contact */}
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-6 text-lg">Legal & Contact</h3>
-              <ul className="space-y-4 text-gray-600">
-                <li><Link href="/terms" className="hover:text-gray-900 hover:translate-x-1 hover:underline transition-all duration-200 block">Terms & Conditions</Link></li>
-                <li><Link href="/i71" className="hover:text-gray-900 hover:translate-x-1 hover:underline transition-all duration-200 block">I-71 Compliance</Link></li>
-                <li><Link href="/privacy" className="hover:text-gray-900 hover:translate-x-1 hover:underline transition-all duration-200 block">Privacy Policy</Link></li>
-                <li>
-                  <a href="mailto:hello@canne.com" target="_blank" rel="noopener noreferrer" className="flex items-center space-x-2 hover:text-gray-900 hover:underline transition-colors duration-200">
-                    <Mail className="h-4 w-4" />
-                    <span className="text-sm">hello@canne.com</span>
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          {/* Enhanced Bottom Bar */}
-          <div className="border-t border-gray-200 pt-8">
-            <div className="flex flex-col md:flex-row justify-between items-center space-y-6 md:space-y-0">
-              <div className="flex flex-wrap justify-center md:justify-start items-center gap-4 sm:gap-6 md:gap-10 text-sm text-gray-500">
-                <span className="flex items-center space-x-2 hover:text-gray-700 transition-colors">
-                  <Palette className="h-4 w-4" />
-                  <span>Curated Art</span>
-                </span>
-                <span className="flex items-center space-x-2 hover:text-gray-700 transition-colors">
-                  <Truck className="h-4 w-4" />
-                  <span>Free Delivery</span>
-                </span>
-                <span className="flex items-center space-x-2 hover:text-gray-700 transition-colors">
-                  <Shield className="h-4 w-4" />
-                  <span>I-71 Compliant</span>
-                </span>
-              </div>
-              
-              <div className="text-sm text-gray-500 text-center md:text-right">
-                © {new Date().getFullYear()} Cannè. All rights reserved.
-              </div>
-            </div>
-          </div>
-        </div>
-      </footer>
+      </div>
     </div>
   );
 }
