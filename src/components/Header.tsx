@@ -26,11 +26,11 @@ export default function Header() {
             {/* Left Logo */}
             <Link href="/" className="flex items-center group">
               <div className="flex items-center">
-                <div className="w-10 h-10 relative flex items-center justify-center">
-                  {/* Fallback logo with CSS if image is not available */}
-                  <div className="w-8 h-8 rounded-full bg-pink-500 flex items-center justify-center">
-                    <div className="w-5 h-4 bg-amber-400 rounded-b-full mt-2"></div>
-                  </div>
+                <div className="w-10 h-10 relative">
+                  {/* Ice cream cone logo */}
+                  <div className="w-8 h-8 rounded-full bg-pink-500 absolute top-0 left-1/2 -translate-x-1/2"></div>
+                  <div className="w-6 h-6 bg-amber-400 absolute bottom-0 left-1/2 -translate-x-1/2" 
+                       style={{ clipPath: 'polygon(50% 100%, 0 0, 100% 0)' }}></div>
                 </div>
                 <div className="ml-1 flex flex-col">
                   <div className="text-lg font-bold text-pink-500 uppercase tracking-wide group-hover:text-pink-600 transition-colors">
