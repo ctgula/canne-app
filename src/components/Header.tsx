@@ -54,7 +54,10 @@ export default function Header() {
               >
                 Shop
               </button>
-              <Link href="/how-it-works" className="text-gray-700 hover:text-gray-900 font-medium text-sm transition-colors">
+              <Link 
+                href="/how-it-works" 
+                className="text-pink-500 hover:text-pink-600 font-semibold text-sm transition-colors border-b-2 border-pink-500 pb-0.5"
+              >
                 How it Works
               </Link>
               <Link href="/i71" className="text-gray-700 hover:text-gray-900 font-medium text-sm transition-colors">

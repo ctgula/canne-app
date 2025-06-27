@@ -73,8 +73,8 @@ export default function Home() {
             </button>
           </div>
           
-          {/* Secondary CTAs - Clean and accessible */}
-          <div className="flex flex-wrap justify-center gap-4">
+          {/* Secondary CTAs - More visible and prominent */}
+          <div className="flex flex-wrap justify-center gap-6 mt-2">
             <button 
               onClick={scrollToCollection}
               className="flex items-center px-6 py-2.5 bg-gray-900 text-white font-medium rounded-full hover:bg-black transition-all duration-200 hover:shadow-md active:scale-95 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:ring-offset-2 group"
@@ -84,10 +84,11 @@ export default function Home() {
             </button>
             <Link 
               href="/how-it-works"
-              className="flex items-center px-6 py-2.5 bg-white text-gray-800 font-medium rounded-full border border-gray-300 hover:border-gray-400 hover:bg-gray-50 transition-all duration-200 hover:shadow-sm active:scale-95 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 group"
+              className="flex items-center px-8 py-3 bg-amber-400 text-gray-900 font-semibold rounded-full hover:bg-amber-500 transition-all duration-200 hover:shadow-lg active:scale-95 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 group relative overflow-hidden border-2 border-amber-500"
             >
-              <span>How It Works</span>
-              <span className="ml-1.5 group-hover:translate-x-0.5 transition-transform">→</span>
+              <span className="relative z-10">How It Works</span>
+              <span className="ml-1.5 group-hover:translate-x-1 transition-transform relative z-10">→</span>
+              <span className="absolute inset-0 bg-gradient-to-r from-amber-300 to-amber-400 opacity-50"></span>
             </Link>
           </div>
         </div>
