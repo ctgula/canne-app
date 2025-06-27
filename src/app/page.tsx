@@ -21,7 +21,7 @@ export default function Home() {
       <div className="bg-white pt-16 pb-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           {/* Centered Logo with enhanced styling */}
-          <div className="mb-10 flex flex-col items-center">
+          <div className="mb-6 flex flex-col items-center">
             <div className="w-32 h-32 relative mb-3">
               <div className="w-28 h-28 bg-pink-500 rounded-full absolute top-0 left-1/2 -translate-x-1/2 shadow-md"></div>
               <div className="w-20 h-20 bg-amber-400 absolute bottom-0 left-1/2 -translate-x-1/2" 
@@ -29,6 +29,48 @@ export default function Home() {
             </div>
             <h2 className="text-4xl font-bold text-pink-500 uppercase tracking-wide">CANNÈ</h2>
             <p className="text-sm uppercase text-gray-600 tracking-widest mt-1">ART COLLECTIVE</p>
+          </div>
+          
+          {/* Three visual call-to-actions below logo */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto mb-10">
+            <div className="flex flex-col items-center bg-white p-5 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+              <div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center mb-3">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-pink-500" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 2a4 4 0 00-4 4v1H5a1 1 0 00-.994.89l-1 9A1 1 0 004 18h12a1 1 0 00.994-1.11l-1-9A1 1 0 0015 7h-1V6a4 4 0 00-4-4zm2 5V6a2 2 0 10-4 0v1h4zm-6 3a1 1 0 112 0 1 1 0 01-2 0zm7-1a1 1 0 100 2 1 1 0 000-2z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-1">Shop</h3>
+              <p className="text-sm text-gray-500 text-center mb-2">Browse our premium art collection</p>
+              <button onClick={scrollToCollection} className="text-pink-500 text-sm font-medium hover:text-pink-600 flex items-center">
+                View Products <span className="ml-1">→</span>
+              </button>
+            </div>
+            
+            <div className="flex flex-col items-center bg-white p-5 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+              <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mb-3">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-amber-500" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-1">Learn</h3>
+              <p className="text-sm text-gray-500 text-center mb-2">Understand our process and gifts</p>
+              <Link href="/how-it-works" className="text-amber-500 text-sm font-medium hover:text-amber-600 flex items-center">
+                How It Works <span className="ml-1">→</span>
+              </Link>
+            </div>
+            
+            <div className="flex flex-col items-center bg-white p-5 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+              <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-700" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-1">About</h3>
+              <p className="text-sm text-gray-500 text-center mb-2">Learn about our art collective</p>
+              <Link href="/about" className="text-gray-700 text-sm font-medium hover:text-gray-900 flex items-center">
+                Our Story <span className="ml-1">→</span>
+              </Link>
+            </div>
           </div>
           
           {/* Premium Drops Banner - Vibrant and eye-catching */}
