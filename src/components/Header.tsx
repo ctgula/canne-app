@@ -25,13 +25,16 @@ export default function Header() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             {/* Left Logo */}
-            <Link href="/" className="flex items-center">
+            <Link href="/" className="flex items-center group">
               <div className="flex items-center">
-                <div className="w-8 h-8">
-                  <div className="w-6 h-6 rounded-full bg-pink-500"></div>
+                <div className="w-10 h-10 relative flex items-center justify-center">
+                  {/* Fallback logo with CSS if image is not available */}
+                  <div className="w-8 h-8 rounded-full bg-pink-500 flex items-center justify-center">
+                    <div className="w-5 h-4 bg-amber-400 rounded-b-full mt-2"></div>
+                  </div>
                 </div>
                 <div className="ml-1 flex flex-col">
-                  <div className="text-lg font-bold text-pink-500 uppercase tracking-wide">
+                  <div className="text-lg font-bold text-pink-500 uppercase tracking-wide group-hover:text-pink-600 transition-colors">
                     CANNÈ
                   </div>
                   <div className="text-[10px] uppercase text-gray-500 tracking-wider -mt-1">

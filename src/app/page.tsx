@@ -23,11 +23,12 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           {/* Centered Logo */}
           <div className="mb-12 flex flex-col items-center">
-            <div className="w-24 h-24 relative mb-2">
-              <div className="w-20 h-20 bg-pink-500 rounded-full absolute top-0 left-1/2 -translate-x-1/2"></div>
-              <div className="w-16 h-14 bg-amber-400 clip-cone-wide absolute bottom-0 left-1/2 -translate-x-1/2"></div>
+            <div className="w-32 h-32 relative mb-2 flex items-center justify-center">
+              <div className="w-28 h-28 bg-pink-500 rounded-full flex items-center justify-center">
+                <div className="w-16 h-14 bg-amber-400 rounded-b-full mt-6"></div>
+              </div>
             </div>
-            <h2 className="text-3xl font-bold text-gray-900 uppercase tracking-wide">CANNÈ</h2>
+            <h2 className="text-3xl font-bold text-pink-500 uppercase tracking-wide">CANNÈ</h2>
             <p className="text-sm uppercase text-gray-600 tracking-wider">ART COLLECTIVE</p>
           </div>
           
