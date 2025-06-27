@@ -4,7 +4,7 @@ import Header from '@/components/Header';
 import React from 'react';
 import { ArrowLeft, Palette, Heart, Sparkles, Clock, Shield, Users } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
+
 
 export default function AboutPage() {
   return (
@@ -74,7 +74,7 @@ export default function AboutPage() {
             </p>
             
             <p className="mb-8">
-              We noticed that while Washington D.C.'s Initiative 71 opened new possibilities for gifting, the experience often lacked the thoughtfulness and design-forward approach that we craved. So we set out to create something different—a platform where digital art collection and gifting merge into a seamless, elevated experience.
+              We noticed that while Washington D.C.&apos;s Initiative 71 opened new possibilities for gifting, the experience often lacked the thoughtfulness and design-forward approach that we craved. So we set out to create something different—a platform where digital art collection and gifting merge into a seamless, elevated experience.
             </p>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 my-12">
@@ -126,7 +126,7 @@ export default function AboutPage() {
                 </div>
                 <div>
                   <h3 className="font-bold text-xl text-gray-800 mb-2">I-71 Compliant</h3>
-                  <p className="text-gray-600">Fully compliant with Washington D.C.'s Initiative 71 regulations.</p>
+                  <p className="text-gray-600">Fully compliant with Washington D.C.&apos;s Initiative 71 regulations.</p>
                 </div>
               </div>
               

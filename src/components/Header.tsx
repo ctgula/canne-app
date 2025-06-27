@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ShoppingCart } from 'lucide-react';
+
 import { useCart } from '@/hooks/use-cart';
 import { useState } from 'react';
 import CartModal from './CartModal';

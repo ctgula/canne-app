@@ -10,7 +10,7 @@ interface CartModalProps {
 }
 
 export default function CartModal({ isOpen, onClose }: CartModalProps) {
-  const { cart, addProduct, removeProduct, updateProductQuantity } = useCart();
+  const { cart, removeProduct, updateProductQuantity } = useCart();
   
   const subtotal = cart.items.reduce((total, item) => total + (item.product.price * item.quantity), 0);
   const itemCount = cart.items.reduce((total, item) => total + item.quantity, 0);
