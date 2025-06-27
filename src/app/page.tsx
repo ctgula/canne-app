@@ -4,7 +4,6 @@ import Header from '@/components/Header';
 import ProductCard from '@/components/ProductCard';
 import { products } from '@/data/products';
 import Link from 'next/link';
-import Image from 'next/image';
 
 export default function Home() {
   const scrollToCollection = () => {
