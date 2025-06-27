@@ -3,8 +3,8 @@
 import Header from '@/components/Header';
 import ProductCard from '@/components/ProductCard';
 import { products } from '@/data/products';
-import { Shield, Truck, Palette, Instagram, Twitter, Facebook, Mail, Phone, MapPin, ArrowDown } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Home() {
   const scrollToCollection = () => {
@@ -15,117 +15,115 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-white">
       <Header />
       
-      {/* Enhanced Hero Section with Luxurious Background */}
-      <section className="relative bg-gradient-to-br from-slate-50 via-violet-50/30 to-indigo-100/40 overflow-hidden min-h-[85vh] flex items-center">
-        {/* Enhanced Animated Background Elements */}
-        <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-1/4 left-1/4 w-40 h-40 bg-gradient-to-r from-violet-300 to-purple-400 rounded-full blur-3xl animate-float-slow"></div>
-          <div className="absolute top-3/4 right-1/4 w-32 h-32 bg-gradient-to-r from-blue-300 to-indigo-400 rounded-full blur-3xl animate-float-delayed"></div>
-          <div className="absolute bottom-1/4 left-1/3 w-48 h-48 bg-gradient-to-r from-emerald-300 to-teal-400 rounded-full blur-3xl animate-float-reverse"></div>
-          <div className="absolute top-1/2 right-1/3 w-24 h-24 bg-gradient-to-r from-rose-300 to-pink-400 rounded-full blur-3xl animate-float-gentle"></div>
-        </div>
-
-        {/* Subtle overlay pattern */}
-        <div className="absolute inset-0 opacity-[0.02] bg-[radial-gradient(circle_500px_at_50%_200px,#8b5cf6,transparent)]"></div>
-        
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 text-center">
-          <div className="space-y-8">
-            {/* Enhanced Animated Title */}
-            <div className="space-y-4">
-              <h1 className="hero-title mb-6 animate-title-entrance">
-                <span className="block text-sm uppercase tracking-wider text-pink-500 mb-2 animate-fade-up">Cannè Collection</span>
-                <span className="inline-block animate-fade-up">Premium Digital Art</span>
-                <span className="block text-violet-600 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent animate-fade-up-delayed">
-                  with Complimentary Gifts
-                </span>
-              </h1>
-              
-              {/* Animated underline accent */}
-              <div className="w-24 h-1 bg-gradient-to-r from-violet-500 to-purple-500 mx-auto rounded-full animate-expand-width"></div>
+      {/* Hero Section */}
+      <div className="bg-white pt-12 pb-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          {/* Centered Logo */}
+          <div className="mb-12 flex flex-col items-center">
+            <div className="w-24 h-24 relative mb-2">
+              <div className="w-20 h-20 bg-pink-500 rounded-full absolute top-0 left-1/2 -translate-x-1/2"></div>
+              <div className="w-16 h-14 bg-amber-400 clip-cone-wide absolute bottom-0 left-1/2 -translate-x-1/2"></div>
             </div>
-
-            <p className="subtitle max-w-2xl mx-auto mb-8 md:mb-12 px-4 animate-fade-up-delayed-2">
-              Discover beautiful digital artwork and receive carefully curated complimentary gifts with every purchase. 
-              Legal and compliant in Washington, D.C.
+            <h2 className="text-3xl font-bold text-gray-900 uppercase tracking-wide">CANNÈ</h2>
+            <p className="text-sm uppercase text-gray-600 tracking-wider">ART COLLECTIVE</p>
+          </div>
+          
+          {/* Premium Drops Banner */}
+          <div className="max-w-md mx-auto mb-12">
+            <div className="bg-gradient-to-r from-amber-400 via-pink-500 to-purple-500 text-white py-3 px-6 rounded-full flex items-center justify-center">
+              <span className="mr-2">🔥</span>
+              <span className="font-medium">Premium Drops Starting at $20</span>
+              <span className="ml-2">✨</span>
+            </div>
+          </div>
+          
+          {/* Headline */}
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-8">
+            Art-first. Street-approved.
+          </h1>
+          
+          {/* CTA Button */}
+          <div className="mb-16">
+            <Link 
+              href="#collection"
+              className="inline-flex items-center px-6 py-3 bg-pink-500 text-white font-medium rounded-full hover:bg-pink-600 transition-colors focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2"
+            >
+              Tap to unlock
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+            </Link>
+          </div>
+          
+          {/* Features */}
+          <div className="flex flex-wrap justify-center gap-8 mb-12">
+            <div className="flex items-center">
+              <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center mr-2">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-green-600" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <span className="text-sm text-gray-700">I71 Compliant</span>
+            </div>
+            <div className="flex items-center">
+              <span className="text-sm text-gray-700">DC Delivery</span>
+            </div>
+          </div>
+          
+          {/* Main Content */}
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-4xl font-bold mb-4">
+              <span className="block">Premium Art Prints with</span>
+              <span className="text-pink-500">Complimentary Gifts</span>
+            </h2>
+            
+            <p className="text-lg text-gray-700 mb-8 max-w-2xl mx-auto">
+              Experience our curated collection of cannabis-inspired art.
+              Each purchase includes a complimentary gift, delivered to your
+              door in DC.
             </p>
             
-            {/* Enhanced Interactive Button */}
-            <div className="animate-fade-up-delayed-3">
-              <button 
-                onClick={scrollToCollection}
-                className="group relative btn-primary-enhanced overflow-hidden"
+            <div className="flex flex-wrap justify-center gap-4">
+              <Link 
+                href="#collection"
+                className="px-6 py-3 bg-pink-500 text-white font-medium rounded-full hover:bg-pink-600 transition-colors focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2"
               >
-                <span className="relative z-10 flex items-center space-x-3">
-                  <span>View Collection</span>
-                  <ArrowDown className="h-4 w-4 transform group-hover:translate-y-1 transition-transform duration-300" />
-                </span>
-                
-                {/* Button background animations */}
-                <div className="absolute inset-0 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
-                <div className="absolute inset-0 bg-gradient-to-r from-violet-600 to-purple-600 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
-              </button>
-            </div>
-
-            {/* Enhanced Feature Highlights */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 max-w-4xl mx-auto px-4 pt-8 animate-fade-up-delayed-4">
-              <div className="text-center group">
-                <div className="feature-icon-enhanced bg-gradient-to-br from-violet-500 to-purple-600 mx-auto mb-4 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-                  <Palette className="h-5 w-5" />
-                </div>
-                <h3 className="font-semibold text-gray-900 mb-2 group-hover:text-violet-700 transition-colors">Curated Collection</h3>
-                <p className="text-gray-600 text-sm">Handpicked digital artwork from talented artists worldwide</p>
-              </div>
-              
-              <div className="text-center group">
-                <div className="feature-icon-enhanced bg-gradient-to-br from-blue-500 to-indigo-600 mx-auto mb-4 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-                  <Truck className="h-5 w-5" />
-                </div>
-                <h3 className="font-semibold text-gray-900 mb-2 group-hover:text-blue-700 transition-colors">Free Delivery</h3>
-                <p className="text-gray-600 text-sm">Complimentary same-day delivery on orders over $40</p>
-              </div>
-              
-              <div className="text-center group">
-                <div className="feature-icon-enhanced bg-gradient-to-br from-emerald-500 to-teal-600 mx-auto mb-4 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-                  <Shield className="h-5 w-5" />
-                </div>
-                <h3 className="font-semibold text-gray-900 mb-2 group-hover:text-emerald-700 transition-colors">I-71 Compliant</h3>
-                <p className="text-gray-600 text-sm">Fully legal and compliant gifting model</p>
-              </div>
+                Shop the Menu
+              </Link>
+              <Link 
+                href="/how-it-works"
+                className="px-6 py-3 bg-white text-gray-900 font-medium rounded-full border border-gray-300 hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2"
+              >
+                How It Works
+              </Link>
             </div>
           </div>
         </div>
       </section>
-
-      {/* Products Grid */}
-      <section id="collection" className="py-12 md:py-20 bg-gray-50">
+      
+      {/* Collection Section */}
+      <section id="collection" className="py-16 md:py-24 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8 md:mb-16">
-            <h2 className="section-title mb-4 px-4">
-              Digital Art Collection
-            </h2>
-            <p className="subtitle max-w-2xl mx-auto mb-6 md:mb-10 px-4">
-              Each piece comes with a carefully selected complimentary gift. 
-              The larger your purchase, the more generous the gift.
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Our Collection</h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Browse our curated selection of premium digital art pieces, each paired with a complimentary gift.
             </p>
-            
-            {/* Enhanced Tier Legend */}
-            <div className="flex flex-wrap justify-center items-center gap-3 md:gap-4 mb-8 md:mb-12 px-4">
-              <div className="flex items-center space-x-2 px-4 py-3 bg-white rounded-xl border-2 border-emerald-200 shadow-sm hover:shadow-md hover:scale-105 transition-all duration-200">
-                <div className="w-4 h-4 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full animate-pulse-gentle"></div>
-                <span className="text-sm font-bold text-emerald-700">Essentials</span>
-                <span className="hidden sm:inline text-xs text-gray-600">Quality package</span>
-              </div>
-              <div className="flex items-center space-x-2 px-4 py-3 bg-white rounded-xl border-2 border-violet-200 shadow-sm hover:shadow-md hover:scale-105 transition-all duration-200">
-                <div className="w-4 h-4 bg-gradient-to-r from-violet-500 to-purple-500 rounded-full animate-pulse-gentle"></div>
-                <span className="text-sm font-bold text-violet-700">Pro</span>
-                <span className="hidden sm:inline text-xs text-gray-600">Enhanced gifts</span>
-              </div>
-              <div className="flex items-center space-x-2 px-4 py-3 bg-white rounded-xl border-2 border-amber-200 shadow-sm hover:shadow-md hover:scale-105 transition-all duration-200">
-                <div className="w-4 h-4 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full animate-pulse-gentle"></div>
-                <span className="text-sm font-bold text-amber-700">Ultra</span>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {products.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
                 <span className="hidden sm:inline text-xs text-gray-600">Premium selection</span>
               </div>
             </div>
