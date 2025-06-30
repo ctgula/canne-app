@@ -39,7 +39,7 @@ const steps: StepProps[] = [
 ];
 
 const TimelineConnector: React.FC<{ progress: number }> = ({ progress }) => (
-  <div className="hidden md:block absolute top-12 left-0 w-full h-1.5 z-10">
+  <div className="hidden md:block absolute top-[2.3125rem] left-0 w-full h-1.5">
     <div className="relative w-full h-full bg-gray-200 dark:bg-gray-700 rounded-full">
       <motion.div 
         className="absolute left-0 top-0 h-full bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 rounded-full shadow-sm"
@@ -122,7 +122,7 @@ export default function HowItWorksSection() {
                 key={step.number}
                 variants={item}
                 data-step={step.number}
-                className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-100 dark:border-gray-700 hover:shadow-lg transition-all duration-300 relative hover:-translate-y-1"
+                className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700 hover:shadow-lg transition-all duration-300 relative hover:-translate-y-1"
               >
                 {/* Mobile step indicator - vertical line with number */}
                 <div className={`md:hidden absolute left-0 top-0 bottom-0 w-1 rounded-l ${step.number === 1 ? 'bg-pink-500' : step.number === 2 ? 'bg-amber-500' : step.number === 3 ? 'bg-blue-500' : 'bg-purple-500'}`}></div>
