@@ -53,7 +53,11 @@ export function useCheckout() {
       const result = await processCheckout(items, formData, cartTotal, userId);
       
       if (!result.success || result.error) {
-        throw new Error(result.error || 'Checkout failed');
+        // Ensure we're passing a string to the Error constructor
+        const errorMessage = result.error ? 
+          (typeof result.error === 'string' ? result.error : JSON.stringify(result.error)) 
+          : 'Checkout failed';
+        throw new Error(errorMessage);
       }
       
       // Success - clear cart and set order ID
