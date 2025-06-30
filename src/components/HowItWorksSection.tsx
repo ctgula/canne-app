@@ -70,7 +70,7 @@ export default function HowItWorksSection() {
   }, [isInView, controls]);
 
   const scrollToTiers = () => {
-    const tiersSection = document.querySelector('section:has(h2:contains("Choose Your Vibe"))');
+    const tiersSection = document.getElementById('tiers-section');
     if (tiersSection) {
       tiersSection.scrollIntoView({ behavior: 'smooth' });
     }

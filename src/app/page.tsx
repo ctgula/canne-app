@@ -31,7 +31,7 @@ export default function Home() {
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-pink-200/20 rounded-full filter blur-3xl dark:bg-pink-900/20"></div>
         <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-purple-200/20 rounded-full filter blur-3xl dark:bg-purple-900/20"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-          <div className="mb-12 flex flex-col items-center">
+          <div className="flex flex-col items-center">
             <div className="w-48 h-48 mb-8">
               <Image 
                 src="/images/canne_logo.svg" 
@@ -42,10 +42,22 @@ export default function Home() {
                 priority
               />
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-transparent bg-clip-text">Cannè</h1>
-            <p className="text-lg md:text-xl text-gray-700 dark:text-gray-300 mb-8 max-w-2xl">Premium Digital Art with Complimentary Gifts</p>
             
-            <div className="flex space-x-4 mt-6">
+            {/* Merged Headline */}
+            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-4 tracking-tight leading-tight">
+              Art-first.<br />
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 dark:from-pink-400 dark:via-purple-500 dark:to-indigo-400">Street-approved.</span>
+            </h1>
+            
+            <p className="text-lg md:text-xl text-gray-700 dark:text-gray-300 mb-6 max-w-2xl">
+              Premium Digital Art with Complimentary Gifts
+            </p>
+
+            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mb-8 leading-relaxed">
+              Each purchase supports local artists and comes with a special gift for you under I-71.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mt-6">
               <button onClick={scrollToCollection} className="px-8 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-medium rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 border border-pink-300/20">
                 Explore Collection
               </button>
@@ -54,16 +66,6 @@ export default function Home() {
               </Link>
             </div>
           </div>
-          
-          {/* Headline with Cannè tier color themes */}
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6 tracking-tight leading-tight">
-            Art-first.<br />
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 dark:from-pink-400 dark:via-purple-500 dark:to-indigo-400">Street-approved.</span>
-          </h1>
-          
-          <p className="text-xl text-gray-700 max-w-2xl mx-auto mb-8 leading-relaxed">
-            Premium digital art with legal gifts under I-71. Each purchase supports local artists and comes with a special gift for you.
-          </p>
         </div>
       </div>
 
