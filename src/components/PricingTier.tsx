@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Award, Crown, Sparkles, Star, Check, ChevronRight } from 'lucide-react';
-import Link from 'next/link';
 
 // Define tier data structure
 interface TierData {
@@ -357,7 +356,7 @@ export default function PricingTier({ tiers = defaultTiers }: PricingTierProps) 
         
         {/* Legal text */}
         <div className="mt-10 text-center">
-          <p className="text-xs text-gray-500">We never sell cannabis. You're buying digital art with legal gifts under I-71 👍🏾</p>
+          <p className="text-xs text-gray-500">We never sell cannabis. You&apos;re buying digital art with legal gifts under I-71 👍🏾</p>
         </div>
       </div>
     </div>

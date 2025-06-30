@@ -66,7 +66,7 @@ export default function StarterPage() {
                 <p className="text-lg text-gray-700 mb-6">{tierInfo.description}</p>
                 
                 <div className="mb-8">
-                  <h3 className="font-medium text-gray-900 mb-3">What's Included:</h3>
+                  <h3 className="font-medium text-gray-900 mb-3">What&apos;s Included:</h3>
                   <ul className="space-y-2">
                     {tierInfo.details.map((detail, index) => (
                       <li key={index} className="flex items-center gap-2 text-gray-700">

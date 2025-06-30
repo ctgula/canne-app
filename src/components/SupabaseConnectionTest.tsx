@@ -23,7 +23,7 @@ export default function SupabaseConnectionTest() {
     async function checkConnection() {
       try {
         // Simple query to check if we can connect to Supabase
-        const { data, error } = await supabase.from('orders').select('count').limit(1);
+        const { error } = await supabase.from('orders').select('count').limit(1);
         
         if (error) {
           throw error;

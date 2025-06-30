@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React from 'react';
 import Image from 'next/image';
 import { products } from '@/data/products';
 import Header from '@/components/Header';
@@ -18,12 +18,7 @@ export default function Home() {
     }
   };
   
-  const scrollToPricing = () => {
-    const element = document.getElementById('pricing');
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
+  // Function removed to fix unused variable error
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-pink-50/20 dark:from-gray-900 dark:to-purple-900/20">

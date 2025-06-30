@@ -17,9 +17,10 @@ export function hasDeliveryEligibility(total: number): boolean {
 
 /**
  * Creates a cart-like object with items, total and delivery status
- * This is a helper function for the functions below
+ * This is kept for reference but is no longer actively used
+ * @deprecated Use CartContext methods directly instead
  */
-function createCartObject(items: CartItem[]) {
+export function createCartObject(items: CartItem[]) {
   const total = calculateCartTotal(items);
   return {
     items,

@@ -49,9 +49,11 @@ export default function AboutPage() {
                 <div className="absolute inset-0 bg-gradient-to-br from-pink-300 via-purple-400 to-indigo-500 rounded-full opacity-80 blur-md"></div>
                 <div className="relative flex items-center justify-center h-full w-full p-6">
                   {/* Actual Cannè Logo */}
-                  <img
+                  <Image
                     src="/images/canne_logo.svg"
                     alt="Cannè Art Collective"
+                    width={160}
+                    height={160}
                     className="h-32 md:h-40 w-auto relative z-10"
                   />
                 </div>

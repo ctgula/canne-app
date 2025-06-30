@@ -3,6 +3,7 @@
 import { X, Plus, Minus, ShoppingBag, CreditCard } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useEffect } from 'react';
+import Image from 'next/image';
 
 interface CartModalProps {
   isOpen: boolean;
@@ -84,7 +85,13 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
                       {/* Product Image Placeholder */}
                       <div className="w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
                         {item.imageUrl ? (
-                          <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover rounded-lg" />
+                          <Image 
+                            src={item.imageUrl} 
+                            alt={item.name} 
+                            width={64} 
+                            height={64}
+                            className="w-full h-full object-cover rounded-lg" 
+                          />
                         ) : (
                           <span className="text-xs font-medium text-gray-600">
                             {item.name.split(' ').map(w => w[0]).join('')}

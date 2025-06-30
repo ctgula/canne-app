@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Search, ShoppingCart, Menu, X, Sun, Moon, ChevronDown, Home, ShoppingBag, Info, Shield } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import Image from 'next/image';
 
 interface HeaderProps {
   scrollToCollection?: () => void;
@@ -17,7 +18,7 @@ interface ShopCategory {
   items: string[];
 }
 
-export default function Header({ scrollToCollection }: HeaderProps) {
+export default function Header({}: HeaderProps) {
   const { items } = useCart();
   const { theme, toggleTheme } = useTheme();
   const isDarkMode = theme === 'dark';
@@ -82,9 +83,11 @@ export default function Header({ scrollToCollection }: HeaderProps) {
             <div className="flex items-center">
               <div className="h-16 w-auto relative mr-2">
                 {/* Cannè Logo */}
-                <img 
+                <Image 
                   src="/images/canne_logo.svg" 
                   alt="Cannè" 
+                  width={64}
+                  height={64}
                   className="h-full w-auto" 
                 />
               </div>

@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import { motion } from 'framer-motion';
 import { UserCheck, Gift, Home, Shield } from 'lucide-react';
+import Image from 'next/image';
 import { 
   Accordion,
   AccordionContent,
@@ -95,7 +95,7 @@ const complianceItems: ComplianceItemProps[] = [
       <ul className="space-y-2">
         <li className="flex items-start space-x-2">
           <span className="text-lg">‣</span>
-          <span>Don't drive high; DUIs apply.</span>
+          <span>Don&apos;t drive high; DUIs apply.</span>
         </li>
         <li className="flex items-start space-x-2">
           <span className="text-lg">‣</span>
@@ -119,9 +119,11 @@ const DcComplianceSection = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
           {/* Left side - Cannè mural image */}
           <div className="rounded-2xl overflow-hidden shadow-lg">
-            <img 
+            <Image 
               src="/images/canne-mural.svg" 
               alt="Cannè Art Mural" 
+              width={600}
+              height={350}
               className="w-full h-full object-cover min-h-[350px]" 
             />
           </div>
@@ -132,7 +134,7 @@ const DcComplianceSection = () => {
             <p className="text-lg text-gray-600 mb-6">Cannè gifts cannabis legally under Washington, D.C. Initiative 71.</p>
             
             <Accordion type="single" collapsible className="w-full">
-              {complianceItems.map((item, index) => (
+              {complianceItems.map((item) => (
                 <AccordionItem key={item.value} value={item.value} className="border-b border-gray-200">
                   <AccordionTrigger className="flex items-center py-4">
                     <div className="flex items-center space-x-3">

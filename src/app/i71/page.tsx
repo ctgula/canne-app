@@ -22,9 +22,11 @@ export default function CompliancePage() {
         
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="flex justify-center p-8 border-b border-gray-100 bg-gradient-to-r from-pink-50 to-indigo-50">
-            <img 
+            <Image 
               src="/images/canne_logo.svg"
               alt="Cannè Art Collective"
+              width={120}
+              height={120}
               className="h-24 w-auto"
             />
           </div>
@@ -37,8 +39,8 @@ export default function CompliancePage() {
             
             <div className="prose prose-lg max-w-none text-gray-600">
               <p className="text-lg font-medium mb-6">
-                At Cannè Art Collective, we strictly adhere to Washington D.C.'s Initiative 71 regulations. 
-                Here's how we ensure compliance:
+                At Cannè Art Collective, we strictly adhere to Washington D.C.&apos;s Initiative 71 regulations. 
+                Here&apos;s how we ensure compliance:
               </p>
               
               <ul className="space-y-4 mt-6">
@@ -48,7 +50,7 @@ export default function CompliancePage() {
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="h-5 w-5 text-green-500 mt-1 flex-shrink-0" />
-                  <span>No tax on the cannabis gift — you're purchasing art</span>
+                  <span>No tax on the cannabis gift — you&apos;re purchasing art</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="h-5 w-5 text-green-500 mt-1 flex-shrink-0" />

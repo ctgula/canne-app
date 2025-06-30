@@ -8,11 +8,12 @@
 
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
 import { Cart, Product } from '@/types';
-// Import the cart utility functions from CartContext instead
-// This fixes the lint errors since these functions were removed from cart-utils
-import { calculateCartTotal, hasDeliveryEligibility } from '@/lib/cart-utils';
+// This hook is deprecated, so we don't need to import any cart utility functions
+// The actual implementation is in @/contexts/CartContext
 
 // Define local versions of the functions that were removed from cart-utils
+// Adding eslint-disable comments to suppress unused variable warnings since this is a deprecated file
+/* eslint-disable @typescript-eslint/no-unused-vars */
 const addToCart = (cart: Cart, product: Product, quantity: number = 1): Cart => {
   // Implementation not needed as this hook is deprecated
   return cart;
@@ -27,6 +28,7 @@ const updateQuantity = (cart: Cart, productId: string, quantity: number): Cart =
   // Implementation not needed as this hook is deprecated
   return cart;
 };
+/* eslint-enable @typescript-eslint/no-unused-vars */
 
 const clearCart = (): Cart => {
   // Implementation not needed as this hook is deprecated

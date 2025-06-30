@@ -2,13 +2,13 @@
 
 import { useState } from 'react';
 import Header from '@/components/Header';
-import { useCart } from '@/hooks/use-cart';
-import { DeliveryDetails, Order } from '@/types';
+import { useCart } from '@/contexts/CartContext';
+import { DeliveryDetails, Order, CartItem as OrderCartItem } from '@/types';
 import { Truck, MapPin, Clock, CreditCard, ArrowLeft, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 
 export default function CheckoutPage() {
-  const { cart, clearAll } = useCart();
+  const { items, clearCart, getCartTotal } = useCart();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOrderComplete, setIsOrderComplete] = useState(false);
   const [orderId, setOrderId] = useState<string>('');
@@ -24,7 +24,7 @@ export default function CheckoutPage() {
   });
 
   // Redirect if cart is empty
-  if (cart.items.length === 0 && !isOrderComplete) {
+  if (items.length === 0 && !isOrderComplete) {
     return (
       <div className="min-h-screen">
         <Header />
@@ -43,7 +43,10 @@ export default function CheckoutPage() {
     );
   }
 
-  const finalTotal = cart.hasDelivery ? cart.total : cart.total + 10;
+  const cartTotal = getCartTotal();
+  // Check if order qualifies for free delivery (orders $40 or more)
+  const hasDelivery = cartTotal >= 40;
+  const finalTotal = hasDelivery ? cartTotal : cartTotal + 10;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -58,11 +61,25 @@ export default function CheckoutPage() {
     setIsSubmitting(true);
 
     try {
+      // Convert CartContext items to the Order's CartItem format
+      const orderItems: OrderCartItem[] = items.map(item => ({
+        product: {
+          id: item.id,
+          name: item.name,
+          description: item.tier,
+          price: item.price,
+          artworkUrl: item.imageUrl || '',
+          giftSize: item.weight,
+          hasDelivery: hasDelivery
+        },
+        quantity: item.quantity
+      }));
+      
       const order: Omit<Order, 'id' | 'createdAt' | 'updatedAt'> = {
-        items: cart.items,
+        items: orderItems,
         deliveryDetails,
         total: finalTotal,
-        hasDelivery: cart.hasDelivery,
+        hasDelivery: hasDelivery,
         status: 'pending',
       };
 
@@ -79,7 +96,7 @@ export default function CheckoutPage() {
         const { orderId: newOrderId } = await response.json();
         setOrderId(newOrderId);
         setIsOrderComplete(true);
-        clearAll();
+        clearCart();
       } else {
         throw new Error('Failed to submit order');
       }
@@ -311,15 +328,15 @@ export default function CheckoutPage() {
               <h2 className="text-xl font-semibold text-gray-900 mb-6">Order Summary</h2>
               
               <div className="space-y-3 mb-6">
-                {cart.items.map((item) => (
-                  <div key={item.product.id} className="flex justify-between items-start">
+                {items.map((item) => (
+                  <div key={item.id} className="flex justify-between items-start">
                     <div className="flex-1">
-                      <h3 className="font-medium text-gray-900">{item.product.name}</h3>
+                      <h3 className="font-medium text-gray-900">{item.name}</h3>
                       <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
-                      <p className="text-sm text-green-600 font-medium">{item.product.giftSize} complimentary gift</p>
+                      <p className="text-sm text-green-600 font-medium">{item.weight} complimentary gift</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-medium">${item.product.price * item.quantity}</p>
+                      <p className="font-medium">${item.price * item.quantity}</p>
                     </div>
                   </div>
                 ))}
@@ -328,13 +345,13 @@ export default function CheckoutPage() {
               <div className="space-y-2 mb-6 pt-4 border-t">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Subtotal</span>
-                  <span>${cart.total}</span>
+                  <span>${cartTotal}</span>
                 </div>
                 
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Delivery</span>
                   <div className="text-right">
-                    {cart.hasDelivery ? (
+                    {hasDelivery ? (
                       <div>
                         <span className="line-through text-gray-400 text-sm">$10</span>
                         <span className="ml-2 font-medium text-green-600">Free</span>
@@ -351,7 +368,7 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              {cart.hasDelivery && (
+              {hasDelivery && (
                 <div className="bg-green-50 border border-green-200 p-4 rounded-xl mb-6">
                   <div className="flex items-center gap-2">
                     <Truck className="h-4 w-4 text-green-600" />
