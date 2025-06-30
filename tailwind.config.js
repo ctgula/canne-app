@@ -5,6 +5,7 @@ module.exports = {
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       fontFamily: {
@@ -41,6 +42,12 @@ module.exports = {
         'bounce-gentle': 'bounce 1s infinite',
         'scale-up': 'scale-up 0.3s ease-out',
         'glow-pulse': 'glow-pulse 2s ease-in-out infinite',
+        'pulse-gentle': 'pulse-gentle 3s ease-in-out infinite',
+        'gradient-slow': 'gradient-shift 8s ease infinite',
+        'float-slow': 'float 6s ease-in-out infinite',
+        'float-delayed': 'float 6s ease-in-out 2s infinite',
+        'accordion-down': 'accordion-down 0.2s ease-out',
+        'accordion-up': 'accordion-up 0.2s ease-out',
       },
       keyframes: {
         'scale-up': {
@@ -54,6 +61,41 @@ module.exports = {
           '50%': { 
             boxShadow: '0 0 30px rgba(168, 85, 247, 0.6), 0 0 40px rgba(168, 85, 247, 0.3)',
           },
+        },
+        'pulse-gentle': {
+          '0%, 100%': { 
+            opacity: 1,
+          },
+          '50%': { 
+            opacity: 0.7,
+          },
+        },
+        'gradient-shift': {
+          '0%': { 
+            backgroundPosition: '0% 50%',
+          },
+          '50%': { 
+            backgroundPosition: '100% 50%',
+          },
+          '100%': { 
+            backgroundPosition: '0% 50%',
+          },
+        },
+        'float': {
+          '0%, 100%': { 
+            transform: 'translateY(0)',
+          },
+          '50%': { 
+            transform: 'translateY(-10px)',
+          },
+        },
+        'accordion-down': {
+          from: { height: 0 },
+          to: { height: 'var(--radix-accordion-content-height)' },
+        },
+        'accordion-up': {
+          from: { height: 'var(--radix-accordion-content-height)' },
+          to: { height: 0 },
         },
       },
     },

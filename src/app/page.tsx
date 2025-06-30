@@ -1,9 +1,14 @@
 'use client';
 
+import { products } from '@/data/products';
 import Header from '@/components/Header';
 import ProductCard from '@/components/ProductCard';
-import { products } from '@/data/products';
+import PricingTier from '@/components/PricingTier';
+import TiersSection from '@/components/TiersSection';
+import HowItWorksSection from '@/components/HowItWorksSection';
+import SupabaseConnectionTest from '@/components/SupabaseConnectionTest';
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 
 export default function Home() {
   const scrollToCollection = () => {
@@ -12,144 +17,371 @@ export default function Home() {
       element.scrollIntoView({ behavior: 'smooth' });
     }
   };
+  
+  const scrollToPricing = () => {
+    const element = document.getElementById('pricing');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-white">
-      <Header />
+    <div className="min-h-screen bg-gradient-to-b from-white to-pink-50/20 dark:from-gray-900 dark:to-purple-900/20">
+      <Header scrollToCollection={scrollToCollection} />
       
-      {/* Hero Section - Optimized blend of designs */}
-      <div className="bg-white pt-16 pb-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          {/* Centered Logo with enhanced styling */}
-          <div className="mb-6 flex flex-col items-center">
-            <div className="w-32 h-32 relative mb-3">
-              <div className="w-28 h-28 bg-pink-500 rounded-full absolute top-0 left-1/2 -translate-x-1/2 shadow-md"></div>
-              <div className="w-20 h-20 bg-amber-400 absolute bottom-0 left-1/2 -translate-x-1/2" 
-                   style={{ clipPath: 'polygon(50% 100%, 0 0, 100% 0)' }}></div>
+      {/* Hero Section - Enhanced with Cannè theme colors */}
+      <div className="pt-20 pb-16 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-pink-100/50 via-lavender-100/30 to-transparent opacity-80 pointer-events-none dark:from-purple-900/30 dark:via-indigo-900/20 dark:to-transparent"></div>
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-pink-200/20 rounded-full filter blur-3xl dark:bg-pink-900/20"></div>
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-lavender-200/20 rounded-full filter blur-3xl dark:bg-purple-900/20"></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+          <div className="mb-12 flex flex-col items-center">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-transparent bg-clip-text">Cannè</h1>
+            <p className="text-lg md:text-xl text-gray-700 dark:text-gray-300 mb-8 max-w-2xl">Premium Digital Art with Complimentary Gifts</p>
+            
+            <div className="flex space-x-4 mt-6">
+              <button onClick={scrollToCollection} className="px-8 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-medium rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+                Explore Collection
+              </button>
+              <Link href="/shop" className="px-8 py-3 bg-white dark:bg-gray-800 text-gray-800 dark:text-white border border-gray-200 dark:border-gray-700 font-medium rounded-xl shadow hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+                Shop Now
+              </Link>
+            </div>
+          </div>
+          <div className="w-36 h-36 relative mb-4">
+            <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-xl">
+                {/* Define gradients */}
+                <defs>
+                  <linearGradient id="pinkGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#ff80b5" />
+                    <stop offset="100%" stopColor="#ff4694" />
+                  </linearGradient>
+                  <linearGradient id="coneGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#8b5a2b" />
+                    <stop offset="100%" stopColor="#6b4423" />
+                  </linearGradient>
+                  <linearGradient id="coneTopGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stopColor="#8b5a2b" />
+                    <stop offset="100%" stopColor="#6b4423" />
+                  </linearGradient>
+                </defs>
+                {/* Drips at the bottom of the ice cream */}
+                <path d="M85,80 C82,90 80,95 75,100 C70,105 65,107 70,110 C75,113 85,110 90,105 C95,100 95,90 95,80 Z" fill="url(#pinkGradient)" />
+                <path d="M115,80 C118,90 120,95 125,100 C130,105 135,107 130,110 C125,113 115,110 110,105 C105,100 105,90 105,80 Z" fill="url(#pinkGradient)" />
+                
+                {/* Pink ice cream scoop - slightly flattened at bottom */}
+                <path d="M100,20 
+                       C130,20 160,50 160,80 
+                       C160,110 130,120 100,120 
+                       C70,120 40,110 40,80 
+                       C40,50 70,20 100,20 Z" 
+                      fill="url(#pinkGradient)" />
+                
+                {/* Cone rim - to create a better transition */}
+                <path d="M45,85 C45,85 60,95 100,95 C140,95 155,85 155,85 L150,80 C150,80 130,90 100,90 C70,90 50,80 50,80 Z" 
+                      fill="url(#coneTopGradient)" />
+                
+                {/* Brown cone - improved shape */}
+                <path d="M55,85 L100,190 L145,85 Z" fill="url(#coneGradient)" />
+                
+                {/* Waffle pattern - more realistic */}
+                <g opacity="0.6" stroke="#5d3319" strokeWidth="0.8">
+                  {/* Horizontal lines */}
+                  <line x1="60" y1="100" x2="140" y2="100" />
+                  <line x1="65" y1="110" x2="135" y2="110" />
+                  <line x1="70" y1="120" x2="130" y2="120" />
+                  <line x1="75" y1="130" x2="125" y2="130" />
+                  <line x1="80" y1="140" x2="120" y2="140" />
+                  <line x1="85" y1="150" x2="115" y2="150" />
+                  <line x1="90" y1="160" x2="110" y2="160" />
+                  <line x1="95" y1="170" x2="105" y2="170" />
+                  
+                  {/* Diagonal lines - left side */}
+                  <line x1="60" y1="85" x2="85" y2="170" />
+                  <line x1="70" y1="85" x2="90" y2="170" />
+                  <line x1="80" y1="85" x2="95" y2="170" />
+                  <line x1="90" y1="85" x2="98" y2="170" />
+                  
+                  {/* Diagonal lines - right side */}
+                  <line x1="140" y1="85" x2="115" y2="170" />
+                  <line x1="130" y1="85" x2="110" y2="170" />
+                  <line x1="120" y1="85" x2="105" y2="170" />
+                  <line x1="110" y1="85" x2="102" y2="170" />
+                </g>
+                
+                {/* Shine spots on ice cream */}
+                <circle cx="80" cy="60" r="10" fill="white" opacity="0.4" />
+                <circle cx="90" cy="40" r="5" fill="white" opacity="0.3" />
+                
+                {/* Melting effect at the edge */}
+                <path d="M95,85 C95,88 97,90 100,90 C103,90 105,88 105,85 Z" fill="url(#pinkGradient)" opacity="0.8" />
+                
+                {/* Gradients */}
+                <defs>
+                  <linearGradient id="pinkGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#f472b6" />
+                    <stop offset="100%" stopColor="#db2777" />
+                  </linearGradient>
+                  <linearGradient id="coneGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stopColor="#92400e" />
+                    <stop offset="100%" stopColor="#713f12" />
+                  </linearGradient>
+                  <linearGradient id="coneTopGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stopColor="#b45309" />
+                    <stop offset="100%" stopColor="#92400e" />
+                  </linearGradient>
+                </defs>
+              </svg>
             </div>
             <h2 className="text-4xl font-bold text-pink-500 uppercase tracking-wide">CANNÈ</h2>
             <p className="text-sm uppercase text-gray-600 tracking-widest mt-1">ART COLLECTIVE</p>
           </div>
           
-          {/* Three visual call-to-actions below logo */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto mb-10">
-            <div className="flex flex-col items-center bg-white p-5 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center mb-3">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-pink-500" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 2a4 4 0 00-4 4v1H5a1 1 0 00-.994.89l-1 9A1 1 0 004 18h12a1 1 0 00.994-1.11l-1-9A1 1 0 0015 7h-1V6a4 4 0 00-4-4zm2 5V6a2 2 0 10-4 0v1h4zm-6 3a1 1 0 112 0 1 1 0 01-2 0zm7-1a1 1 0 100 2 1 1 0 000-2z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-1">Shop</h3>
-              <p className="text-sm text-gray-500 text-center mb-2">Browse our premium art collection</p>
-              <button onClick={scrollToCollection} className="text-pink-500 text-sm font-medium hover:text-pink-600 flex items-center">
-                View Products <span className="ml-1">→</span>
-              </button>
-            </div>
-            
-            <div className="flex flex-col items-center bg-white p-5 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mb-3">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-amber-500" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-1">Learn</h3>
-              <p className="text-sm text-gray-500 text-center mb-2">Understand our process and gifts</p>
-              <Link href="/how-it-works" className="text-amber-500 text-sm font-medium hover:text-amber-600 flex items-center">
-                How It Works <span className="ml-1">→</span>
-              </Link>
-            </div>
-            
-            <div className="flex flex-col items-center bg-white p-5 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-700" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-1">About</h3>
-              <p className="text-sm text-gray-500 text-center mb-2">Learn about our art collective</p>
-              <Link href="/about" className="text-gray-700 text-sm font-medium hover:text-gray-900 flex items-center">
-                Our Story <span className="ml-1">→</span>
-              </Link>
-            </div>
-          </div>
-          
-          {/* Premium Drops Banner - Vibrant and eye-catching */}
-          <div className="mb-10 max-w-xl mx-auto">
-            <div className="bg-gradient-to-r from-amber-400 via-pink-500 to-purple-500 text-white py-3 px-6 rounded-xl flex items-center justify-center shadow-lg">
-              <span className="mr-2">🔥</span>
-              <span className="font-medium">Premium Drops Starting at $20</span>
-              <span className="ml-2">✨</span>
-            </div>
-          </div>
-          
           {/* Headline - Bold and impactful */}
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 tracking-tight">
-            Art-first.<br />Street-approved.
+          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 tracking-tight leading-tight">
+            Art-first.<br /><span className="bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-700">Street-approved.</span>
           </h1>
           
           {/* Subheadline - Clean and informative */}
-          <p className="text-lg md:text-xl text-gray-700 max-w-2xl mx-auto mb-10">
-            Premium digital art prints with complimentary gifts. Each purchase supports local artists and comes with a special gift for you to enjoy.
+          <p className="text-xl text-gray-700 max-w-2xl mx-auto mb-8 leading-relaxed">
+            Premium digital art with legal gifts under I-71. Each purchase supports local artists and comes with a special gift for you.
           </p>
           
-          {/* Feature Highlights - Clean and informative */}
-          <div className="flex flex-wrap justify-center gap-5 mb-10">
-            <div className="bg-gray-50 px-5 py-2.5 rounded-full text-sm font-medium text-gray-700 shadow-sm border border-gray-100 flex items-center">
-              <span className="text-green-500 mr-1.5">✅</span> I-71 Compliant
+          {/* Feature Highlights with Trust Counter */}
+          <div className="flex flex-wrap justify-center gap-4 mb-10">
+            <div className="bg-white px-5 py-2.5 rounded-full text-sm font-medium text-gray-700 shadow-md border border-gray-100 flex items-center hover:shadow-lg transition-all">
+              <span className="text-green-500 mr-2">✅</span> I-71 Compliant
             </div>
-            <div className="bg-gray-50 px-5 py-2.5 rounded-full text-sm font-medium text-gray-700 shadow-sm border border-gray-100 flex items-center">
-              <span className="text-amber-500 mr-1.5">🚚</span> DC Delivery
+            <div className="bg-white px-5 py-2.5 rounded-full text-sm font-medium text-gray-700 shadow-md border border-gray-100 flex items-center hover:shadow-lg transition-all">
+              <span className="text-amber-500 mr-2">🚚</span> DC Delivery
+            </div>
+            <div className="bg-white px-5 py-2.5 rounded-full text-sm font-medium text-gray-700 shadow-md border border-gray-100 flex items-center hover:shadow-lg transition-all">
+              <span className="text-green-500 mr-2">🖤</span> 2,174 drops delivered
             </div>
           </div>
           
-          {/* Primary CTA - Bold and attention-grabbing */}
-          <div className="mb-8">
+          {/* Merged Primary CTA - Bold and attention-grabbing */}
+          <div className="mb-8 w-full max-w-md mx-auto">
             <button 
               onClick={scrollToCollection}
-              className="inline-flex items-center px-8 py-3.5 bg-pink-500 text-white font-medium text-lg rounded-full hover:bg-pink-600 transition-all duration-300 hover:shadow-lg active:scale-98 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2"
+              className="w-full inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-pink-500 to-pink-600 text-white font-medium text-lg rounded-xl hover:from-pink-600 hover:to-pink-700 transition-all duration-300 hover:shadow-xl active:scale-98 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 relative overflow-hidden group"
             >
-              Tap to unlock
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
-              </svg>
+              <div className="absolute right-0 top-0 bg-pink-400/60 backdrop-blur-sm px-2 py-1 text-xs font-bold rounded-bl-lg rounded-tr-xl">$20+</div>
+              <span>Browse Drops</span>
+              <span className="ml-2 group-hover:translate-x-1 transition-transform duration-300">→</span>
             </button>
+            <p className="text-xs text-center text-gray-500 mt-2.5">We never sell cannabis. You're buying digital art 👍🏾</p>
           </div>
           
-          {/* Secondary CTAs - More visible and prominent */}
-          <div className="flex flex-wrap justify-center gap-6 mt-2">
-            <button 
-              onClick={scrollToCollection}
-              className="flex items-center px-6 py-2.5 bg-gray-900 text-white font-medium rounded-full hover:bg-black transition-all duration-200 hover:shadow-md active:scale-95 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:ring-offset-2 group"
-            >
-              <span>Shop the Menu</span>
-              <span className="ml-1.5 group-hover:translate-x-0.5 transition-transform">→</span>
-            </button>
+          {/* How It Works Link - Less prominent */}
+          <div className="flex justify-center mb-16">
             <Link 
               href="/how-it-works"
-              className="flex items-center px-8 py-3 bg-amber-400 text-gray-900 font-semibold rounded-full hover:bg-amber-500 transition-all duration-200 hover:shadow-lg active:scale-95 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 group relative overflow-hidden border-2 border-amber-500"
+              className="text-sm text-gray-600 hover:text-pink-600 transition-colors flex items-center gap-1.5 group"
             >
-              <span className="relative z-10">How It Works</span>
-              <span className="ml-1.5 group-hover:translate-x-1 transition-transform relative z-10">→</span>
-              <span className="absolute inset-0 bg-gradient-to-r from-amber-300 to-amber-400 opacity-50"></span>
+              <span>Learn more about how it works</span>
+              <span className="text-xs group-hover:translate-x-0.5 transition-transform">→</span>
             </Link>
+          </div>
+          
+          {/* Three-Step Process - Apple-inspired design */}
+          <div className="relative mb-16 overflow-hidden">
+            {/* I-71 Compliant Badge - Repositioned above the steps */}
+            <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 z-10 pointer-events-auto">
+              <div className="group relative">
+                <div className="bg-white/90 backdrop-blur-sm border border-gray-100 shadow-lg text-gray-700 rounded-full px-5 py-2 font-medium flex items-center cursor-help transition-all duration-200 group-hover:shadow-md">
+                  <span className="text-gray-900 font-semibold">I-71 Compliant</span>
+                  <span className="ml-1.5 text-gray-400 group-hover:text-gray-500 transition-colors duration-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1v-3a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                  </span>
+                </div>
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-64 bg-black/90 backdrop-blur-sm text-white text-xs rounded-lg py-2.5 px-4 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-50 shadow-xl">
+                  I-71 refers to Initiative 71, which allows for personal possession and gifting of cannabis in DC. All purchases are considered donations with art as a legal gift.
+                  <div className="absolute left-1/2 -translate-x-1/2 top-full h-2 w-2 bg-black/90 rotate-45 transform -translate-y-1"></div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex overflow-x-auto snap-x snap-mandatory py-16 px-4 -mx-4 scrollbar-hide">
+              <div className="flex gap-6 md:gap-16 md:justify-center min-w-full w-max">
+                {/* Step 1: Sign Up */}
+                <div className="flex flex-col items-center w-40 flex-shrink-0 snap-center">
+                  <div className="w-16 h-16 bg-pink-500 rounded-full flex items-center justify-center mb-4 relative shadow-xl overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-b from-pink-400 via-pink-500 to-pink-600 opacity-90"></div>
+                    <span className="text-white font-semibold text-2xl relative z-10">1</span>
+                    <div className="hidden md:block absolute top-1/2 left-full h-0.5 w-16 bg-gray-200 -translate-y-1/2"></div>
+                  </div>
+                  <h3 className="text-base font-semibold text-gray-900 mb-1">Sign Up</h3>
+                  <p className="text-xs text-gray-500 text-center leading-tight">Create your account in seconds</p>
+                </div>
+                
+                {/* Step 2: Pick Art */}
+                <div className="flex flex-col items-center w-40 flex-shrink-0 snap-center">
+                  <div className="w-16 h-16 bg-amber-500 rounded-full flex items-center justify-center mb-4 relative shadow-xl overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-b from-amber-400 via-amber-500 to-amber-600 opacity-90"></div>
+                    <span className="text-white font-semibold text-2xl relative z-10">2</span>
+                    <div className="hidden md:block absolute top-1/2 left-full h-0.5 w-16 bg-gray-200 -translate-y-1/2"></div>
+                  </div>
+                  <h3 className="text-base font-semibold text-gray-900 mb-1">Pick Art</h3>
+                  <p className="text-xs text-gray-500 text-center leading-tight">Choose from our premium collection</p>
+                </div>
+                
+                {/* Step 3: Get Delivered - Enhanced */}
+                <div className="flex flex-col items-center w-40 flex-shrink-0 snap-center group">
+                  <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4 relative shadow-xl overflow-hidden transform transition-all duration-300 group-hover:scale-110">
+                    {/* Animated gradient background */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-pink-500 via-pink-600 to-pink-700 opacity-90 animate-gradient-slow"></div>
+                    
+                    {/* Decorative elements */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-full h-full bg-[radial-gradient(circle_at_center,_rgba(255,255,255,0.2)_0%,_transparent_60%)] animate-pulse-gentle"></div>
+                    </div>
+                    
+                    {/* Number with enhanced styling */}
+                    <span className="text-white font-bold text-2xl relative z-10 drop-shadow-glow transition-all duration-300 group-hover:scale-110">3</span>
+                    
+                    {/* Subtle shine effect */}
+                    <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-white to-transparent opacity-20 transform -translate-x-full -translate-y-full group-hover:translate-x-0 group-hover:translate-y-0 transition-transform duration-700"></div>
+                  </div>
+                  
+                  {/* Enhanced text with animation */}
+                  <h3 className="text-base font-semibold text-gray-900 mb-1 transition-colors duration-300 group-hover:text-pink-600">Get Delivered</h3>
+                  <p className="text-xs text-gray-500 text-center leading-tight transition-opacity duration-300 group-hover:text-gray-700">Receive your art with legal gifts</p>
+                  
+                  {/* Subtle indicator for hover state */}
+                  <div className="h-0.5 w-0 bg-pink-500 mt-1 transition-all duration-300 group-hover:w-12 opacity-0 group-hover:opacity-100"></div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Indicator dots for mobile */}
+            <div className="flex justify-center mt-2 md:hidden">
+              <div className="w-2 h-2 rounded-full bg-pink-500 mx-1"></div>
+              <div className="w-2 h-2 rounded-full bg-gray-300 mx-1"></div>
+              <div className="w-2 h-2 rounded-full bg-gray-300 mx-1"></div>
+            </div>
+          </div>
+          
+          {/* CTA buttons moved to the top section */}
+        </div>
+      </div>
+
+      {/* Tiers Section */}
+      <TiersSection />
+      
+      {/* How It Works Section */}
+      <HowItWorksSection />
+      
+      {/* Enhanced Neon Gen Z Logo Section with Cannè colors */}
+      <div className="py-16 relative overflow-hidden bg-gradient-to-br from-gray-900 via-purple-900/70 to-gray-900">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-pink-600/30 via-purple-900/40 to-gray-900"></div>
+        <div className="absolute top-0 right-0 w-64 h-64 bg-pink-500/10 rounded-full filter blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/10 rounded-full filter blur-3xl"></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col items-center">
+          <img 
+            src="/images/ca/pixs/canne_logo_neon_genz.svg" 
+            alt="Cannè Neon Logo" 
+            className="h-24 md:h-32 w-auto filter drop-shadow-lg hover:drop-shadow-xl transition-all duration-300 animate-pulse-gentle"
+          />
+          <p className="text-white/80 mt-6 text-center max-w-lg">Experience the perfect blend of art and complimentary gifts, delivered right to your door in DC.</p>
+        </div>
+      </div>
+      
+      {/* Pricing section removed as requested */}
+      
+      {/* Collection Section - Enhanced with Cannè colors */}
+      <div id="collection" className="py-20 md:py-24 bg-gradient-to-b from-gray-50 to-pink-50/30 dark:from-gray-900 dark:to-purple-900/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <div className="inline-block mb-4">
+              <span className="px-4 py-1 bg-pink-100 dark:bg-pink-900/30 text-pink-800 dark:text-pink-300 rounded-full text-sm font-medium">Premium Collection</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 bg-clip-text text-transparent inline-block">Our Collection</h2>
+            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+              Browse our curated selection of premium digital art pieces, each paired with a complimentary gift.
+            </p>
+            <div className="mt-8 flex justify-center">
+              <Link href="/shop" className="px-6 py-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 inline-flex items-center gap-2">
+                View All Products
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m9 18 6-6-6-6"/>
+                </svg>
+              </Link>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+            {products.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Features Section - Mobile Optimized */}
+      <div className="py-16 md:py-20 bg-white dark:bg-gray-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Why Choose Cannè</h2>
+            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">Art-first approach with complimentary gifts delivered to your door</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {/* Feature 1 */}
+            <div className="p-6 bg-pink-50 dark:bg-gray-800 rounded-xl shadow-sm border border-pink-100 dark:border-gray-700">
+              <div className="w-12 h-12 bg-pink-500/10 rounded-full flex items-center justify-center mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-pink-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Premium Digital Art</h3>
+              <p className="text-gray-600 dark:text-gray-300">Exclusive digital prints from local artists with signature authenticity</p>
+            </div>
+            
+            {/* Feature 2 */}
+            <div className="p-6 bg-purple-50 dark:bg-gray-800 rounded-xl shadow-sm border border-purple-100 dark:border-gray-700">
+              <div className="w-12 h-12 bg-purple-500/10 rounded-full flex items-center justify-center mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Complimentary Gifts</h3>
+              <p className="text-gray-600 dark:text-gray-300">I-71 compliant gifting with premium flower in various quantities</p>
+            </div>
+            
+            {/* Feature 3 */}
+            <div className="p-6 bg-indigo-50 dark:bg-gray-800 rounded-xl shadow-sm border border-indigo-100 dark:border-gray-700">
+              <div className="w-12 h-12 bg-indigo-500/10 rounded-full flex items-center justify-center mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Multiple Tiers</h3>
+              <p className="text-gray-600 dark:text-gray-300">Choose from Starter, Classic, Black, and Ultra tiers to match your preferences</p>
+            </div>
+            
+            {/* Feature 4 */}
+            <div className="p-6 bg-pink-50 dark:bg-gray-800 rounded-xl shadow-sm border border-pink-100 dark:border-gray-700">
+              <div className="w-12 h-12 bg-pink-500/10 rounded-full flex items-center justify-center mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-pink-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold mb-2">DC Delivery</h3>
+              <p className="text-gray-600 dark:text-gray-300">Convenient delivery options throughout the DC area</p>
+            </div>
           </div>
         </div>
       </div>
       
-      {/* Collection Section - Refined and elegant */}
-      <div id="collection" className="py-20 md:py-24 bg-gray-50">
+      {/* Supabase Connection Status - Moved to bottom */}
+      <div className="bg-gray-50 dark:bg-gray-900 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Our Collection</h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Browse our curated selection of premium digital art pieces, each paired with a complimentary gift.
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
+            <SupabaseConnectionTest />
           </div>
         </div>
       </div>

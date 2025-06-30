@@ -1,7 +1,7 @@
 'use client';
 
 import { X, Plus, Minus, ShoppingBag, CreditCard } from 'lucide-react';
-import { useCart } from '@/hooks/use-cart';
+import { useCart } from '@/contexts/CartContext';
 import { useEffect } from 'react';
 
 interface CartModalProps {
@@ -10,10 +10,10 @@ interface CartModalProps {
 }
 
 export default function CartModal({ isOpen, onClose }: CartModalProps) {
-  const { cart, removeProduct, updateProductQuantity } = useCart();
+  const { items, removeItem, updateQuantity, getCartTotal, getCartItemCount } = useCart();
   
-  const subtotal = cart.items.reduce((total, item) => total + (item.product.price * item.quantity), 0);
-  const itemCount = cart.items.reduce((total, item) => total + item.quantity, 0);
+  const subtotal = getCartTotal();
+  const itemCount = getCartItemCount();
 
   // Close modal on escape key
   useEffect(() => {
@@ -64,7 +64,7 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
 
           {/* Cart Items */}
           <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-6">
-            {cart.items.length === 0 ? (
+            {items.length === 0 ? (
               <div className="text-center py-12">
                 <ShoppingBag className="mx-auto h-12 w-12 text-gray-400 mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">Your cart is empty</h3>
@@ -78,31 +78,35 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
               </div>
             ) : (
               <div className="space-y-6">
-                {cart.items.map((item) => (
-                  <div key={item.product.id} className="group">
+                {items.map((item) => (
+                  <div key={item.id} className="group">
                     <div className="flex items-start space-x-4">
                       {/* Product Image Placeholder */}
                       <div className="w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <span className="text-xs font-medium text-gray-600">
-                          {item.product.name.split(' ').map(w => w[0]).join('')}
-                        </span>
+                        {item.imageUrl ? (
+                          <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover rounded-lg" />
+                        ) : (
+                          <span className="text-xs font-medium text-gray-600">
+                            {item.name.split(' ').map(w => w[0]).join('')}
+                          </span>
+                        )}
                       </div>
                       
                       <div className="flex-1 min-w-0">
                         <h3 className="text-sm font-medium text-gray-900 group-hover:text-gray-700">
-                          {item.product.name}
+                          {item.name}
                         </h3>
                         <p className="text-sm text-gray-500 mt-1">
-                          Gift: {item.product.giftSize}
+                          Gift: {item.weight}
                         </p>
                         <p className="text-sm font-semibold text-gray-900 mt-1">
-                          ${item.product.price}
+                          ${item.price.toFixed(2)}
                         </p>
                         
                         {/* Quantity Controls */}
                         <div className="flex items-center space-x-2 mt-3">
                           <button
-                            onClick={() => updateProductQuantity(item.product.id, item.quantity - 1)}
+                            onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
                             className="w-7 h-7 rounded-full bg-gray-50 border border-gray-200 hover:bg-gray-100 flex items-center justify-center transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-1"
                             aria-label="Decrease quantity"
                           >
@@ -112,7 +116,7 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
                             {item.quantity}
                           </span>
                           <button
-                            onClick={() => updateProductQuantity(item.product.id, item.quantity + 1)}
+                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
                             className="w-7 h-7 rounded-full bg-gray-50 border border-gray-200 hover:bg-gray-100 flex items-center justify-center transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-1"
                             aria-label="Increase quantity"
                           >
@@ -123,7 +127,7 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
                       
                       {/* Remove Button */}
                       <button
-                        onClick={() => removeProduct(item.product.id)}
+                        onClick={() => removeItem(item.id)}
                         className="text-gray-400 hover:text-gray-900 transition-colors p-1 rounded-full hover:bg-gray-50 active:scale-95"
                         aria-label="Remove item"
                       >
@@ -137,7 +141,7 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
           </div>
 
           {/* Footer */}
-          {cart.items.length > 0 && (
+          {items.length > 0 && (
             <div className="border-t border-gray-200 px-4 py-6 sm:px-6">
               <div className="space-y-4">
                 {/* Subtotal */}

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="600" viewBox="0 0 400 600" preserveAspectRatio="xMidYMid meet">
+  <!-- Defs for gradients and patterns -->
+  <defs>
+    <!-- Purple ice cream gradient -->
+    <linearGradient id="purpleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#b066ff" />
+      <stop offset="100%" stop-color="#8833cc" />
+    </linearGradient>
+    
+    <!-- Cone gradient -->
+    <linearGradient id="coneGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e6b87a" />
+      <stop offset="100%" stop-color="#b78144" />
+    </linearGradient>
+    
+    <!-- Cone top border gradient -->
+    <linearGradient id="coneTopGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d6a76a" />
+      <stop offset="100%" stop-color="#a77134" />
+    </linearGradient>
+    
+    <!-- Sprinkle pattern for the ice cream -->
+    <pattern id="sprinklePattern" patternUnits="userSpaceOnUse" width="50" height="50" patternTransform="rotate(45)">
+      <rect width="50" height="50" fill="none"/>
+      <circle cx="10" cy="10" r="2" fill="#ff66aa" />
+      <circle cx="25" cy="30" r="2" fill="#66aaff" />
+      <circle cx="40" cy="15" r="2" fill="#ffcc33" />
+      <circle cx="5" cy="35" r="2" fill="#33cc99" />
+    </pattern>
+  </defs>
+  
+  <!-- Main Ice Cream Scoop -->
+  <circle cx="200" cy="180" r="80" fill="url(#purpleGradient)" />
+  
+  <!-- Drips and melting effects -->
+  <path d="M140,180 C120,220 130,270 150,280 C165,288 185,280 190,260 C195,240 180,220 170,210 Z" fill="url(#purpleGradient)" />
+  <path d="M260,180 C280,220 270,270 250,280 C235,288 215,280 210,260 C205,240 220,220 230,210 Z" fill="url(#purpleGradient)" />
+  
+  <!-- Large center drip -->
+  <path d="M180,250 C160,270 170,310 190,330 C210,350 230,340 220,310 C210,280 190,260 180,250 Z" fill="url(#purpleGradient)" />
+  
+  <!-- Sprinkles on the ice cream -->
+  <circle cx="200" cy="180" r="70" fill="url(#sprinklePattern)" fill-opacity="0.4" />
+  
+  <!-- Cone -->
+  <path d="M120,260 L200,450 L280,260 Z" fill="url(#coneGradient)" stroke="#a77134" stroke-width="1" />
+  
+  <!-- Cone top border -->
+  <path d="M120,260 L280,260 L270,245 C270,245 240,260 200,260 C160,260 130,245 130,245 Z" fill="url(#coneTopGradient)" />
+  
+  <!-- Cone waffle pattern -->
+  <g stroke="#a77134" stroke-width="1" opacity="0.5">
+    <!-- Horizontal lines -->
+    <line x1="130" y1="290" x2="270" y2="290" />
+    <line x1="140" y1="320" x2="260" y2="320" />
+    <line x1="150" y1="350" x2="250" y2="350" />
+    <line x1="160" y1="380" x2="240" y2="380" />
+    <line x1="170" y1="410" x2="230" y2="410" />
+    
+    <!-- Diagonal lines (left to right) -->
+    <line x1="130" y1="260" x2="170" y2="410" />
+    <line x1="160" y1="260" x2="190" y2="410" />
+    <line x1="190" y1="260" x2="200" y2="410" />
+    <line x1="220" y1="260" x2="210" y2="410" />
+    <line x1="250" y1="260" x2="230" y2="410" />
+    <line x1="280" y1="260" x2="230" y2="410" />
+  </g>
+  
+  <!-- Shine spots on ice cream -->
+  <ellipse cx="170" cy="150" rx="15" ry="10" fill="white" opacity="0.4" />
+  <ellipse cx="220" cy="160" rx="8" ry="5" fill="white" opacity="0.3" />
+  
+  <!-- Text CANNÈ -->
+  <text x="200" y="520" font-family="Arial, sans-serif" font-size="48" font-weight="bold" text-anchor="middle" fill="#8833cc">CANNÈ</text>
+  
+  <!-- Text ART COLLECTIVE -->
+  <text x="200" y="550" font-family="Arial, sans-serif" font-size="18" font-weight="normal" text-anchor="middle" fill="#666666">ART COLLECTIVE</text>
+</svg>

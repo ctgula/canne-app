@@ -1,0 +1,72 @@
+
+<svg width="2000" height="2400" viewBox="0 0 2000 2400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Neon gradient scoop -->
+    <linearGradient id="neonScoop" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FF2BD7"/>
+      <stop offset="50%" stop-color="#7A1BFF"/>
+      <stop offset="100%" stop-color="#00E5FF"/>
+    </linearGradient>
+    <!-- Cone gradient -->
+    <linearGradient id="neonCone" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFC960"/>
+      <stop offset="100%" stop-color="#FF8B2E"/>
+    </linearGradient>
+    <!-- Text gradient -->
+    <linearGradient id="neonText" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FF2BD7"/>
+      <stop offset="100%" stop-color="#00E5FF"/>
+    </linearGradient>
+    <!-- Sparkle symbol -->
+    <symbol id="sparkle" viewBox="0 0 100 100">
+      <polygon points="50,0 60,35 100,50 60,65 50,100 40,65 0,50 40,35" fill="#FFFFFF" />
+    </symbol>
+    <!-- Glow filter -->
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="15" result="blur" />
+      <feMerge> <feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Scoop -->
+  <path d="
+    M1000 420
+    C1180 420 1320 570 1320 740
+    C1320 850 1260 950 1180 1020
+    C1180 1020 1210 1120 1080 1120
+    C1000 1120 1000 1020 1000 1020
+    C930 1120 820 1120 820 1020
+    C740 950 680 850 680 740
+    C680 570 820 420 1000 420Z"
+    fill="url(#neonScoop)" stroke="#FFFFFF" stroke-width="25" stroke-linejoin="round" filter="url(#glow)"/>
+
+  <!-- Drip -->
+  <path d="
+    M1000 1020
+    C1035 1060 1035 1110 1000 1150
+    C965 1110 965 1060 1000 1020Z"
+    fill="url(#neonScoop)" stroke="#FFFFFF" stroke-width="25" stroke-linejoin="round" filter="url(#glow)"/>
+
+  <!-- Cone -->
+  <path d="M860 1150 L1140 1150 L1000 1700 Z"
+        fill="url(#neonCone)" stroke="#FFFFFF" stroke-width="25" stroke-linejoin="round" filter="url(#glow)"/>
+
+  <!-- Waffle lines -->
+  <path d="M920 1250 L1080 1500" stroke="#FF9B2E" stroke-width="18" opacity="0.8"/>
+  <path d="M1080 1250 L920 1500" stroke="#FF9B2E" stroke-width="18" opacity="0.8"/>
+
+  <!-- Wordmark -->
+  <text x="1000" y="2000" font-family="Montserrat, Arial, sans-serif"
+        font-size="280" font-weight="900" text-anchor="middle"
+        fill="url(#neonText)" letter-spacing="16" filter="url(#glow)">CANNÈ</text>
+  <text x="1000" y="2130" font-family="Montserrat, Arial, sans-serif"
+        font-size="160" font-weight="700" text-anchor="middle"
+        fill="url(#neonText)" letter-spacing="10" filter="url(#glow)">ART COLLECTIVE</text>
+
+  <!-- Sparkles -->
+  <use href="#sparkle" x="650" y="500" width="120" height="120" opacity="0.9"/>
+  <use href="#sparkle" x="1350" y="600" width="90" height="90" opacity="0.8"/>
+  <use href="#sparkle" x="900" y="900" width="80" height="80" opacity="0.7"/>
+  <use href="#sparkle" x="1150" y="950" width="100" height="100" opacity="0.8"/>
+  <use href="#sparkle" x="800" y="1450" width="90" height="90" opacity="0.9"/>
+</svg>

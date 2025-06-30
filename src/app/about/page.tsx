@@ -1,9 +1,11 @@
 'use client';
 
 import Header from '@/components/Header';
+import DcComplianceSection from '@/components/DcComplianceSection';
 import React from 'react';
 import { ArrowLeft, Palette, Heart, Sparkles, Clock, Shield, Users } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 
 export default function AboutPage() {
@@ -43,25 +45,23 @@ export default function AboutPage() {
                 </p>
               </div>
               
-              <div className="relative w-40 h-40 md:w-56 md:h-56 mx-auto md:mx-0 mt-8 md:mt-0 animate-float-gentle">
+              <div className="relative w-40 h-40 md:w-64 md:h-64 mx-auto md:mx-0 mt-8 md:mt-0 animate-float-gentle flex items-center justify-center">
                 <div className="absolute inset-0 bg-gradient-to-br from-pink-300 via-purple-400 to-indigo-500 rounded-full opacity-80 blur-md"></div>
-                <div className="relative w-full h-full flex items-center justify-center">
-                  <div className="w-24 h-24 md:w-32 md:h-32 relative">
-                    {/* Stylized ice cream cone logo */}
-                    <div className="w-full h-3/4 bg-gradient-to-br from-pink-300 via-pink-400 to-purple-500 rounded-t-full shadow-lg">
-                      {/* Shine effect */}
-                      <div className="absolute top-2 left-2 w-4 h-4 bg-white opacity-60 rounded-full"></div>
-                    </div>
-                    <div className="absolute bottom-0 w-full h-1/3 bg-gradient-to-br from-amber-300 to-amber-500 clip-cone transform translate-y-2 shadow-md"></div>
-                    {/* Drip effects */}
-                    <div className="absolute -top-1 right-2 w-3 h-4 bg-pink-300 rounded-full animate-pulse-slow"></div>
-                    <div className="absolute top-3 left-1 w-2 h-2 bg-pink-200 rounded-full"></div>
-                  </div>
+                <div className="relative flex items-center justify-center h-full w-full p-6">
+                  {/* Actual Cannè Logo */}
+                  <img
+                    src="/images/canne_logo.svg"
+                    alt="Cannè Art Collective"
+                    className="h-32 md:h-40 w-auto relative z-10"
+                  />
                 </div>
               </div>
             </div>
           </div>
         </div>
+        
+        {/* DC Compliance Section */}
+        <DcComplianceSection />
         
         {/* Our Story Section */}
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 md:p-12 mb-12">

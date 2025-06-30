@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400" preserveAspectRatio="xMidYMid meet">
+  <!-- Background with gradient -->
+  <defs>
+    <!-- Purple background gradient -->
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#b066ff" />
+      <stop offset="100%" stop-color="#8833cc" />
+    </linearGradient>
+    
+    <!-- Text gradient -->
+    <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#e0e0e0" />
+    </linearGradient>
+    
+    <!-- Ice cream pattern -->
+    <pattern id="iceCreamPattern" patternUnits="userSpaceOnUse" width="60" height="60">
+      <rect width="60" height="60" fill="#a040ff" />
+      <!-- Ice cream cones in pattern -->
+      <path d="M10,10 L20,40 L30,10 Z" fill="#e6b87a" />
+      <circle cx="20" cy="10" r="10" fill="#b066ff" />
+      
+      <path d="M40,40 L50,70 L60,40 Z" fill="#e6b87a" />
+      <circle cx="50" cy="40" r="10" fill="#b066ff" />
+    </pattern>
+  </defs>
+  
+  <!-- Main background -->
+  <rect width="600" height="400" fill="url(#bgGradient)" />
+  
+  <!-- Abstract art elements -->
+  <circle cx="100" cy="100" r="50" fill="#ff66aa" opacity="0.7" />
+  <circle cx="500" cy="300" r="70" fill="#66aaff" opacity="0.7" />
+  <circle cx="400" cy="100" r="60" fill="#ffcc33" opacity="0.7" />
+  
+  <!-- Pattern rectangle -->
+  <rect x="150" y="150" width="300" height="100" fill="url(#iceCreamPattern)" opacity="0.3" />
+  
+  <!-- Large Ice Cream Icon -->
+  <g transform="translate(300, 220) scale(1.5)">
+    <!-- Cone -->
+    <path d="M-30,30 L0,90 L30,30 Z" fill="#e6b87a" stroke="#a77134" stroke-width="1" />
+    
+    <!-- Ice cream scoop -->
+    <circle cx="0" cy="10" r="30" fill="#b066ff" />
+    
+    <!-- Drips -->
+    <path d="M-20,20 C-25,35 -20,50 -10,45 C-5,42 -10,30 -15,25 Z" fill="#b066ff" />
+    <path d="M20,20 C25,35 20,50 10,45 C5,42 10,30 15,25 Z" fill="#b066ff" />
+  </g>
+  
+  <!-- Text "CANNÈ ART" -->
+  <text x="300" y="180" font-family="Arial, sans-serif" font-size="48" font-weight="bold" text-anchor="middle" fill="url(#textGradient)" stroke="#333" stroke-width="1">CANNÈ ART</text>
+  
+  <!-- Text "COLLECTIVE" -->
+  <text x="300" y="230" font-family="Arial, sans-serif" font-size="32" font-weight="normal" text-anchor="middle" fill="url(#textGradient)" stroke="#333" stroke-width="0.5">COLLECTIVE</text>
+  
+  <!-- Decorative swirls -->
+  <path d="M50,350 C100,300 150,330 200,300 C250,270 300,350 350,300 C400,250 450,300 500,250 C550,200 580,250 600,200" stroke="white" stroke-width="3" fill="none" opacity="0.5" />
+  
+  <path d="M0,250 C50,300 100,270 150,300 C200,330 250,250 300,300 C350,350 400,300 450,350 C500,400 550,350 600,400" stroke="white" stroke-width="2" fill="none" opacity="0.3" />
+</svg>

@@ -2,7 +2,7 @@
 
 import { Plus, Minus, X, Palette, Star, Crown, Sparkles, Check, Truck, Award } from 'lucide-react';
 import { Product } from '@/types';
-import { useCart } from '@/hooks/use-cart';
+import { useCart } from '@/contexts/CartContext';
 import { useState } from 'react';
 
 interface ProductCardProps {
@@ -10,41 +10,61 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-  const { cart, addProduct, updateProductQuantity, removeProduct } = useCart();
+  const { items, addItem, updateQuantity, removeItem } = useCart();
   const [isAdded, setIsAdded] = useState(false);
   
   // Check if product is already in cart
-  const cartItem = cart.items.find(item => item.product.id === product.id);
+  const cartItem = items.find(item => item.id === product.id);
   const quantity = cartItem?.quantity || 0;
   const isInCart = quantity > 0;
   
   // Debug cart state
-  console.log(`Product ${product.name} - In cart: ${isInCart}, Quantity: ${quantity}`);
+  // console.log(`Product ${product.name} - In cart: ${isInCart}, Quantity: ${quantity}`);
 
   const handleAddToCart = () => {
-    addProduct(product);
+    const newItem = {
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      quantity: 1,
+      tier: getTier(product.price),
+      imageUrl: product.artworkUrl,
+      weight: product.giftSize,
+      colorTheme: getTierColorTheme(getTier(product.price))
+    };
+    addItem(newItem);
     setIsAdded(true);
     setTimeout(() => setIsAdded(false), 2000);
   };
 
   const handleDecreaseQuantity = () => {
     if (quantity > 1) {
-      updateProductQuantity(product.id, quantity - 1);
+      updateQuantity(product.id, quantity - 1);
     } else {
-      removeProduct(product.id);
+      removeItem(product.id);
     }
   };
 
   const handleRemoveFromCart = () => {
-    removeProduct(product.id);
+    removeItem(product.id);
   };
 
   // Enhanced tier determination with more granular levels
   const getTier = (price: number) => {
     if (price >= 140) return 'ultra';
-    if (price >= 50) return 'pro';
-    if (price >= 40) return 'essentials';
-    return 'standard';
+    if (price >= 75) return 'black';
+    if (price >= 45) return 'classic';
+    return 'starter';
+  };
+  
+  // Get color theme based on tier
+  const getTierColorTheme = (tier: string) => {
+    switch (tier) {
+      case 'ultra': return 'purple';
+      case 'black': return 'black';
+      case 'classic': return 'violet';
+      default: return 'pink';
+    }
   };
 
   const tier = getTier(product.price);
@@ -54,11 +74,13 @@ export default function ProductCard({ product }: ProductCardProps) {
     const baseClass = 'group product-card-enhanced';
     switch (tier) {
       case 'ultra':
-        return `${baseClass} hover:shadow-amber-200/50 hover:border-amber-300/50`;
-      case 'pro':
+        return `${baseClass} hover:shadow-purple-200/50 hover:border-purple-300/50`;
+      case 'black':
+        return `${baseClass} hover:shadow-gray-200/50 hover:border-gray-300/50`;
+      case 'classic':
         return `${baseClass} hover:shadow-violet-200/50 hover:border-violet-300/50`;
-      case 'essentials':
-        return `${baseClass} hover:shadow-emerald-200/50 hover:border-emerald-300/50`;
+      case 'starter':
+        return `${baseClass} hover:shadow-pink-200/50 hover:border-pink-300/50`;
       default:
         return `${baseClass} hover:shadow-gray-200/50`;
     }
@@ -68,9 +90,11 @@ export default function ProductCard({ product }: ProductCardProps) {
     switch (tier) {
       case 'ultra':
         return <Crown className="h-4 w-4" />;
-      case 'pro':
+      case 'black':
+        return <Sparkles className="h-4 w-4" />;
+      case 'classic':
         return <Star className="h-4 w-4" />;
-      case 'essentials':
+      case 'starter':
         return <Award className="h-4 w-4" />;
       default:
         return null;
@@ -78,13 +102,18 @@ export default function ProductCard({ product }: ProductCardProps) {
   };
 
   const getTierBadgeClass = () => {
+    // Base class with adjusted positioning (shifted down 4px)
+    const baseClass = 'tier-badge-enhanced text-white absolute top-[4px] right-0';
+    
     switch (tier) {
       case 'ultra':
-        return 'tier-badge-enhanced bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 text-white shadow-amber-300/50';
-      case 'pro':
-        return 'tier-badge-enhanced bg-gradient-to-r from-violet-500 via-purple-500 to-indigo-500 text-white shadow-violet-300/50';
-      case 'essentials':
-        return 'tier-badge-enhanced bg-gradient-to-r from-emerald-500 via-teal-500 to-green-500 text-white shadow-emerald-300/50';
+        return `${baseClass} bg-gradient-to-r from-purple-400 via-purple-500 to-purple-600 shadow-purple-300/50`;
+      case 'black':
+        return `${baseClass} bg-gradient-to-r from-gray-700 via-gray-800 to-black shadow-gray-300/50`;
+      case 'classic':
+        return `${baseClass} bg-gradient-to-r from-violet-400 via-violet-500 to-violet-600 shadow-violet-300/50`;
+      case 'starter':
+        return `${baseClass} bg-gradient-to-r from-pink-400 via-pink-500 to-pink-600 shadow-pink-300/50`;
       default:
         return '';
     }
@@ -94,10 +123,12 @@ export default function ProductCard({ product }: ProductCardProps) {
     switch (tier) {
       case 'ultra':
         return 'Ultra';
-      case 'pro':
-        return 'Pro';
-      case 'essentials':
-        return 'Essentials';
+      case 'black':
+        return 'Black';
+      case 'classic':
+        return 'Classic';
+      case 'starter':
+        return 'Starter';
       default:
         return '';
     }
@@ -106,11 +137,13 @@ export default function ProductCard({ product }: ProductCardProps) {
   const getArtworkGradient = () => {
     switch (tier) {
       case 'ultra':
-        return 'from-amber-50 via-orange-50 to-yellow-50';
-      case 'pro':
-        return 'from-violet-50 via-purple-50 to-indigo-50';
-      case 'essentials':
-        return 'from-emerald-50 via-teal-50 to-green-50';
+        return 'from-purple-50 via-purple-100 to-indigo-200';
+      case 'black':
+        return 'from-gray-50 via-gray-100 to-gray-200';
+      case 'classic':
+        return 'from-violet-50 via-violet-100 to-violet-200';
+      case 'starter':
+        return 'from-pink-50 via-pink-100 to-pink-200';
       default:
         return 'from-gray-50 via-slate-50 to-gray-50';
     }
@@ -131,10 +164,12 @@ export default function ProductCard({ product }: ProductCardProps) {
   return (
     <div className={getCardClass()}>
       {/* Enhanced Tier Badge */}
-      {tier !== 'standard' && (
-        <div className={getTierBadgeClass()}>
+      {(
+        <div className={getTierBadgeClass()} aria-label={`${getTierName()} tier product`}>
           {getTierIcon()}
           <span>{getTierName()}</span>
+          {tier === 'classic' && <span className="ml-1 text-xs bg-white text-violet-500 px-1.5 rounded-full">POPULAR</span>}
+          {tier === 'ultra' && <span className="ml-1 text-xs bg-white text-purple-500 px-1.5 rounded-full">PREMIUM</span>}
         </div>
       )}
 
@@ -148,7 +183,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         </div>
         
         {/* Premium Sparkle Effect */}
-        {tier !== 'standard' && (
+        {(
           <div className="absolute top-3 left-3 opacity-70 group-hover:opacity-100 transition-opacity duration-500">
             <Sparkles className="h-5 w-5 text-white animate-pulse-gentle" />
           </div>
@@ -184,21 +219,22 @@ export default function ProductCard({ product }: ProductCardProps) {
               <span>Complimentary Gift</span>
             </span>
             <div className={`px-3 py-1 rounded-xl text-sm font-bold shadow-sm ${
-              tier === 'ultra' ? 'bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800' :
-              tier === 'pro' ? 'bg-gradient-to-r from-violet-100 to-purple-100 text-violet-800' :
-              tier === 'essentials' ? 'bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-800' :
-              'bg-gray-200 text-gray-700'
+              tier === 'ultra' ? 'bg-gradient-to-r from-purple-100 to-indigo-100 text-purple-800' :
+              tier === 'black' ? 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800' :
+              tier === 'classic' ? 'bg-gradient-to-r from-violet-100 to-violet-200 text-violet-800' :
+              'bg-gradient-to-r from-pink-100 to-pink-200 text-pink-700'
             }`}>
               {product.giftSize}
             </div>
           </div>
-          {tier !== 'standard' && (
+          {(
             <div className="text-xs text-gray-500 flex items-center space-x-2">
               {getTierIcon()}
               <span className="font-medium">
-                {tier === 'ultra' ? 'Premium quality selection' : 
-                 tier === 'pro' ? 'Enhanced gift bundle' :
-                 'Quality essentials package'}
+                {tier === 'ultra' ? '28g Premium flower collection' : 
+                 tier === 'black' ? '14g Premium flower' :
+                 tier === 'classic' ? '7g Complimentary flower' :
+                 '3.5g Complimentary flower'}
               </span>
             </div>
           )}
@@ -210,15 +246,15 @@ export default function ProductCard({ product }: ProductCardProps) {
             <div className="text-2xl md:text-3xl font-bold text-gray-900 group-hover:text-gray-700 transition-colors duration-300">
               ${product.price}
             </div>
-            {tier !== 'standard' && (
+            {tier !== 'starter' && (
               <div className={`text-sm font-bold ${
-                tier === 'ultra' ? 'text-amber-600' : 
-                tier === 'pro' ? 'text-violet-600' :
-                'text-emerald-600'
+                tier === 'ultra' ? 'text-purple-600' : 
+                tier === 'black' ? 'text-gray-800' :
+                'text-violet-600'
               }`}>
-                {tier === 'ultra' ? 'Ultra Value' : 
-                 tier === 'pro' ? 'Pro Deal' :
-                 'Great Value'}
+                {tier === 'ultra' ? '28g Premium' : 
+                 tier === 'black' ? '14g Premium' :
+                 '7g Complimentary'}
               </div>
             )}
           </div>
@@ -242,7 +278,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                 </span>
                 
                 <button
-                  onClick={() => addProduct(product)}
+                  onClick={handleAddToCart}
                   aria-label="Increase quantity"
                   className="p-2 sm:p-2.5 hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-200 focus:ring-offset-1 active:bg-gray-100"
                   style={{ touchAction: 'manipulation' }}

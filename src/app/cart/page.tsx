@@ -2,17 +2,19 @@
 
 import Link from 'next/link';
 import Header from '@/components/Header';
-import { useCart } from '@/hooks/use-cart';
+import { useCart } from '@/contexts/CartContext';
 import { Minus, Plus, Trash2, ArrowRight, Truck, ShoppingBag } from 'lucide-react';
 import { DELIVERY_THRESHOLD } from '@/lib/cart-utils';
 
 export default function CartPage() {
-  const { cart, updateProductQuantity, removeProduct } = useCart();
-
-  const deliveryAmountNeeded = DELIVERY_THRESHOLD - cart.total;
+  const { items, updateQuantity, removeItem, getCartTotal } = useCart();
+  
+  const total = getCartTotal();
+  const deliveryAmountNeeded = DELIVERY_THRESHOLD - total;
   const isCloseToDelivery = deliveryAmountNeeded > 0 && deliveryAmountNeeded <= 15;
+  const hasDelivery = total >= DELIVERY_THRESHOLD;
 
-  if (cart.items.length === 0) {
+  if (items.length === 0) {
     return (
       <div className="min-h-screen">
         <Header />
@@ -42,15 +44,15 @@ export default function CartPage() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Your Cart</h1>
           <p className="text-gray-600">
-            {cart.items.length} item{cart.items.length !== 1 ? 's' : ''} in your cart
+            {items.length} item{items.length !== 1 ? 's' : ''} in your cart
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Cart Items */}
           <div className="lg:col-span-2 space-y-4">
-            {cart.items.map((item) => (
-              <div key={item.product.id} className="card">
+            {items.map((item) => (
+              <div key={item.id} className="card">
                 <div className="flex flex-col sm:flex-row gap-4">
                   {/* Product Image */}
                   <div className="w-full sm:w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -62,14 +64,14 @@ export default function CartPage() {
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                       <div className="flex-1">
                         <h3 className="font-semibold text-lg text-gray-900 mb-1">
-                          {item.product.name}
+                          {item.name}
                         </h3>
                         <p className="text-sm text-gray-600 mb-2">
-                          {item.product.description}
+                          {item.tier} tier art with complimentary gift
                         </p>
                         <div className="flex items-center gap-2">
-                          <span className="gift-badge">{item.product.giftSize} gift</span>
-                          {item.product.hasDelivery && (
+                          <span className="gift-badge">{item.weight} gift</span>
+                          {hasDelivery && (
                             <span className="delivery-badge">
                               <Truck className="h-3 w-3 mr-1" />
                               Free delivery
@@ -81,14 +83,14 @@ export default function CartPage() {
                       {/* Price and Controls */}
                       <div className="flex flex-col items-end gap-3">
                         <div className="text-xl font-bold text-gray-900">
-                          ${item.product.price * item.quantity}
+                          ${(item.price * item.quantity).toFixed(2)}
                         </div>
                         
                         {/* Quantity Controls */}
                         <div className="flex items-center gap-3">
                           <div className="flex items-center bg-gray-100 rounded-lg">
                             <button
-                              onClick={() => updateProductQuantity(item.product.id, item.quantity - 1)}
+                              onClick={() => updateQuantity(item.id, item.quantity - 1)}
                               className="p-2 hover:bg-gray-200 rounded-l-lg transition-colors"
                             >
                               <Minus className="h-4 w-4" />
@@ -97,7 +99,7 @@ export default function CartPage() {
                               {item.quantity}
                             </span>
                             <button
-                              onClick={() => updateProductQuantity(item.product.id, item.quantity + 1)}
+                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
                               className="p-2 hover:bg-gray-200 rounded-r-lg transition-colors"
                             >
                               <Plus className="h-4 w-4" />
@@ -105,7 +107,7 @@ export default function CartPage() {
                           </div>
                           
                           <button
-                            onClick={() => removeProduct(item.product.id)}
+                            onClick={() => removeItem(item.id)}
                             className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -127,26 +129,26 @@ export default function CartPage() {
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Subtotal</span>
-                  <span className="font-medium">${cart.total}</span>
+                  <span className="font-medium">${total.toFixed(2)}</span>
                 </div>
                 
                 <div className="flex justify-between">
                   <span className="text-gray-600">Delivery</span>
                   <span className="font-medium">
-                    {cart.hasDelivery ? 'Free' : '$10'}
+                    {hasDelivery ? 'Free' : '$10'}
                   </span>
                 </div>
                 
                 <div className="border-t pt-3">
                   <div className="flex justify-between text-lg font-bold">
                     <span>Total</span>
-                    <span>${cart.hasDelivery ? cart.total : cart.total + 10}</span>
+                    <span>${hasDelivery ? total.toFixed(2) : (total + 10).toFixed(2)}</span>
                   </div>
                 </div>
               </div>
 
               {/* Delivery Threshold Message */}
-              {!cart.hasDelivery && (
+              {!hasDelivery && (
                 <div className={`p-4 rounded-xl mb-6 ${
                   isCloseToDelivery 
                     ? 'bg-orange-50 border border-orange-200' 
@@ -170,7 +172,7 @@ export default function CartPage() {
                 </div>
               )}
 
-              {cart.hasDelivery && (
+              {hasDelivery && (
                 <div className="bg-green-50 border border-green-200 p-4 rounded-xl mb-6">
                   <div className="flex items-center gap-2 mb-2">
                     <Truck className="h-4 w-4 text-green-600" />

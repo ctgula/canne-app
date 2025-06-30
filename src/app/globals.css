@@ -266,6 +266,9 @@
 }
 
 @layer utilities {
+  .drop-shadow-glow {
+    filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.5));
+  }
   /* Enhanced animations */
   .animate-fade-in {
     animation: fade-in 0.8s ease-out forwards;
