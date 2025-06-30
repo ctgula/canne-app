@@ -1,6 +1,9 @@
 import { CartItem } from '@/contexts/CartContext';
 import { createOrder, addOrderItems } from './orderService';
 
+// Define a type for checkout errors
+type CheckoutError = string | Error | unknown;
+
 type CheckoutFormData = {
   customerName: string;
   customerEmail: string;
@@ -22,7 +25,7 @@ export async function processCheckout(
   formData: CheckoutFormData,
   cartTotal: number,
   userId?: string
-): Promise<{ success: boolean; orderId?: string; error?: any }> {
+): Promise<{ success: boolean; orderId?: string; error?: CheckoutError }> {
   try {
     // 1. Create the order
     const orderData = {

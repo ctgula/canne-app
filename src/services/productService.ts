@@ -1,10 +1,18 @@
 import { supabase } from '@/lib/supabase';
 import { Product } from '@/types/supabase';
 
+// Define a type for Supabase errors
+type SupabaseError = {
+  message: string;
+  details?: string;
+  hint?: string;
+  code?: string;
+};
+
 /**
  * Get all active products
  */
-export async function getAllProducts(): Promise<{ products: Product[], error: any }> {
+export async function getAllProducts(): Promise<{ products: Product[], error: SupabaseError | null }> {
   try {
     const { data, error } = await supabase
       .from('products')
@@ -16,14 +24,14 @@ export async function getAllProducts(): Promise<{ products: Product[], error: an
     return { products: data || [], error: null };
   } catch (error) {
     console.error('Error fetching products:', error);
-    return { products: [], error };
+    return { products: [], error: error as SupabaseError };
   }
 }
 
 /**
  * Get products by tier
  */
-export async function getProductsByTier(tier: string): Promise<{ products: Product[], error: any }> {
+export async function getProductsByTier(tier: string): Promise<{ products: Product[], error: SupabaseError | null }> {
   try {
     const { data, error } = await supabase
       .from('products')
@@ -35,14 +43,14 @@ export async function getProductsByTier(tier: string): Promise<{ products: Produ
     return { products: data || [], error: null };
   } catch (error) {
     console.error(`Error fetching ${tier} products:`, error);
-    return { products: [], error };
+    return { products: [], error: error as SupabaseError };
   }
 }
 
 /**
  * Get product by ID
  */
-export async function getProductById(id: string): Promise<{ product: Product | null, error: any }> {
+export async function getProductById(id: string): Promise<{ product: Product | null, error: SupabaseError | null }> {
   try {
     const { data, error } = await supabase
       .from('products')
@@ -54,7 +62,7 @@ export async function getProductById(id: string): Promise<{ product: Product | n
     return { product: data, error: null };
   } catch (error) {
     console.error('Error fetching product:', error);
-    return { product: null, error };
+    return { product: null, error: error as SupabaseError };
   }
 }
 
@@ -62,7 +70,7 @@ export async function getProductById(id: string): Promise<{ product: Product | n
  * Create product mapping for the four tiers
  * This is useful for initializing the database with the standard products
  */
-export async function createStandardProducts(): Promise<{ success: boolean, error: any }> {
+export async function createStandardProducts(): Promise<{ success: boolean, error: SupabaseError | null }> {
   try {
     const standardProducts = [
       {
@@ -115,6 +123,6 @@ export async function createStandardProducts(): Promise<{ success: boolean, erro
     return { success: true, error: null };
   } catch (error) {
     console.error('Error creating standard products:', error);
-    return { success: false, error };
+    return { success: false, error: error as SupabaseError };
   }
 }

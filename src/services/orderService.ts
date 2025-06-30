@@ -2,10 +2,18 @@ import { supabase } from '@/lib/supabase';
 import { Order, OrderItem } from '@/types/supabase';
 import { CartItem } from '@/contexts/CartContext';
 
+// Define a type for Supabase errors
+type SupabaseError = {
+  message: string;
+  details?: string;
+  hint?: string;
+  code?: string;
+};
+
 /**
  * Create a new order in Supabase
  */
-export async function createOrder(orderData: Omit<Order, 'id' | 'created_at'>): Promise<{ data: Order | null, error: any }> {
+export async function createOrder(orderData: Omit<Order, 'id' | 'created_at'>): Promise<{ data: Order | null, error: SupabaseError | null }> {
   try {
     const { data, error } = await supabase
       .from('orders')
@@ -17,14 +25,14 @@ export async function createOrder(orderData: Omit<Order, 'id' | 'created_at'>): 
     return { data, error: null };
   } catch (error) {
     console.error('Error creating order:', error);
-    return { data: null, error };
+    return { data: null, error: error as SupabaseError };
   }
 }
 
 /**
  * Add order items to an existing order
  */
-export async function addOrderItems(orderId: string, cartItems: CartItem[]): Promise<{ success: boolean, error: any }> {
+export async function addOrderItems(orderId: string, cartItems: CartItem[]): Promise<{ success: boolean, error: SupabaseError | null }> {
   try {
     // Convert cart items to order items format
     const orderItems = cartItems.map(item => ({
@@ -45,7 +53,7 @@ export async function addOrderItems(orderId: string, cartItems: CartItem[]): Pro
     return { success: true, error: null };
   } catch (error) {
     console.error('Error adding order items:', error);
-    return { success: false, error };
+    return { success: false, error: error as SupabaseError };
   }
 }
 
@@ -55,7 +63,7 @@ export async function addOrderItems(orderId: string, cartItems: CartItem[]): Pro
 export async function getOrderWithItems(orderId: string): Promise<{ 
   order: Order | null, 
   items: OrderItem[], 
-  error: any 
+  error: SupabaseError | null 
 }> {
   try {
     // Get order
@@ -82,7 +90,7 @@ export async function getOrderWithItems(orderId: string): Promise<{
     };
   } catch (error) {
     console.error('Error fetching order with items:', error);
-    return { order: null, items: [], error };
+    return { order: null, items: [], error: error as SupabaseError };
   }
 }
 
@@ -92,7 +100,7 @@ export async function getOrderWithItems(orderId: string): Promise<{
 export async function updateOrderStatus(
   orderId: string, 
   status: Order['status']
-): Promise<{ success: boolean, error: any }> {
+): Promise<{ success: boolean, error: SupabaseError | null }> {
   try {
     const { error } = await supabase
       .from('orders')
@@ -103,7 +111,7 @@ export async function updateOrderStatus(
     return { success: true, error: null };
   } catch (error) {
     console.error('Error updating order status:', error);
-    return { success: false, error };
+    return { success: false, error: error as SupabaseError };
   }
 }
 
@@ -112,7 +120,7 @@ export async function updateOrderStatus(
  */
 export async function getUserOrders(userId: string): Promise<{ 
   orders: Order[], 
-  error: any 
+  error: SupabaseError | null 
 }> {
   try {
     const { data, error } = await supabase
@@ -125,6 +133,6 @@ export async function getUserOrders(userId: string): Promise<{
     return { orders: data || [], error: null };
   } catch (error) {
     console.error('Error fetching user orders:', error);
-    return { orders: [], error };
+    return { orders: [], error: error as SupabaseError };
   }
 }
