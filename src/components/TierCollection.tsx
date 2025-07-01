@@ -1,13 +1,12 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { tiers, Tier } from '@/data/tiers';
+import { tiers } from '@/data/tiers';
 import StrainCard from './StrainCard';
 
 const containerVariants = {
@@ -42,8 +41,7 @@ export default function TierCollection() {
           {tiers.map((tier) => (
             <motion.div key={tier.name} variants={itemVariants} className="flex flex-col gap-8">
               <Card
-                className="p-1 bg-gradient-to-br hover:scale-105 transition-transform duration-200 shadow-lg"
-                style={{ '--tw-gradient-from': tier.color.split(' ')[0], '--tw-gradient-to': tier.color.split(' ')[1] } as React.CSSProperties}
+                className={`p-1 bg-gradient-to-br ${tier.color.gradient} hover:scale-105 transition-transform duration-200 shadow-lg`}
               >
                 <div className="bg-white dark:bg-gray-900 rounded-lg">
                   <CardHeader>

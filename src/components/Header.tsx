@@ -11,7 +11,7 @@ interface HeaderProps {
   scrollToCollection?: () => void;
 }
 
-export default function Header({ scrollToCollection }: HeaderProps) {
+export default function Header({}: HeaderProps) {
   const { items } = useCart();
   const { theme, toggleTheme } = useTheme();
   const isDarkMode = theme === 'dark';

@@ -8,7 +8,14 @@ import { ArrowLeft } from 'lucide-react';
 import { tiers } from '@/data/tiers';
 import { Button } from '@/components/ui/button';
 
-export default function ProductDetailPage({ params }: { params: { slug: string; id: string } }) {
+interface ProductDetailPageProps {
+  params: {
+    slug: string;
+    id: string;
+  };
+}
+
+export default function ProductDetailPage({ params }: ProductDetailPageProps) {
   const { slug, id } = params;
   const tier = tiers.find((t) => t.slug === slug);
   const strain = tier?.strains.find((s) => s.id === id);

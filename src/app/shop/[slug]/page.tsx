@@ -7,7 +7,13 @@ import { ArrowLeft } from 'lucide-react';
 import { tiers } from '@/data/tiers';
 import StrainCard from '@/components/StrainCard';
 
-export default function TierPage({ params }: { params: { slug: string } }) {
+interface TierPageProps {
+  params: {
+    slug: string;
+  };
+}
+
+export default function TierPage({ params }: TierPageProps) {
   const { slug } = params;
   const tier = tiers.find((t) => t.slug === slug);
 
