@@ -59,10 +59,11 @@ export default function Home() {
               <img src="/images/canne_logo_web.svg" alt="Cannè Art Collective Logo" className="w-full h-full" />
             </motion.div>
             <motion.h1 
-              className="-mt-32 text-6xl md:text-8xl font-poppins font-extrabold tracking-tighter leading-tight bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-600 text-transparent bg-clip-text"
+              className="-mt-32 text-[2.25rem] sm:text-6xl md:text-8xl font-poppins font-extrabold tracking-tighter leading-tight md:leading-[1.1] break-words bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-600 text-transparent bg-clip-text"
               variants={itemVariants}
             >
-              Art-first.<br />Street-approved.
+              <span className="block sm:inline">Art-first.</span>{' '}
+              <span className="block sm:inline">Street-approved.</span>
             </motion.h1>
             <motion.p 
               className="mt-4 max-w-xl mx-auto text-lg md:text-xl text-gray-700 dark:text-gray-300 tracking-wide font-poppins"
@@ -71,13 +72,13 @@ export default function Home() {
               Premium Digital Art with Complimentary Gifts
             </motion.p>
             <motion.div 
-              className="mt-8 flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6"
+              className="mt-6 sm:mt-8 flex flex-col sm:flex-row justify-center items-center space-y-3 sm:space-y-0 sm:space-x-6 px-4 sm:px-0"
               variants={itemVariants}
             >
-              <button onClick={scrollToCollection} className="px-10 py-3 text-base bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
-                Explore Collection
+              <button onClick={scrollToCollection} className="w-full sm:w-auto px-8 sm:px-10 py-3 text-base bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+                View Art Collection
               </button>
-              <Link href="/shop" className="px-10 py-3 text-base bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm text-gray-800 dark:text-white border border-gray-200 dark:border-gray-700 font-semibold rounded-lg shadow hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+              <Link href="/shop" className="w-full sm:w-auto px-8 sm:px-10 py-3 text-base bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm text-gray-800 dark:text-white border border-gray-200 dark:border-gray-700 font-semibold rounded-lg shadow hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
                 Shop Now
               </Link>
             </motion.div>
