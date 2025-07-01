@@ -54,7 +54,7 @@ export default function AboutPage() {
                     alt="Cannè Art Collective"
                     width={160}
                     height={160}
-                    className="h-32 md:h-40 w-auto relative z-10"
+                    className="h-40 md:h-48 w-auto relative z-10"
                   />
                 </div>
               </div>

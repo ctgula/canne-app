@@ -123,8 +123,8 @@ const DcComplianceSection = () => {
               src="/images/canne-mural.svg" 
               alt="Cannè Art Mural" 
               width={600}
-              height={350}
-              className="w-full h-full object-cover min-h-[350px]" 
+              height={450}
+              className="w-full h-full object-cover min-h-[450px]" 
             />
           </div>
           

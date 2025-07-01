@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+.marquee-mask {
+  -webkit-mask-image: linear-gradient(to right, transparent, black 20%, black 80%, transparent);
+  mask-image: linear-gradient(to right, transparent, black 20%, black 80%, transparent);
+}
+
 @layer base {
   :root {
     /* Professional color palette */
@@ -41,6 +46,11 @@
     0% { transform: translateY(0); opacity: 0.7; }
     50% { transform: translateY(3px); opacity: 1; }
     100% { transform: translateY(0); opacity: 0.7; }
+  }
+
+  @keyframes marquee {
+    0% { transform: translateX(0%); }
+    100% { transform: translateX(-100%); }
   }
   
   .animate-pulse-slow {

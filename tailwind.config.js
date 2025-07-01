@@ -6,6 +6,12 @@ module.exports = {
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   darkMode: 'class',
+  safelist: [
+    'from-pink-500', 'to-rose-500', 'bg-pink-500', 'border-pink-500',
+    'from-violet-500', 'to-purple-500', 'bg-violet-500', 'border-violet-500',
+    'from-gray-700', 'to-black', 'bg-gray-800', 'border-gray-600',
+    'from-purple-500', 'to-indigo-600', 'bg-indigo-600', 'border-indigo-500',
+  ],
   theme: {
     extend: {
       fontFamily: {
@@ -48,6 +54,7 @@ module.exports = {
         'float-delayed': 'float 6s ease-in-out 2s infinite',
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        'marquee': 'marquee 25s linear infinite',
       },
       keyframes: {
         'scale-up': {
@@ -96,6 +103,10 @@ module.exports = {
         'accordion-up': {
           from: { height: 'var(--radix-accordion-content-height)' },
           to: { height: 0 },
+        },
+        'marquee': {
+          '0%': { transform: 'translateX(0%)' },
+          '100%': { transform: 'translateX(-100%)' },
         },
       },
     },
