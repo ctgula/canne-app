@@ -48,66 +48,61 @@ function ScrollButton({ direction, onClick, disabled }: ScrollButtonProps) {
 // Default tiers data
 const defaultTiers: TierData[] = [
   {
-    id: 'essential',
-    name: 'Essential',
-    price: 20,
-    alternatePrice: 25,
+    id: 'starter',
+    name: 'Starter',
+    price: 25,
     gramsPerPurchase: 3.5,
-    alternateGrams: 5,
-    description: 'Starter taste',
+    description: 'Single digital print + complimentary top-shelf gift',
     features: [
-      'Single premium gift',
-      'Access to standard artworks',
-      'Digital gallery access',
+      'Single digital print',
+      'Complimentary top-shelf gift',
+      '3.5g complimentary flower',
     ],
     icon: <Award className="h-6 w-6" aria-hidden="true" />,
-    pricePerGram: '$5.71',
-    alternatePricePerGram: '$5.00',
+    pricePerGram: '$7.14',
   },
   {
-    id: 'pro',
-    name: 'Pro',
-    price: 40,
-    alternatePrice: 50,
+    id: 'classic',
+    name: 'Classic',
+    price: 45,
     gramsPerPurchase: 7,
-    alternateGrams: 10,
-    description: 'Perfect for enthusiasts',
+    description: 'Double art series with signature + two curated gifts',
     features: [
-      'Premium gift package',
-      'Priority delivery',
-      'Member-only art releases',
+      'Double art series with signature',
+      'Two curated gifts',
+      '7g complimentary flower',
     ],
     badge: 'MOST POPULAR',
     icon: <Star className="h-6 w-6" aria-hidden="true" />,
-    pricePerGram: '$5.71',
-    alternatePricePerGram: '$5.00',
+    pricePerGram: '$6.43',
+  },
+  {
+    id: 'black',
+    name: 'Black',
+    price: 75,
+    gramsPerPurchase: 14,
+    description: 'Limited collection prints + four premium gifts',
+    features: [
+      'Limited collection prints',
+      'Four premium gifts',
+      '14g premium flower',
+    ],
+    badge: 'BEST VALUE',
+    icon: <Sparkles className="h-6 w-6" aria-hidden="true" />,
+    pricePerGram: '$5.36',
   },
   {
     id: 'ultra',
     name: 'Ultra',
-    price: 65,
-    gramsPerPurchase: 14,
-    description: 'Best value for regulars',
-    features: [
-      'Premium gift selection',
-      'Exclusive limited editions',
-      'VIP events and previews',
-    ],
-    badge: 'BEST VALUE',
-    icon: <Sparkles className="h-6 w-6" aria-hidden="true" />,
-    pricePerGram: '$4.64',
-  },
-  {
-    id: 'max',
-    name: 'Max',
     price: 140,
     gramsPerPurchase: 28,
-    description: 'Collector / party size',
+    description: 'Exclusive gallery pieces + eight premium selections',
     features: [
-      'Premium gift collection',
-      'Custom commission options',
-      'Premium concierge service',
+      'Exclusive gallery pieces',
+      'Eight premium selections',
+      '28g premium flower collection',
     ],
+    badge: 'PREMIUM',
     icon: <Crown className="h-6 w-6" aria-hidden="true" />,
     pricePerGram: '$5.00',
   },
@@ -165,37 +160,37 @@ export default function PricingTier({ tiers = defaultTiers }: PricingTierProps) 
   // Function to get tier colors
   function getTierColors(id: string) {
     switch (id) {
-      case 'essential':
+      case 'starter':
         return {
-          border: 'border-orange-400',
-          bg: 'bg-gradient-to-b from-orange-50 to-orange-100',
-          text: 'text-orange-600',
-          icon: 'bg-orange-500 text-white',
+          border: 'border-pink-400',
+          bg: 'bg-gradient-to-b from-pink-50 to-pink-100',
+          text: 'text-pink-600',
+          icon: 'bg-pink-500 text-white',
           highlight: 'bg-pink-500 text-white',
         };
-      case 'pro':
+      case 'classic':
         return {
-          border: 'border-purple-400',
-          bg: 'bg-gradient-to-b from-purple-50 to-purple-100',
-          text: 'text-purple-600',
-          icon: 'bg-purple-500 text-white',
-          highlight: 'bg-pink-500 text-white',
+          border: 'border-violet-400',
+          bg: 'bg-gradient-to-b from-violet-50 to-violet-100',
+          text: 'text-violet-600',
+          icon: 'bg-violet-500 text-white',
+          highlight: 'bg-violet-500 text-white',
+        };
+      case 'black':
+        return {
+          border: 'border-gray-700',
+          bg: 'bg-gradient-to-b from-gray-800 to-gray-900',
+          text: 'text-gray-100',
+          icon: 'bg-black text-white',
+          highlight: 'bg-gray-700 text-white',
         };
       case 'ultra':
         return {
-          border: 'border-blue-400',
-          bg: 'bg-gradient-to-b from-blue-50 to-blue-100',
-          text: 'text-blue-600',
-          icon: 'bg-blue-500 text-white',
-          highlight: 'bg-pink-500 text-white',
-        };
-      case 'max':
-        return {
-          border: 'border-gray-400',
-          bg: 'bg-gradient-to-b from-gray-50 to-gray-100',
-          text: 'text-gray-800',
-          icon: 'bg-black text-white',
-          highlight: 'bg-pink-500 text-white',
+          border: 'border-indigo-400',
+          bg: 'bg-gradient-to-b from-indigo-500 to-purple-600',
+          text: 'text-white',
+          icon: 'bg-indigo-700 text-white',
+          highlight: 'bg-purple-500 text-white',
         };
       default:
         return {
