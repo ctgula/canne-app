@@ -117,8 +117,9 @@ export default function HowItWorksSection() {
               How It Works
             </h2>
           </motion.div>
-          <motion.h1 variants={item} className="mt-3 text-4xl md:text-5xl font-poppins font-extrabold tracking-tighter leading-tight bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-600 text-transparent bg-clip-text">
-            Art-First Gifting in 4 Simple Steps
+          <motion.h1 variants={item} className="mt-3 text-3xl sm:text-4xl md:text-5xl font-poppins font-extrabold tracking-tighter leading-tight md:leading-[1.1] break-words px-2 sm:px-0 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-600 text-transparent bg-clip-text">
+            <span className="inline-block">Art-First Gifting</span>{' '}
+            <span className="inline-block">in 4 Simple Steps</span>
           </motion.h1>
           <motion.p variants={item} className="mt-4 max-w-2xl mx-auto text-lg text-gray-600 dark:text-gray-400">
             We sell exclusive digital art. As a thank you, we include a complimentary cannabis gift with every purchase, fully I-71 compliant.
