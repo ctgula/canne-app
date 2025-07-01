@@ -48,20 +48,50 @@ export default function ShopPage() {
   
   // Simulate loading state
   useEffect(() => {
+    // Simulate loading state and reset filters on initial load
     const timer = setTimeout(() => {
       setIsLoading(false);
+      // Reset filters to ensure content is displayed
+      setActiveFilter('all');
+      setSearchQuery('');
     }, 800); // Short timeout to improve perceived performance
+    
+    // Debugging - log tiers data to console
+    console.log('Tiers data:', tiers);
+    tiers.forEach(tier => {
+      console.log(`Tier ${tier.name} has ${tier.strains?.length || 0} strains`);
+    });
     
     return () => clearTimeout(timer);
   }, []);
   
   // Filter function
   const getFilteredStrains = (tier: Tier) => {
+    // Make sure tier.strains exists and is an array
+    if (!tier.strains || !Array.isArray(tier.strains)) {
+      console.warn(`No strains found for tier: ${tier.slug}`);
+      return [];
+    }
+    
+    // When no filters are active, return all strains
+    if (activeFilter === 'all' && searchQuery === '') {
+      return tier.strains;
+    }
+    
+    // Filter strains based on type and search query
     return tier.strains.filter(strain => {
-      const matchesType = activeFilter === 'all' || strain.type?.toLowerCase() === activeFilter;
-      const matchesSearch = searchQuery === '' || 
-        strain.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        strain.description?.toLowerCase().includes(searchQuery.toLowerCase());
+      // Apply type filter - handle strains without type property
+      const matchesType = 
+        activeFilter === 'all' || 
+        !strain.type || // Include strains without type when filter is 'all'
+        (strain.type && strain.type.toLowerCase() === activeFilter.toLowerCase());
+      
+      // Apply search query filter with null safety
+      const matchesSearch = 
+        searchQuery === '' || 
+        (strain.title && strain.title.toLowerCase().includes(searchQuery.toLowerCase())) || 
+        (strain.description && strain.description.toLowerCase().includes(searchQuery.toLowerCase()));
+      
       return matchesType && matchesSearch;
     });
   };
@@ -239,10 +269,16 @@ export default function ShopPage() {
             animate="visible"
           >
             {tiers.map((tier) => {
+              // Ensure tier data exists
+              if (!tier) return null;
+              
               const filteredStrains = getFilteredStrains(tier);
               
-              // Skip rendering tiers with no matching strains
-              if (filteredStrains.length === 0) return null;
+              // Always show the section if no filters are applied
+              const isFiltering = activeFilter !== 'all' || searchQuery !== '';
+              
+              // Skip sections with no matching strains only when filtering
+              if (filteredStrains.length === 0 && isFiltering) return null;
               
               return (
                 <motion.section 
