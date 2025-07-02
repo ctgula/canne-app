@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { Inter, Poppins } from 'next/font/google';
 import "./globals.css";
-import { CartProvider } from '@/contexts/CartContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
-import { Toaster } from 'react-hot-toast';
+import Toaster from '@/components/Toaster';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -32,12 +31,10 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${poppins.variable}`}>
       <body className="antialiased font-inter bg-gray-50 dark:bg-gray-900 dark:text-white transition-colors duration-200" suppressHydrationWarning={true}>
         <ThemeProvider>
-          <CartProvider>
-            <Toaster position="top-center" />
-            <div className="min-h-screen">
-              {children}
-            </div>
-          </CartProvider>
+          <Toaster />
+          <div className="min-h-screen">
+            {children}
+          </div>
         </ThemeProvider>
       </body>
     </html>

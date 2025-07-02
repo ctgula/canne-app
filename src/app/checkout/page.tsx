@@ -2,13 +2,49 @@
 
 import { useState } from 'react';
 import Header from '@/components/Header';
-import { useCart } from '@/contexts/CartContext';
-import { DeliveryDetails, Order, CartItem as OrderCartItem } from '@/types';
+import { useCartStore } from '@/services/CartService';
 import { Truck, MapPin, Clock, CreditCard, ArrowLeft, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 
+// Types for checkout
+interface DeliveryDetails {
+  name: string;
+  phone: string;
+  address: string;
+  city: string;
+  zipCode: string;
+  timePreference: 'morning' | 'afternoon' | 'evening';
+  specialInstructions: string;
+}
+
+// Order interface
+interface Order {
+  id?: string;
+  items: OrderCartItem[];
+  deliveryDetails: DeliveryDetails;
+  total: number;
+  hasDelivery: boolean;
+  status: 'pending' | 'processing' | 'delivered' | 'cancelled';
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+// Cart item for order
+interface OrderCartItem {
+  product: {
+    id: string;
+    name: string;
+    description: string;
+    price: number;
+    artworkUrl: string;
+    giftSize: string;
+    hasDelivery: boolean;
+  };
+  quantity: number;
+}
+
 export default function CheckoutPage() {
-  const { items, clearCart, getCartTotal } = useCart();
+  const { items, clearCart, getTotal } = useCartStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOrderComplete, setIsOrderComplete] = useState(false);
   const [orderId, setOrderId] = useState<string>('');
@@ -43,7 +79,7 @@ export default function CheckoutPage() {
     );
   }
 
-  const cartTotal = getCartTotal();
+  const cartTotal = getTotal();
   // Check if order qualifies for free delivery (orders $40 or more)
   const hasDelivery = cartTotal >= 40;
   const finalTotal = hasDelivery ? cartTotal : cartTotal + 10;
@@ -61,15 +97,15 @@ export default function CheckoutPage() {
     setIsSubmitting(true);
 
     try {
-      // Convert CartContext items to the Order's CartItem format
+      // Convert CartStore items to the Order's CartItem format
       const orderItems: OrderCartItem[] = items.map(item => ({
         product: {
-          id: item.id,
-          name: item.name,
-          description: item.tier,
-          price: item.price,
-          artworkUrl: item.imageUrl || '',
-          giftSize: item.weight,
+          id: item.product.id,
+          name: item.product.name,
+          description: item.product.tier,
+          price: item.product.price,
+          artworkUrl: item.product.image_url || '',
+          giftSize: item.product.weight,
           hasDelivery: hasDelivery
         },
         quantity: item.quantity
@@ -329,14 +365,14 @@ export default function CheckoutPage() {
               
               <div className="space-y-3 mb-6">
                 {items.map((item) => (
-                  <div key={item.id} className="flex justify-between items-start">
+                  <div key={item.product.id} className="flex justify-between items-start">
                     <div className="flex-1">
-                      <h3 className="font-medium text-gray-900">{item.name}</h3>
+                      <h3 className="font-medium text-gray-900">{item.product.name}</h3>
                       <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
-                      <p className="text-sm text-green-600 font-medium">{item.weight} complimentary gift</p>
+                      <p className="text-sm text-green-600 font-medium">{item.product.weight} complimentary gift</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-medium">${item.price * item.quantity}</p>
+                      <p className="font-medium">${item.product.price * item.quantity}</p>
                     </div>
                   </div>
                 ))}

@@ -3,8 +3,9 @@
 import React from 'react';
 import Link from 'next/link';
 import Header from '@/components/Header';
-import TiersSection from '@/components/TiersSection';
 import HowItWorksSection from '@/components/HowItWorksSection';
+import ProductsPresenter from '@/components/ProductsPresenter';
+import SupabaseConnectionTest from '@/components/SupabaseConnectionTest';
 import { motion, Variants } from 'framer-motion';
 
 
@@ -42,56 +43,70 @@ export default function Home() {
       <Header scrollToCollection={scrollToCollection} />
       <main>
         {/* Hero Section - Basic Structure */}
-        <section className="relative bg-gradient-to-b from-pink-50 to-white dark:from-gray-900 dark:to-black text-center h-screen flex flex-col justify-center items-center">
+        <section className="relative bg-gradient-to-b from-pink-50 to-white dark:from-gray-900 dark:to-black text-center h-screen flex flex-col justify-start pt-24 md:pt-16 items-center">
           <div className="absolute -top-40 -right-40 w-96 h-96 bg-pink-200/20 rounded-full filter blur-3xl dark:bg-pink-900/20 opacity-50"></div>
           <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-lavender-200/20 rounded-full filter blur-3xl dark:bg-purple-900/20 opacity-50"></div>
           <div className="absolute -bottom-80 -right-20 w-96 h-96 bg-blue-200/10 rounded-full filter blur-3xl dark:bg-blue-900/10 opacity-50"></div>
           <motion.div 
-            className="container mx-auto px-4 relative z-10 -mt-24"
+            className="container mx-auto px-4 relative z-10"
             variants={containerVariants}
             initial="hidden"
             animate="visible"
           >
             <motion.div 
-              className="w-80 h-80 md:w-[34rem] md:h-[34rem] mx-auto mb-4"
+              className="flex flex-col items-center gap-4"
               variants={itemVariants}
             >
-              <img src="/images/canne_logo_web.svg" alt="Cannè Art Collective Logo" className="w-full h-full" />
-            </motion.div>
-            <motion.h1 
-              className="-mt-32 text-[2.25rem] sm:text-6xl md:text-8xl font-poppins font-extrabold tracking-tighter leading-tight md:leading-[1.1] break-words bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-600 text-transparent bg-clip-text"
-              variants={itemVariants}
-            >
-              <span className="block sm:inline">Art-first.</span>{' '}
-              <span className="block sm:inline">Street-approved.</span>
-            </motion.h1>
-            <motion.p 
-              className="mt-4 max-w-xl mx-auto text-lg md:text-xl text-gray-700 dark:text-gray-300 tracking-wide font-poppins"
-              variants={itemVariants}
-            >
-              Premium Digital Art with Complimentary Gifts
-            </motion.p>
-            <motion.div 
-              className="mt-6 sm:mt-8 flex flex-col sm:flex-row justify-center items-center space-y-3 sm:space-y-0 sm:space-x-6 px-4 sm:px-0"
-              variants={itemVariants}
-            >
-              <button onClick={scrollToCollection} className="w-full sm:w-auto px-8 sm:px-10 py-3 text-base bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
-                View Art Collection
-              </button>
-              <Link href="/shop" className="w-full sm:w-auto px-8 sm:px-10 py-3 text-base bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm text-gray-800 dark:text-white border border-gray-200 dark:border-gray-700 font-semibold rounded-lg shadow hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
-                Shop Now
-              </Link>
+              <div className="w-full max-w-[280px] h-auto md:max-w-[380px] lg:max-w-[480px] mx-auto -mb-8">
+                <img 
+                  src="/images/canne_logo_web.svg" 
+                  alt="Cannè Art Collective Logo" 
+                  className="w-full h-full object-contain" 
+                  loading="eager"
+                  width="480"
+                  height="480"
+                />
+              </div>
+              
+              <motion.h1 
+                className="mt-0 text-[4rem] sm:text-8xl md:text-[10rem] font-poppins font-extrabold tracking-tighter leading-none md:leading-[0.9] bg-gradient-to-r from-[#e91e63] via-[#c038cc] to-[#651fff] text-transparent bg-clip-text drop-shadow-md w-full max-w-[1400px]"
+                variants={itemVariants}
+              >
+                <span className="block text-[4rem] sm:text-8xl md:text-[10rem] sm:inline">Art-first.</span>{' '}
+                <span className="block text-[4rem] sm:text-8xl md:text-[10rem] sm:inline">Street-approved.</span>
+              </motion.h1>
+              
+              <motion.p 
+                className="max-w-3xl mx-auto text-2xl md:text-4xl text-gray-700 dark:text-gray-300 tracking-wide font-poppins mt-4 font-medium"
+                variants={itemVariants}
+              >
+                Premium Digital Art with Complimentary Gifts
+              </motion.p>
+              
+              <motion.div 
+                className="mt-8 sm:mt-10 flex flex-col sm:flex-row justify-center items-center space-y-3 sm:space-y-0 sm:space-x-6 w-full px-4 sm:px-0"
+                variants={itemVariants}
+              >
+                <Link href="/shop">
+                  <button className="w-full sm:w-auto px-16 sm:px-20 py-6 text-2xl bg-gradient-to-r from-[#e91e63] to-[#c038cc] text-white font-bold rounded-lg shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 animate-pulse-gentle">
+                    SHOP NOW
+                  </button>
+                </Link>
+              </motion.div>
             </motion.div>
           </motion.div>
         </section>
 
-        <div>
+        <div id="collection">
           {/* How It Works Section */}
           <HowItWorksSection />
-
-          {/* Tiers Section */}
-          <div id="tiers">
-            <TiersSection />
+          
+          {/* Products Section using MCP */}
+          <ProductsPresenter />
+          
+          {/* Supabase Connection Test */}
+          <div className="container mx-auto px-4 py-8">
+            <SupabaseConnectionTest />
           </div>
         </div>
 
