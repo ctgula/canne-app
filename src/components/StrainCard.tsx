@@ -17,13 +17,15 @@ const itemVariants = {
 
 const StrainCard: React.FC<{ strain: Strain; tierSlug: string }> = ({ strain, tierSlug }) => {  
   const { addItem } = useCart();
+  const strainUrl = `/shop/${tierSlug}/${strain.id}`;
   
   return (
     <motion.div variants={itemVariants}>
     <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 group h-full flex flex-col rounded-xl border-0 ring-1 ring-gray-200 dark:ring-gray-700 bg-white dark:bg-gray-800">
         <CardContent className="p-0 flex-grow">
-          <Link href={`/shop/${tierSlug}/${strain.id}`} aria-label={`View details of ${strain.title}`}>
-            <div className="aspect-square relative overflow-hidden rounded-t-xl">
+          {/* Image container - clickable */}
+          <div className="aspect-square relative overflow-hidden rounded-t-xl">
+            <Link href={strainUrl} className="block h-full w-full" aria-label={`View details of ${strain.title}`}>
               <Image 
                 src={strain.img} 
                 alt={`${strain.title} - ${strain.type || 'Cannabis strain'} ${strain.thc ? `with ${strain.thc} THC` : ''}`} 
@@ -34,7 +36,8 @@ const StrainCard: React.FC<{ strain: Strain; tierSlug: string }> = ({ strain, ti
                 loading="lazy"
                 quality={85}
               />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            </Link>
             {strain.type && (
               <div className="absolute top-3 right-3">
                 <Badge 
@@ -50,16 +53,20 @@ const StrainCard: React.FC<{ strain: Strain; tierSlug: string }> = ({ strain, ti
               </div>
             )}
           </div>
+          
+          {/* Title and description - title is clickable */}
           <div className="p-5">
-            <Link href={`/shop/${tierSlug}/${strain.id}`} className="focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 rounded-md">
-              <h4 className="text-lg font-semibold tracking-tight hover:text-pink-600 dark:hover:text-pink-400 transition-colors">{strain.title}</h4>
-            </Link>
+            <div>
+              <Link href={strainUrl} className="focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 rounded-md">
+                <h4 className="text-lg font-semibold tracking-tight hover:text-pink-600 dark:hover:text-pink-400 transition-colors">{strain.title}</h4>
+              </Link>
+            </div>
             {strain.description && (
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 line-clamp-2">{strain.description}</p>
             )}
           </div>
-          </Link>
         </CardContent>
+        
         <CardFooter className="px-5 py-4 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-800/50 backdrop-blur-sm">
           <div className="flex items-center gap-2 flex-wrap">
             {strain.thc && (
@@ -76,7 +83,7 @@ const StrainCard: React.FC<{ strain: Strain; tierSlug: string }> = ({ strain, ti
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Complimentary</span>
             <div className="flex gap-1">
-              <Link href={`/shop/${tierSlug}/${strain.id}`} className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" aria-label={`View ${strain.title} details`}>
+              <Link href={strainUrl} className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" aria-label={`View ${strain.title} details`}>
                 <Eye className="w-4 h-4 text-gray-600 dark:text-gray-300" />
               </Link>
               <button
