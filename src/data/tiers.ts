@@ -26,10 +26,10 @@ export interface Tier {
 
 // Using placeholder images for our strains to match each tier's color theme
 const placeholderImages = {
-  pink: '/images/placeholder-pink.svg?v=1', // Pink theme for Starter tier
-  violet: '/images/placeholder-violet.svg?v=1', // Violet theme for Classic tier
-  black: '/images/placeholder-black.svg?v=1', // Black theme for Black tier
-  indigo: '/images/placeholder-indigo.svg?v=1', // Indigo theme for Ultra tier
+  pink: '/images/placeholder-pink.svg', // Pink theme for Starter tier
+  violet: '/images/placeholder-violet.svg', // Violet theme for Classic tier
+  black: '/images/placeholder-black.svg', // Black theme for Black tier
+  indigo: '/images/placeholder-indigo.svg', // Indigo theme for Ultra tier
 };
 
 export const tiers: Tier[] = [

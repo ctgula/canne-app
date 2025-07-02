@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { Search, ShoppingCart, Menu, X, Sun, Moon, Home, ShoppingBag, Info, Shield } from 'lucide-react';
+import { Search, ShoppingCart, Menu, X, Sun, Moon, Home, Info, Shield } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import Image from 'next/image';
@@ -58,7 +58,6 @@ export default function Header({}: HeaderProps) {
           
           <nav className="hidden md:flex items-center space-x-8">
             <Link href="/" className="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white font-medium text-sm transition-colors">Home</Link>
-            <Link href="/shop" className="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white font-medium text-sm transition-colors">Shop</Link>
             <Link href="/how-it-works" className="text-pink-500 hover:text-pink-600 font-semibold text-sm transition-colors">How it Works</Link>
             <Link href="/i71" className="text-gray-700 hover:text-gray-900 font-medium text-sm transition-colors">I71 Compliance</Link>
             <Link href="/about" className="text-gray-700 hover:text-gray-900 font-medium text-sm transition-colors">About</Link>
@@ -105,7 +104,6 @@ export default function Header({}: HeaderProps) {
                 
                 <nav className="p-4 flex flex-col space-y-2">
                   <Link href="/" className="flex items-center p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800" onClick={toggleMenu}><Home size={18} className="mr-3" />Home</Link>
-                  <Link href="/shop" className="flex items-center p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800" onClick={toggleMenu}><ShoppingBag size={18} className="mr-3" />Shop</Link>
                   <Link href="/how-it-works" className="flex items-center p-3 rounded-lg text-pink-500 hover:bg-pink-50 dark:hover:bg-pink-900/20" onClick={toggleMenu}><Info size={18} className="mr-3" />How it Works</Link>
                   <Link href="/i71" className="flex items-center p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800" onClick={toggleMenu}><Shield size={18} className="mr-3" />I71 Compliance</Link>
                   <Link href="/about" className="flex items-center p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800" onClick={toggleMenu}><Info size={18} className="mr-3" />About</Link>
