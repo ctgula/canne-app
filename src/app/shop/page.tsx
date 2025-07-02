@@ -26,7 +26,9 @@ interface ShopProduct {
 export default function ShopPage() {
   const { addItem } = useCartStore();
   const [products, setProducts] = useState<ShopProduct[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<ShopProduct[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     // In a real app, this would fetch from your API
@@ -285,8 +287,13 @@ export default function ShopPage() {
       type: 'art' as const
     }));
     
+    // Limit to 8 products total as requested
+    const limitedFlowerProducts = flowerProducts.slice(0, 8);
+    
     // Combine all product types
-    setProducts([...artProducts, ...flowerProducts, ...tieProducts]);
+    const allProducts = [...artProducts, ...limitedFlowerProducts, ...tieProducts];
+    setProducts(allProducts);
+    setFilteredProducts(allProducts);
     setLoading(false);
   }, []);
 
@@ -355,19 +362,70 @@ export default function ShopPage() {
   };
 
   const [filter, setFilter] = useState<'all' | 'art' | 'tie' | 'flower'>('all');
+  
+  // Handle search functionality
+  useEffect(() => {
+    if (!searchTerm.trim()) {
+      // If search is empty, just apply the type filter
+      setFilteredProducts(products.filter(product => 
+        filter === 'all' || product.type === filter
+      ));
+      return;
+    }
+    
+    const searchLower = searchTerm.toLowerCase();
+    
+    // Check if search term matches sativa/indica/hybrid
+    const isStrainSearch = ['sativa', 'indica', 'hybrid'].includes(searchLower);
+    
+    const filtered = products.filter(product => {
+      // First apply the type filter
+      const typeMatch = filter === 'all' || product.type === filter;
+      if (!typeMatch) return false;
+      
+      // Then apply the search filter
+      const nameMatch = product.name.toLowerCase().includes(searchLower);
+      const strainMatch = isStrainSearch && product.strain?.toLowerCase().includes(searchLower);
+      
+      return nameMatch || strainMatch;
+    });
+    
+    setFilteredProducts(filtered);
+  }, [searchTerm, filter, products]);
 
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
       
       <main className="flex-grow container mx-auto px-4 py-8">
-        <div className="text-center mb-12">
+        <div className="text-center mb-8">
           <h1 className="text-4xl md:text-5xl font-bold font-poppins mb-4 bg-gradient-to-r from-[#e91e63] via-[#c038cc] to-[#651fff] text-transparent bg-clip-text">
             Cannè Collection
           </h1>
           <p className="text-lg md:text-xl text-gray-700 dark:text-gray-300 max-w-3xl mx-auto">
             Browse our premium digital artwork, designer ties, and top-shelf flowers, organized by tier
           </p>
+        </div>
+        
+        {/* Search Bar */}
+        <div className="mb-8">
+          <div className="relative max-w-md mx-auto">
+            <input
+              type="text"
+              placeholder="Search by name or strain (sativa/indica/hybrid)..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 shadow-sm"
+            />
+            {searchTerm && (
+              <button 
+                onClick={() => setSearchTerm('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+              >
+                ✕
+              </button>
+            )}
+          </div>
         </div>
         
         <div className="flex justify-center mb-8">
@@ -421,15 +479,9 @@ export default function ShopPage() {
           </div>
         ) : (
           <>
-            {['Starter', 'Classic', 'Black', 'Ultra'].map((tier) => {
+            {['Starter', 'Classic', 'Black', 'Ultra'].map(tier => {
               // Skip this tier section if no products match the current filter
-              const tierProducts = products.filter(product => 
-                product.tier === tier && 
-                (filter === 'all' || 
-                 (filter === 'art' && product.type === 'art') || 
-                 (filter === 'tie' && product.type === 'tie') ||
-                 (filter === 'flower' && product.type === 'flower'))
-              );
+              const tierProducts = filteredProducts.filter(product => product.tier === tier);
               
               if (tierProducts.length === 0) return null;
               
@@ -506,7 +558,7 @@ export default function ShopPage() {
             )})}
             
             {/* Special section for flowers when viewing all products */}
-            {filter === 'all' && (
+            {filter === 'all' && filteredProducts.some(p => p.type === 'flower') && (
               <section className="mb-16">
                 <h2 className="text-2xl md:text-3xl font-bold mb-6 font-poppins">
                   Premium Flowers
@@ -528,7 +580,7 @@ export default function ShopPage() {
                   initial="hidden"
                   animate="visible"
                 >
-                  {products
+                  {filteredProducts
                     .filter(product => product.type === 'flower')
                     .map(product => (
                       <motion.div 
@@ -574,7 +626,7 @@ export default function ShopPage() {
             )}
             
             {/* Special section just for ties when viewing all products */}
-            {filter === 'all' && (
+            {filter === 'all' && filteredProducts.some(p => p.type === 'tie') && (
               <section className="mb-16">
                 <h2 className="text-2xl md:text-3xl font-bold mb-6 font-poppins">
                   Designer Ties
@@ -596,7 +648,7 @@ export default function ShopPage() {
                   initial="hidden"
                   animate="visible"
                 >
-                  {products
+                  {filteredProducts
                     .filter(product => product.type === 'tie')
                     .map(product => (
                       <motion.div 
