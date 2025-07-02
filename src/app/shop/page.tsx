@@ -367,9 +367,10 @@ export default function ShopPage() {
   useEffect(() => {
     if (!searchTerm.trim()) {
       // If search is empty, just apply the type filter
-      setFilteredProducts(products.filter(product => 
-        filter === 'all' || product.type === filter
-      ));
+      setFilteredProducts(products.filter(product => {
+        if (filter === 'all') return true;
+        return product.type === filter;
+      }));
       return;
     }
     
