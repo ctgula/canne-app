@@ -15,7 +15,10 @@ export default function CartHydration() {
   // Hydrate cart once when component mounts on client side
   useEffect(() => {
     if (isMounted) {
-      hydrateCart();
+      // Small timeout to ensure proper hydration after DOM is ready
+      setTimeout(() => {
+        hydrateCart();
+      }, 0);
     }
   }, [hydrateCart, isMounted]);
   

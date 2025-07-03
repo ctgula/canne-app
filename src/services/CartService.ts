@@ -144,8 +144,11 @@ export const useCartStore = create<CartStore>((set, get) => ({
   
   // Get the total number of items in the cart
   getItemCount: () => {
-    return get().items.reduce(
-      (count, item) => count + item.quantity,
+    const items = get().items || [];
+    if (!Array.isArray(items)) return 0;
+    
+    return items.reduce(
+      (count, item) => count + (item.quantity || 1),
       0
     );
   }
