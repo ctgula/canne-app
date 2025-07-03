@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import Script from 'next/script';
 import { Inter, Poppins } from 'next/font/google';
 import "./globals.css";
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import Toaster from '@/components/Toaster';
 import CartHydration from '@/components/CartHydration';
+import ThemeScript from './ThemeScript';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -35,15 +35,11 @@ export default function RootLayout({
         {/* Anti-flash meta tag to prevent initial white flash */}
         <meta name="theme-color" content="#111827" media="(prefers-color-scheme: dark)" />
         <meta name="theme-color" content="#f9fafb" media="(prefers-color-scheme: light)" />
-        
-        {/* Highest priority anti-flash script - loads and executes IMMEDIATELY */}
-        <script src="/no-flash.js" />
       </head>
       
-      {/* Next.js Script component for the beforeInteractive strategy */}
-      <Script src="/no-flash.js" strategy="beforeInteractive" />
-      
       <body className="antialiased font-inter bg-gray-50 dark:bg-gray-900 dark:text-white transition-colors duration-300" suppressHydrationWarning={true}>
+        {/* Client-side theme script that runs immediately after hydration */}
+        <ThemeScript />
         <ThemeProvider>
           <Toaster />
           <CartHydration />
