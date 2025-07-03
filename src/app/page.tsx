@@ -7,7 +7,7 @@ import Header from '@/components/Header';
 import ProductsPresenter from '@/components/ProductsPresenter';
 import SupabaseConnectionTest from '@/components/SupabaseConnectionTest';
 import { motion, Variants } from 'framer-motion';
-
+import { Brush, CreditCard, Package, Sparkles } from 'lucide-react';
 
 export default function Home() {
   const scrollToCollection = () => {
@@ -97,6 +97,83 @@ export default function Home() {
               </motion.div>
             </motion.div>
           </motion.div>
+        </section>
+
+        {/* How It Works Section - Simplified Process */}
+        <section className="py-16 bg-white dark:bg-gray-900">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-600 text-transparent bg-clip-text mb-4">How It Works</h2>
+              <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+                Simple, seamless, and I-71 compliant — art purchases with complimentary gifts
+              </p>
+            </div>
+            
+            <div className="relative mt-12">
+              {/* Timeline Connector */}
+              <div className="hidden md:block absolute top-[2.3125rem] left-0 w-full h-1.5 -z-10">
+                <div className="relative w-full h-full bg-gray-200 dark:bg-gray-700 rounded-full">
+                  <div className="absolute left-0 top-0 h-full w-full bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 rounded-full shadow-sm" />
+                </div>
+              </div>
+              
+              {/* Process Steps */}
+              <div className="grid grid-cols-1 gap-8 md:grid-cols-4 md:gap-6">
+                {/* Step 1 */}
+                <div className="text-center flex flex-col items-center">
+                  <div className="flex justify-center items-center mx-auto mb-6 w-16 h-16 bg-gradient-to-br from-pink-100 to-purple-100 dark:from-pink-900/50 dark:to-purple-900/50 rounded-full shadow-inner-lg">
+                    <div className="flex items-center justify-center w-12 h-12 bg-white/80 dark:bg-gray-800/80 rounded-full shadow-md">
+                      <Brush className="h-6 w-6 text-pink-500" />
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Pick Your Art</h3>
+                  <p className="text-gray-600 dark:text-gray-400">Choose a tier; each purchase is for exclusive artwork.</p>
+                </div>
+                
+                {/* Step 2 */}
+                <div className="text-center flex flex-col items-center">
+                  <div className="flex justify-center items-center mx-auto mb-6 w-16 h-16 bg-gradient-to-br from-pink-100 to-purple-100 dark:from-pink-900/50 dark:to-purple-900/50 rounded-full shadow-inner-lg">
+                    <div className="flex items-center justify-center w-12 h-12 bg-white/80 dark:bg-gray-800/80 rounded-full shadow-md">
+                      <CreditCard className="h-6 w-6 text-amber-500" />
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Secure Checkout</h3>
+                  <p className="text-gray-600 dark:text-gray-400">Pay online—taxes + delivery included.</p>
+                </div>
+                
+                {/* Step 3 */}
+                <div className="text-center flex flex-col items-center">
+                  <div className="flex justify-center items-center mx-auto mb-6 w-16 h-16 bg-gradient-to-br from-pink-100 to-purple-100 dark:from-pink-900/50 dark:to-purple-900/50 rounded-full shadow-inner-lg">
+                    <div className="flex items-center justify-center w-12 h-12 bg-white/80 dark:bg-gray-800/80 rounded-full shadow-md">
+                      <Package className="h-6 w-6 text-blue-500" />
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">We Gift the Vibe</h3>
+                  <p className="text-gray-600 dark:text-gray-400">Our courier hands you the complimentary cannabis.</p>
+                </div>
+                
+                {/* Step 4 */}
+                <div className="text-center flex flex-col items-center">
+                  <div className="flex justify-center items-center mx-auto mb-6 w-16 h-16 bg-gradient-to-br from-pink-100 to-purple-100 dark:from-pink-900/50 dark:to-purple-900/50 rounded-full shadow-inner-lg">
+                    <div className="flex items-center justify-center w-12 h-12 bg-white/80 dark:bg-gray-800/80 rounded-full shadow-md">
+                      <Sparkles className="h-6 w-6 text-purple-500" />
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Enjoy Responsibly</h3>
+                  <p className="text-gray-600 dark:text-gray-400">Must be 21+. Keep gifts inside the District.</p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Shop Now CTA */}
+            <div className="text-center mt-12">
+              <Link href="/shop">
+                <button className="px-12 py-4 text-base font-medium bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-lg shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+                  Start Shopping
+                </button>
+              </Link>
+            </div>
+          </div>
         </section>
 
         <div id="collection">
