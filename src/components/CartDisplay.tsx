@@ -40,7 +40,7 @@ export default function CartDisplay() {
               <div className="flex items-center">
                 <div 
                   className="w-3 h-12 mr-3 rounded-sm" 
-                  style={{ backgroundColor: item.product.color_theme.split('/')[0].toLowerCase() }}
+                  style={{ backgroundColor: item.product.color_theme ? item.product.color_theme.split('/')[0].toLowerCase() : 'gray' }}
                 ></div>
                 <div>
                   <h4 className="font-medium">{item.product.name}</h4>

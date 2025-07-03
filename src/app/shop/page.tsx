@@ -8,6 +8,7 @@ import { useCartStore } from '@/services/CartService';
 import { Product as DatabaseProduct } from '@/models/Product';
 import toast from 'react-hot-toast';
 import { ShoppingBag } from 'lucide-react';
+import Link from 'next/link';
 
 // Extended product interface for the shop page
 interface ShopProduct {
@@ -18,330 +19,185 @@ interface ShopProduct {
   description: string;
   image: string;
   strain?: string;
-  type?: 'art' | 'tie';
+  type?: 'art' | 'tie' | 'flower';
   color?: string;
   pattern?: string;
+  features?: string[];
 }
 
 export default function ShopPage() {
-  const { addItem } = useCartStore();
+  const { addItem, items } = useCartStore();
   const [products, setProducts] = useState<ShopProduct[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<ShopProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedTier, setSelectedTier] = useState<string | null>(null);
 
   useEffect(() => {
     // In a real app, this would fetch from your API
     // For now, we'll use mock data based on the tiers
     const mockProducts: ShopProduct[] = [
-      // Starter Tier ($25) - Pink
+      // Starter Tier ($25)
       {
         id: 'starter-1',
-        name: 'Sunrise Haze Print',
+        name: 'Sunrise Haze Art Print',
         tier: 'Starter',
         price: 25,
-        description: 'Single digital print + complimentary top-shelf gift (3.5g)',
+        description: 'Digital art print + FREE premium flower (3.5g)',
         image: '/images/products/starter-1.jpg',
-        strain: 'Sativa'
+        type: 'art',
+        features: [
+          'High-resolution digital artwork',
+          'FREE Sativa flower (18-22% THC)',
+          'Same-day delivery available'
+        ]
       },
       {
         id: 'starter-2',
-        name: 'Urban Vibes Print',
+        name: 'Urban Vibes Collection',
         tier: 'Starter',
         price: 25,
-        description: 'Single digital print + complimentary top-shelf gift (3.5g)',
+        description: 'Digital art collection + FREE premium flower (3.5g)',
         image: '/images/products/starter-2.jpg',
-        strain: 'Indica'
+        type: 'art',
+        features: [
+          'Exclusive digital collection',
+          'FREE Indica flower (18-22% THC)',
+          'Limited edition release'
+        ]
       },
       
-      // Classic Tier ($45) - Violet
+      // Classic Tier ($45)
       {
         id: 'classic-1',
         name: 'Dreamscape Series',
         tier: 'Classic',
         price: 45,
-        description: 'Double art series with signature + two curated gifts (7g)',
+        description: 'Premium art series + FREE premium flower (7g)',
         image: '/images/products/classic-1.jpg',
-        strain: 'Hybrid'
+        type: 'art',
+        features: [
+          'Signature digital artwork series',
+          'FREE Hybrid flower (20-24% THC)',
+          'Access to digital gallery'
+        ]
       },
       {
         id: 'classic-2',
         name: 'Neon Nights Collection',
         tier: 'Classic',
         price: 45,
-        description: 'Double art series with signature + two curated gifts (7g)',
+        description: 'Classic tier art + FREE premium flower (7g)',
         image: '/images/products/classic-2.jpg',
-        strain: 'Sativa'
+        type: 'art',
+        features: [
+          'Vibrant digital art collection',
+          'FREE Sativa flower (20-24% THC)',
+          'Artist signed digital certificate'
+        ]
       },
       
-      // Black Tier ($75) - Black/Gray
+      // Black Tier ($75)
       {
         id: 'black-1',
         name: 'Midnight Abstractions',
         tier: 'Black',
         price: 75,
-        description: 'Limited collection prints + four premium gifts (14g)',
+        description: 'Limited collection + FREE premium flower (14g)',
         image: '/images/products/black-1.jpg',
-        strain: 'Indica'
+        type: 'art',
+        features: [
+          'Exclusive black tier artwork',
+          'FREE Premium Indica flower (24-28% THC)',
+          'VIP digital art experience'
+        ]
       },
       {
         id: 'black-2',
         name: 'Urban Shadows Series',
         tier: 'Black',
         price: 75,
-        description: 'Limited collection prints + four premium gifts (14g)',
+        description: 'Premium black tier art + FREE premium flower (14g)',
         image: '/images/products/black-2.jpg',
-        strain: 'Hybrid'
+        type: 'art',
+        features: [
+          'Limited edition series',
+          'FREE Premium Hybrid flower (24-28% THC)',
+          'Exclusive collector access'
+        ]
       },
       
-      // Ultra Tier ($140) - Purple
+      // Ultra Tier ($140)
       {
         id: 'ultra-1',
-        name: 'Ultra Collection - Masterpiece',
+        name: 'Ultra Masterpiece',
         tier: 'Ultra',
         price: 140,
-        description: 'Our highest-tier digital art offering comes with a heavy, full-ounce gift of high-grade cannabis — elite quality, maximum generosity.',
+        description: 'Our highest-tier digital art + FREE premium flower (28g)',
         image: '/images/products/ultra-1.jpg',
-        strain: 'Elite Quality Strain'
+        type: 'art',
+        features: [
+          'Museum-quality digital masterpiece',
+          'FREE Elite Quality flower (28-32% THC)',
+          'Lifetime gallery membership'
+        ]
       },
       {
         id: 'ultra-2',
-        name: 'Ultra Collection - Exclusive',
+        name: 'Ultra Exclusive Collection',
         tier: 'Ultra',
         price: 140,
-        description: 'Premium digital art with 28g high-grade cannabis and maximum gift generosity',
+        description: 'Elite digital art + FREE premium flower (28g)',
         image: '/images/products/ultra-2.jpg',
-        strain: 'Premium Blend'
-      },
-    ];
-    
-    // Add flower products with proper strain information
-    const flowerProducts: ShopProduct[] = [
-      // Starter Tier Flowers
-      {
-        id: 'flower-starter-1',
-        name: 'Premium Flower - Sativa',
-        type: 'flower',
-        tier: 'Starter',
-        price: 25,
-        description: 'Top-shelf flower, 3.5g - light complimentary gift',
-        image: '/images/products/flower-starter-sativa.jpg',
-        strain: 'Sativa Dominant'
-      },
-      {
-        id: 'flower-starter-2',
-        name: 'Premium Flower - Indica',
-        type: 'flower',
-        tier: 'Starter',
-        price: 25,
-        description: 'Top-shelf flower, 3.5g - light complimentary gift',
-        image: '/images/products/flower-starter-indica.jpg',
-        strain: 'Indica Dominant'
-      },
-      
-      // Classic Tier Flowers
-      {
-        id: 'flower-classic-1',
-        name: 'Premium Flower - Hybrid',
-        type: 'flower',
-        tier: 'Classic',
-        price: 45,
-        description: 'Premium cannabis — for longer sessions and better value, 7g',
-        image: '/images/products/flower-classic-hybrid.jpg',
-        strain: 'Balanced Hybrid'
-      },
-      {
-        id: 'flower-classic-2',
-        name: 'Premium Flower - Sativa',
-        type: 'flower',
-        tier: 'Classic',
-        price: 45,
-        description: 'Premium cannabis — for longer sessions and better value, 7g',
-        image: '/images/products/flower-classic-sativa.jpg',
-        strain: 'Sativa Dominant'
-      },
-      
-      // Black Tier Flowers
-      {
-        id: 'flower-black-1',
-        name: 'Premium Flower - Indica',
-        type: 'flower',
-        tier: 'Black',
-        price: 75,
-        description: 'Stronger top-shelf flower — stronger strains, deeper experience, 14g',
-        image: '/images/products/flower-black-indica.jpg',
-        strain: 'Indica Dominant'
-      },
-      {
-        id: 'flower-black-2',
-        name: 'Premium Flower - Hybrid',
-        type: 'flower',
-        tier: 'Black',
-        price: 75,
-        description: 'Stronger top-shelf flower — stronger strains, deeper experience, 14g',
-        image: '/images/products/flower-black-hybrid.jpg',
-        strain: 'Premium Hybrid'
-      },
-      
-      // Ultra Tier Flowers
-      {
-        id: 'flower-ultra-1',
-        name: 'Elite Flower - Premium Blend',
-        type: 'flower',
-        tier: 'Ultra',
-        price: 140,
-        description: 'Full-ounce gift of high-grade cannabis — elite quality, maximum generosity, 28g',
-        image: '/images/products/flower-ultra-premium.jpg',
-        strain: 'Elite Quality Strain'
-      },
-      {
-        id: 'flower-ultra-2',
-        name: 'Elite Flower - Signature Blend',
-        type: 'flower',
-        tier: 'Ultra',
-        price: 140,
-        description: 'Full-ounce gift of high-grade cannabis — elite quality, maximum generosity, 28g',
-        image: '/images/products/flower-ultra-signature.jpg',
-        strain: 'Signature Blend'
+        type: 'art',
+        features: [
+          'Collector\'s edition digital art',
+          'FREE Elite Quality flower (28-32% THC)',
+          'Private viewing experience'
+        ]
       }
     ];
     
-    // Add tie products
-    const tieProducts: ShopProduct[] = [
-      // Classic Tier Ties
-      {
-        id: 'tie-classic-1',
-        name: 'Classic Silk Tie - Navy',
-        type: 'tie',
-        tier: 'Classic',
-        price: 45,
-        description: 'Premium silk tie with subtle pattern, perfect for formal occasions',
-        image: '/images/products/tie-classic-navy.jpg',
-        color: 'Navy',
-        pattern: 'Subtle'
-      },
-      {
-        id: 'tie-classic-2',
-        name: 'Classic Silk Tie - Burgundy',
-        type: 'tie',
-        tier: 'Classic',
-        price: 45,
-        description: 'Premium silk tie with subtle pattern, perfect for formal occasions',
-        image: '/images/products/tie-classic-burgundy.jpg',
-        color: 'Burgundy',
-        pattern: 'Subtle'
-      },
-      
-      // Black Tier Ties
-      {
-        id: 'tie-designer-1',
-        name: 'Designer Tie - Abstract',
-        type: 'tie',
-        tier: 'Black',
-        price: 75,
-        description: 'Unique designer tie with abstract pattern, makes a bold statement',
-        image: '/images/products/tie-designer-abstract.jpg',
-        color: 'Multi',
-        pattern: 'Abstract'
-      },
-      {
-        id: 'tie-designer-2',
-        name: 'Designer Tie - Geometric',
-        type: 'tie',
-        tier: 'Black',
-        price: 75,
-        description: 'Unique designer tie with geometric pattern, makes a bold statement',
-        image: '/images/products/tie-designer-geometric.jpg',
-        color: 'Blue/Gray',
-        pattern: 'Geometric'
-      },
-      
-      // Ultra Tier Ties
-      {
-        id: 'tie-luxury-1',
-        name: 'Luxury Silk Tie - Limited Edition',
-        type: 'tie',
-        tier: 'Ultra',
-        price: 140,
-        description: 'Limited edition luxury silk tie with premium craftsmanship - our highest-tier offering',
-        image: '/images/products/tie-luxury-limited.jpg',
-        color: 'Black/Gold',
-        pattern: 'Exclusive'
-      },
-      {
-        id: 'tie-luxury-2',
-        name: 'Luxury Silk Tie - Signature Collection',
-        type: 'tie',
-        tier: 'Ultra',
-        price: 140,
-        description: 'Signature collection luxury silk tie with elite quality materials and maximum generosity',
-        image: '/images/products/tie-luxury-signature.jpg',
-        color: 'Purple/Silver',
-        pattern: 'Signature'
-      }
-    ];
-    
-    // Mark existing products as art type
-    const artProducts = mockProducts.map(product => ({
-      ...product,
-      type: 'art' as const
-    }));
-    
-    // Limit to 8 products total as requested
-    const limitedFlowerProducts = flowerProducts.slice(0, 8);
-    
-    // Combine all product types
-    const allProducts = [...artProducts, ...limitedFlowerProducts, ...tieProducts];
-    setProducts(allProducts);
-    setFilteredProducts(allProducts);
+    setProducts(mockProducts);
+    setFilteredProducts(mockProducts);
     setLoading(false);
   }, []);
 
-  const handleAddToCart = (product: ShopProduct) => {
-    // Convert ShopProduct to the expected Product type
-    const cartProduct: DatabaseProduct = {
-      id: product.id,
-      name: product.name,
-      description: product.description,
-      price: product.price,
-      tier: product.tier,
-      weight: '',  // Default values for required fields
-      color_theme: product.color || '',
-      image_url: product.image,
-      is_active: true,
-      created_at: new Date().toISOString()
-    };
+  // Filter products based on search term and selected tier
+  useEffect(() => {
+    let filtered = products;
     
-    addItem(cartProduct);
-    toast.success(`Added ${product.name} to cart`);
-  };
-
-  const getTierColor = (tier: 'Starter' | 'Classic' | 'Black' | 'Ultra') => {
-    switch (tier) {
-      case 'Starter':
-        return 'from-pink-400 to-pink-600';
-      case 'Classic':
-        return 'from-violet-400 to-violet-600';
-      case 'Black':
-        return 'from-gray-700 to-gray-900';
-      case 'Ultra':
-        return 'from-indigo-400 to-purple-600';
-      default:
-        return 'from-blue-400 to-blue-600';
+    // Apply tier filter if selected
+    if (selectedTier) {
+      filtered = filtered.filter(product => product.tier === selectedTier);
     }
-  };
-
-  const getTierBadge = (tier: 'Starter' | 'Classic' | 'Black' | 'Ultra') => {
-    if (tier === 'Ultra') {
-      return (
-        <span className="absolute top-2 right-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white text-xs font-bold px-2 py-1 rounded-full">
-          PREMIUM
-        </span>
+    
+    // Apply search term filter
+    if (searchTerm.trim() !== '') {
+      filtered = filtered.filter(product => 
+        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.description.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-    return null;
+    
+    setFilteredProducts(filtered);
+  }, [searchTerm, products, selectedTier]);
+
+  const handleAddToCart = (product: ShopProduct) => {
+    // Convert ShopProduct to the expected cart product format
+    const cartItem = {
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image || '/images/placeholder.jpg',
+      quantity: 1,
+    };
+    
+    addItem(cartItem);
+    toast.success(`${product.name} added to cart!`);
   };
 
+  // Framer Motion variants
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -361,62 +217,49 @@ export default function ShopPage() {
     }
   };
 
-  const [filter, setFilter] = useState<'all' | 'art' | 'tie' | 'flower'>('all');
-  
-  // Handle search functionality
-  useEffect(() => {
-    if (!searchTerm.trim()) {
-      // If search is empty, just apply the type filter
-      setFilteredProducts(products.filter(product => {
-        if (filter === 'all') return true;
-        return product.type === filter;
-      }));
-      return;
-    }
-    
-    const searchLower = searchTerm.toLowerCase();
-    
-    // Check if search term matches sativa/indica/hybrid
-    const isStrainSearch = ['sativa', 'indica', 'hybrid'].includes(searchLower);
-    
-    const filtered = products.filter(product => {
-      // First apply the type filter
-      const typeMatch = filter === 'all' || product.type === filter;
-      if (!typeMatch) return false;
-      
-      // Then apply the search filter
-      const nameMatch = product.name.toLowerCase().includes(searchLower);
-      const strainMatch = isStrainSearch && product.strain?.toLowerCase().includes(searchLower);
-      
-      return nameMatch || strainMatch;
-    });
-    
-    setFilteredProducts(filtered);
-  }, [searchTerm, filter, products]);
-
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
       <Header />
       
-      <main className="flex-grow container mx-auto px-4 py-8">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold font-poppins mb-4 bg-gradient-to-r from-[#e91e63] via-[#c038cc] to-[#651fff] text-transparent bg-clip-text">
-            Cannè Collection
+      <main className="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-transparent bg-clip-text mb-6">
+            Digital Art Collection
           </h1>
-          <p className="text-lg md:text-xl text-gray-700 dark:text-gray-300 max-w-3xl mx-auto">
-            Browse our premium digital artwork, designer ties, and top-shelf flowers, organized by tier
+          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+            Each art purchase includes a <span className="font-semibold">FREE premium cannabis gift</span>. I-71 compliant.
           </p>
+          
+          {/* Tier filter buttons */}
+          <div className="flex gap-3 mb-6 justify-center mt-8">
+            {['Starter', 'Classic', 'Black', 'Ultra'].map(tier => (
+              <button
+                key={tier}
+                onClick={() => setSelectedTier(selectedTier === tier ? null : tier)}
+                className={`px-4 py-2 rounded-full text-sm font-medium border transition-all ${
+                  selectedTier === tier ? 'bg-black text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                {tier}
+              </button>
+            ))}
+          </div>
         </div>
         
         {/* Search Bar */}
         <div className="mb-8">
           <div className="relative max-w-md mx-auto">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+            </div>
             <input
               type="text"
-              placeholder="Search by name or strain (sativa/indica/hybrid)..."
+              placeholder="Search digital art collection..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 shadow-sm"
+              className="w-full pl-10 pr-10 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-500"
             />
             {searchTerm && (
               <button 
@@ -429,277 +272,55 @@ export default function ShopPage() {
           </div>
         </div>
         
-        <div className="flex justify-center mb-8">
-          <div className="inline-flex rounded-md shadow-sm">
-            <button
-              onClick={() => setFilter('all')}
-              className={`px-4 py-2 text-sm font-medium rounded-l-lg ${
-                filter === 'all' 
-                  ? 'bg-purple-600 text-white' 
-                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'
-              }`}
-            >
-              All Products
-            </button>
-            <button
-              onClick={() => setFilter('art')}
-              className={`px-4 py-2 text-sm font-medium ${
-                filter === 'art' 
-                  ? 'bg-purple-600 text-white' 
-                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'
-              }`}
-            >
-              Art Only
-            </button>
-            <button
-              onClick={() => setFilter('tie')}
-              className={`px-4 py-2 text-sm font-medium ${
-                filter === 'tie' 
-                  ? 'bg-purple-600 text-white' 
-                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'
-              }`}
-            >
-              Ties Only
-            </button>
-            <button
-              onClick={() => setFilter('flower')}
-              className={`px-4 py-2 text-sm font-medium rounded-r-lg ${
-                filter === 'flower' 
-                  ? 'bg-purple-600 text-white' 
-                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'
-              }`}
-            >
-              Flowers Only
-            </button>
-          </div>
-        </div>
+        {/* Grid of product cards */}
+        <motion.div 
+          className="mt-12 grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          {loading ? (
+            <div className="col-span-full flex justify-center items-center py-20">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-pink-500"></div>
+            </div>
+          ) : filteredProducts.length === 0 ? (
+            <div className="col-span-full text-center py-20">
+              <p className="text-gray-500 text-lg">No products found.</p>
+            </div>
+          ) : (
+            filteredProducts.map((product) => (
+              <motion.div
+                key={product.id}
+                variants={itemVariants}
+                className="rounded-xl shadow-md border px-6 py-8 flex flex-col items-center text-center bg-white dark:bg-gray-800 hover:shadow-lg transition-all duration-300"
+              >
+                <div className="text-3xl font-bold text-gray-800 dark:text-white">${product.price}</div>
+                <div className="text-lg mt-2 font-semibold">{product.name}</div>
+                <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">{product.description}</div>
+                <ul className="mt-4 space-y-1 text-sm text-gray-500 text-left w-full">
+                  {product.features?.map(feature => (
+                    <li key={feature}>✅ {feature}</li>
+                  ))}
+                </ul>
+                <button
+                  className="mt-6 px-4 py-2 rounded-lg text-white w-full font-semibold transition bg-gradient-to-r from-pink-500 to-purple-500 hover:opacity-90"
+                  onClick={() => handleAddToCart(product)}
+                >
+                  Select Tier
+                </button>
+              </motion.div>
+            ))
+          )}
+        </motion.div>
         
-        {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
-          </div>
-        ) : (
-          <>
-            {['Starter', 'Classic', 'Black', 'Ultra'].map(tier => {
-              // Skip this tier section if no products match the current filter
-              const tierProducts = filteredProducts.filter(product => product.tier === tier);
-              
-              if (tierProducts.length === 0) return null;
-              
-              return (
-              <section key={tier} className="mb-16">
-                <h2 className="text-2xl md:text-3xl font-bold mb-6 font-poppins">
-                  {tier} Tier
-                  {tier === 'Ultra' && (
-                    <span className="ml-2 inline-block bg-gradient-to-r from-purple-500 to-indigo-600 text-white text-sm px-2 py-1 rounded-full">
-                      PREMIUM
-                    </span>
-                  )}
-                </h2>
-                
-                <motion.div 
-                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8"
-                  variants={containerVariants}
-                  initial="hidden"
-                  animate="visible"
-                >
-                  {tierProducts.map(product => (
-                      <motion.div 
-                        key={product.id} 
-                        className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
-                        variants={itemVariants}
-                      >
-                        <div className="relative">
-                          <div className="aspect-w-16 aspect-h-9 bg-gray-200 dark:bg-gray-700">
-                            <div className="w-full h-64 bg-gradient-to-br from-gray-100 to-gray-300 dark:from-gray-700 dark:to-gray-900 flex items-center justify-center">
-                              <span className="text-gray-400 dark:text-gray-500">{product.name}</span>
-                            </div>
-                          </div>
-                          {getTierBadge(product.tier)}
-                        </div>
-                        
-                        <div className="p-6">
-                          <div className="flex justify-between items-start mb-2">
-                            <h3 className="text-xl font-bold">{product.name}</h3>
-                            <span className="font-bold text-lg">${product.price}</span>
-                          </div>
-                          
-                          <p className="text-gray-600 dark:text-gray-300 mb-4">{product.description}</p>
-                          
-                          {product.strain && (
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
-                              Strain: {product.strain}
-                            </p>
-                          )}
-                          
-                          {product.color && (
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
-                              Color: {product.color}
-                            </p>
-                          )}
-                          
-                          {product.pattern && (
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                              Pattern: {product.pattern}
-                            </p>
-                          )}
-                          
-                          <button
-                            onClick={() => handleAddToCart(product)}
-                            className={`w-full py-2 px-4 rounded-lg text-white font-medium flex items-center justify-center bg-gradient-to-r ${getTierColor(product.tier)} hover:opacity-90 transition-opacity`}
-                          >
-                            <ShoppingBag className="mr-2 h-5 w-5" />
-                            Add to Cart
-                          </button>
-                        </div>
-                      </motion.div>
-                    ))}
-                </motion.div>
-              </section>
-            )})}
-            
-            {/* Special section for flowers when viewing all products */}
-            {filter === 'all' && filteredProducts.some(p => p.type === 'flower') && (
-              <section className="mb-16">
-                <h2 className="text-2xl md:text-3xl font-bold mb-6 font-poppins">
-                  Premium Flowers
-                  <span className="ml-2 inline-block bg-gradient-to-r from-green-500 to-emerald-600 text-white text-sm px-2 py-1 rounded-full">
-                    FEATURED
-                  </span>
-                </h2>
-                
-                <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl mb-8">
-                  <p className="text-lg text-gray-700 dark:text-gray-300">
-                    Explore our selection of premium flowers, available in all tiers from Starter (3.5g) to Ultra (28g).
-                    Each flower product comes with our signature Cannè packaging and digital art certificate.
-                  </p>
-                </div>
-                
-                <motion.div 
-                  className="grid grid-cols-1 md:grid-cols-3 gap-8"
-                  variants={containerVariants}
-                  initial="hidden"
-                  animate="visible"
-                >
-                  {filteredProducts
-                    .filter(product => product.type === 'flower')
-                    .map(product => (
-                      <motion.div 
-                        key={product.id} 
-                        className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
-                        variants={itemVariants}
-                      >
-                        <div className="relative">
-                          <div className="aspect-w-16 aspect-h-9 bg-gray-200 dark:bg-gray-700">
-                            <div className="w-full h-64 bg-gradient-to-br from-green-100 to-emerald-300 dark:from-green-900 dark:to-emerald-700 flex items-center justify-center">
-                              <span className="text-gray-600 dark:text-gray-300">{product.name}</span>
-                            </div>
-                          </div>
-                          {getTierBadge(product.tier)}
-                        </div>
-                        
-                        <div className="p-6">
-                          <div className="flex justify-between items-start mb-2">
-                            <h3 className="text-xl font-bold">{product.name}</h3>
-                            <span className="font-bold text-lg">${product.price}</span>
-                          </div>
-                          
-                          <p className="text-gray-600 dark:text-gray-300 mb-4">{product.description}</p>
-                          
-                          {product.strain && (
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                              <span className="font-semibold">Strain:</span> {product.strain}
-                            </p>
-                          )}
-                          
-                          <button
-                            onClick={() => handleAddToCart(product)}
-                            className={`w-full py-2 px-4 rounded-lg text-white font-medium flex items-center justify-center bg-gradient-to-r ${getTierColor(product.tier)} hover:opacity-90 transition-opacity`}
-                          >
-                            <ShoppingBag className="mr-2 h-5 w-5" />
-                            Add to Cart
-                          </button>
-                        </div>
-                      </motion.div>
-                    ))}
-                </motion.div>
-              </section>
-            )}
-            
-            {/* Special section just for ties when viewing all products */}
-            {filter === 'all' && filteredProducts.some(p => p.type === 'tie') && (
-              <section className="mb-16">
-                <h2 className="text-2xl md:text-3xl font-bold mb-6 font-poppins">
-                  Designer Ties
-                  <span className="ml-2 inline-block bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-sm px-2 py-1 rounded-full">
-                    NEW
-                  </span>
-                </h2>
-                
-                <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl mb-8">
-                  <p className="text-lg text-gray-700 dark:text-gray-300">
-                    Explore our exclusive collection of designer ties, available in various tiers to match your style and occasion.
-                    Each tie is crafted with premium materials and comes with our signature Cannè packaging.
-                  </p>
-                </div>
-                
-                <motion.div 
-                  className="grid grid-cols-1 md:grid-cols-3 gap-8"
-                  variants={containerVariants}
-                  initial="hidden"
-                  animate="visible"
-                >
-                  {filteredProducts
-                    .filter(product => product.type === 'tie')
-                    .map(product => (
-                      <motion.div 
-                        key={product.id} 
-                        className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
-                        variants={itemVariants}
-                      >
-                        <div className="relative">
-                          <div className="aspect-w-16 aspect-h-9 bg-gray-200 dark:bg-gray-700">
-                            <div className="w-full h-64 bg-gradient-to-br from-gray-100 to-gray-300 dark:from-gray-700 dark:to-gray-900 flex items-center justify-center">
-                              <span className="text-gray-400 dark:text-gray-500">{product.name}</span>
-                            </div>
-                          </div>
-                          {getTierBadge(product.tier)}
-                        </div>
-                        
-                        <div className="p-6">
-                          <div className="flex justify-between items-start mb-2">
-                            <h3 className="text-xl font-bold">{product.name}</h3>
-                            <span className="font-bold text-lg">${product.price}</span>
-                          </div>
-                          
-                          <p className="text-gray-600 dark:text-gray-300 mb-4">{product.description}</p>
-                          
-                          {product.color && (
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
-                              Color: {product.color}
-                            </p>
-                          )}
-                          
-                          {product.pattern && (
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                              Pattern: {product.pattern}
-                            </p>
-                          )}
-                          
-                          <button
-                            onClick={() => handleAddToCart(product)}
-                            className={`w-full py-2 px-4 rounded-lg text-white font-medium flex items-center justify-center bg-gradient-to-r ${getTierColor(product.tier)} hover:opacity-90 transition-opacity`}
-                          >
-                            <ShoppingBag className="mr-2 h-5 w-5" />
-                            Add to Cart
-                          </button>
-                        </div>
-                      </motion.div>
-                    ))}
-                </motion.div>
-              </section>
-            )}
-          </>
+        {/* Checkout button */}
+        {items.length > 0 && (
+          <Link href="/checkout">
+            <button className="fixed bottom-6 right-6 bg-black text-white px-6 py-3 rounded-xl shadow-lg z-50 flex items-center space-x-2">
+              <ShoppingBag className="h-5 w-5" />
+              <span>Checkout ({items.length})</span>
+            </button>
+          </Link>
         )}
       </main>
       
