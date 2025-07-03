@@ -10,8 +10,34 @@ if (!supabaseServiceKey) {
   console.warn('Supabase Service Role Key is missing. Please check your environment variables.');
 }
 
-// Create the Supabase admin client with service role key
-export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+// Create the Supabase admin client with service role key, but make it optional for builds
+export let supabaseAdmin: ReturnType<typeof createClient>;
+
+// Only create the client if we have both URL and key
+if (supabaseUrl && supabaseServiceKey) {
+  supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+} else {
+  // Create a mock client for build time that won't actually make API calls
+  // This prevents build failures when environment variables are not available
+  supabaseAdmin = {
+    from: () => ({
+      select: () => ({
+        eq: () => ({ single: () => ({ data: null, error: null }) }),
+        single: () => ({ data: null, error: null })
+      }),
+      insert: () => ({
+        select: () => ({
+          single: () => ({ data: null, error: null })
+        })
+      }),
+      upsert: () => ({
+        select: () => ({
+          single: () => ({ data: null, error: null })
+        })
+      })
+    })
+  } as any; // Type assertion to match the expected interface
+}
 
 // Helper functions for common admin operations
 

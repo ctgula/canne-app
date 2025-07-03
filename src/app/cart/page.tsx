@@ -2,14 +2,16 @@
 
 import Link from 'next/link';
 import Header from '@/components/Header';
-import { useCart } from '@/contexts/CartContext';
+import { useCartStore } from '@/services/CartService';
 import { Minus, Plus, Trash2, ArrowRight, Truck, ShoppingBag } from 'lucide-react';
-import { DELIVERY_THRESHOLD } from '@/lib/cart-utils';
+
+// Define the delivery threshold here since we don't have cart-utils
+const DELIVERY_THRESHOLD = 75; // $75 for free delivery
 
 export default function CartPage() {
-  const { items, updateQuantity, removeItem, getCartTotal } = useCart();
+  const { items, updateQuantity, removeItem, getTotal } = useCartStore();
   
-  const total = getCartTotal();
+  const total = getTotal();
   const deliveryAmountNeeded = DELIVERY_THRESHOLD - total;
   const isCloseToDelivery = deliveryAmountNeeded > 0 && deliveryAmountNeeded <= 15;
   const hasDelivery = total >= DELIVERY_THRESHOLD;
@@ -52,7 +54,7 @@ export default function CartPage() {
           {/* Cart Items */}
           <div className="lg:col-span-2 space-y-4">
             {items.map((item) => (
-              <div key={item.id} className="card">
+              <div key={item.product.id} className="card">
                 <div className="flex flex-col sm:flex-row gap-4">
                   {/* Product Image */}
                   <div className="w-full sm:w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -64,13 +66,13 @@ export default function CartPage() {
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                       <div className="flex-1">
                         <h3 className="font-semibold text-lg text-gray-900 mb-1">
-                          {item.name}
+                          {item.product.name}
                         </h3>
                         <p className="text-sm text-gray-600 mb-2">
-                          {item.tier} tier art with complimentary gift
+                          {item.product.tier} tier art with complimentary gift
                         </p>
                         <div className="flex items-center gap-2">
-                          <span className="gift-badge">{item.weight} gift</span>
+                          <span className="gift-badge">{item.product.weight || "Standard"} gift</span>
                           {hasDelivery && (
                             <span className="delivery-badge">
                               <Truck className="h-3 w-3 mr-1" />
@@ -83,14 +85,14 @@ export default function CartPage() {
                       {/* Price and Controls */}
                       <div className="flex flex-col items-end gap-3">
                         <div className="text-xl font-bold text-gray-900">
-                          ${(item.price * item.quantity).toFixed(2)}
+                          ${(item.product.price * item.quantity).toFixed(2)}
                         </div>
                         
                         {/* Quantity Controls */}
                         <div className="flex items-center gap-3">
                           <div className="flex items-center bg-gray-100 rounded-lg">
                             <button
-                              onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                              onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
                               className="p-2 hover:bg-gray-200 rounded-l-lg transition-colors"
                             >
                               <Minus className="h-4 w-4" />
@@ -99,7 +101,7 @@ export default function CartPage() {
                               {item.quantity}
                             </span>
                             <button
-                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                              onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
                               className="p-2 hover:bg-gray-200 rounded-r-lg transition-colors"
                             >
                               <Plus className="h-4 w-4" />
@@ -107,7 +109,7 @@ export default function CartPage() {
                           </div>
                           
                           <button
-                            onClick={() => removeItem(item.id)}
+                            onClick={() => removeItem(item.product.id)}
                             className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
                           >
                             <Trash2 className="h-4 w-4" />
