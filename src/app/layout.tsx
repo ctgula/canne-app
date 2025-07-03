@@ -31,21 +31,18 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`no-flash ${inter.variable} ${poppins.variable}`}>
-      {/* Prevent flash of white by injecting script directly */}
-      <Script id="theme-switcher" strategy="beforeInteractive">
-        {`
-          (function() {
-            try {
-              const savedTheme = localStorage.getItem('theme');
-              if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                document.documentElement.classList.add('dark');
-              } else {
-                document.documentElement.classList.remove('dark');
-              }
-            } catch (e) {}
-          })();
-        `}
-      </Script>
+      <head>
+        {/* Anti-flash meta tag to prevent initial white flash */}
+        <meta name="theme-color" content="#111827" media="(prefers-color-scheme: dark)" />
+        <meta name="theme-color" content="#f9fafb" media="(prefers-color-scheme: light)" />
+        
+        {/* Highest priority anti-flash script - loads and executes IMMEDIATELY */}
+        <script src="/no-flash.js" />
+      </head>
+      
+      {/* Next.js Script component for the beforeInteractive strategy */}
+      <Script src="/no-flash.js" strategy="beforeInteractive" />
+      
       <body className="antialiased font-inter bg-gray-50 dark:bg-gray-900 dark:text-white transition-colors duration-300" suppressHydrationWarning={true}>
         <ThemeProvider>
           <Toaster />

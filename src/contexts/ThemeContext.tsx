@@ -42,13 +42,25 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const root = document.documentElement;
     if (theme === 'dark') {
       root.classList.add('dark');
+      root.classList.remove('light');
     } else {
       root.classList.remove('dark');
+      root.classList.add('light');
     }
     
     // Save to localStorage
     localStorage.setItem('theme', theme);
   }, [theme]);
+
+  // Add loaded class after initial render to enable transitions
+  useEffect(() => {
+    // Small delay to ensure the initial styles are applied first
+    const timer = setTimeout(() => {
+      document.documentElement.classList.add('loaded');
+    }, 50);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   const toggleTheme = () => {
     setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
