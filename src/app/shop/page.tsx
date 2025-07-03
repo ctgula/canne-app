@@ -32,6 +32,7 @@ export default function ShopPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTier, setSelectedTier] = useState<string | null>(null);
+  const [quantities, setQuantities] = useState<Record<string, number>>({});
 
   useEffect(() => {
     // In a real app, this would fetch from your API
@@ -184,17 +185,29 @@ export default function ShopPage() {
   }, [searchTerm, products, selectedTier]);
 
   const handleAddToCart = (product: ShopProduct) => {
-    // Convert ShopProduct to the expected cart product format
-    const cartItem = {
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      image: product.image || '/images/placeholder.jpg',
-      quantity: 1,
-    };
+    const quantity = quantities[product.id] || 1;
     
-    addItem(cartItem);
-    toast.success(`${product.name} added to cart!`);
+    // Add the product to cart multiple times based on quantity
+    for (let i = 0; i < quantity; i++) {
+      addItem(product as unknown as DatabaseProduct);
+    }
+    
+    toast.success(`${quantity} ${product.name} added to cart!`);
+    
+    // Reset quantity after adding to cart
+    setQuantities(prev => ({
+      ...prev,
+      [product.id]: 1
+    }));
+  };
+  
+  const updateQuantity = (productId: string, newQuantity: number) => {
+    if (newQuantity < 1) return; // Don't allow quantities less than 1
+    
+    setQuantities(prev => ({
+      ...prev,
+      [productId]: newQuantity
+    }));
   };
 
   // Framer Motion variants
@@ -302,11 +315,32 @@ export default function ShopPage() {
                     <li key={feature}>✅ {feature}</li>
                   ))}
                 </ul>
+                <div className="mt-4 flex items-center justify-center space-x-2 border rounded-lg overflow-hidden w-full">
+                  <button 
+                    onClick={() => updateQuantity(product.id, Math.max(1, (quantities[product.id] || 1) - 1))}
+                    className="w-10 h-10 flex items-center justify-center bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-bold transition-colors"
+                    aria-label="Decrease quantity"
+                  >
+                    -
+                  </button>
+                  
+                  <span className="w-10 text-center font-medium">{quantities[product.id] || 1}</span>
+                  
+                  <button 
+                    onClick={() => updateQuantity(product.id, (quantities[product.id] || 1) + 1)}
+                    className="w-10 h-10 flex items-center justify-center bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-bold transition-colors"
+                    aria-label="Increase quantity"
+                  >
+                    +
+                  </button>
+                </div>
+                
                 <button
-                  className="mt-6 px-4 py-2 rounded-lg text-white w-full font-semibold transition bg-gradient-to-r from-pink-500 to-purple-500 hover:opacity-90"
+                  className="mt-3 px-4 py-3 rounded-lg text-white w-full font-semibold transition bg-gradient-to-r from-pink-500 to-purple-500 hover:opacity-90 flex items-center justify-center space-x-2"
                   onClick={() => handleAddToCart(product)}
                 >
-                  Select Tier
+                  <ShoppingBag size={16} />
+                  <span>Add to Cart</span>
                 </button>
               </motion.div>
             ))
