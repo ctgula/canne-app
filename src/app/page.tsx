@@ -54,7 +54,7 @@ export default function Home() {
             animate="visible"
           >
             <motion.div 
-              className="flex flex-col items-center text-center px-4 pt-28 pb-16"
+              className="flex flex-col items-center text-center px-4 pt-12 sm:pt-16 md:pt-20 lg:pt-28 pb-8 sm:pb-12 md:pb-16"
               variants={itemVariants}
             >
               <Image 
@@ -62,35 +62,35 @@ export default function Home() {
                 alt="Cannè Logo" 
                 width={200} 
                 height={200} 
-                className="mb-6" 
+                className="w-32 h-32 sm:w-36 sm:h-36 md:w-48 md:h-48 lg:w-56 lg:h-56 xl:w-64 xl:h-64 mb-4 sm:mb-6" 
                 priority
               />
               
               <motion.h1 
-                className="text-6xl md:text-7xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 text-transparent bg-clip-text"
+                className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 text-transparent bg-clip-text"
                 variants={itemVariants}
               >
                 Art–first. Street–approved.
               </motion.h1>
               
               <motion.p 
-                className="text-lg text-gray-600 mt-4 mb-8"
+                className="text-base sm:text-lg text-gray-600 dark:text-gray-300 mt-2 sm:mt-4 mb-6 sm:mb-8"
                 variants={itemVariants}
               >
                 Premium Digital Art with Complimentary Gifts
               </motion.p>
               
               <motion.div 
-                className="flex gap-4"
+                className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto"
                 variants={itemVariants}
               >
                 <Link href="/shop">
-                  <button className="px-6 py-3 bg-pink-500 text-white rounded-xl shadow-md hover:bg-pink-600 transition">
+                  <button className="w-full sm:w-auto px-5 sm:px-6 py-2.5 sm:py-3 bg-pink-500 text-white rounded-xl shadow-md hover:bg-pink-600 transition">
                     View Art Collection
                   </button>
                 </Link>
                 <Link href="/shop">
-                  <button className="px-6 py-3 bg-white border border-gray-300 rounded-xl shadow-sm hover:bg-gray-100 transition">
+                  <button className="w-full sm:w-auto px-5 sm:px-6 py-2.5 sm:py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition">
                     Shop Now
                   </button>
                 </Link>

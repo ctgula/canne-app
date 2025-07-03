@@ -3,6 +3,7 @@ import { Inter, Poppins } from 'next/font/google';
 import "./globals.css";
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import Toaster from '@/components/Toaster';
+import CartHydration from '@/components/CartHydration';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -32,6 +33,7 @@ export default function RootLayout({
       <body className="antialiased font-inter bg-gray-50 dark:bg-gray-900 dark:text-white transition-colors duration-200" suppressHydrationWarning={true}>
         <ThemeProvider>
           <Toaster />
+          <CartHydration />
           <div className="min-h-screen">
             {children}
           </div>

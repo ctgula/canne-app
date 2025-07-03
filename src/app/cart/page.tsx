@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Header from '@/components/Header';
 import { useCartStore } from '@/services/CartService';
@@ -9,7 +10,13 @@ import { Minus, Plus, Trash2, ArrowRight, Truck, ShoppingBag } from 'lucide-reac
 const DELIVERY_THRESHOLD = 75; // $75 for free delivery
 
 export default function CartPage() {
-  const { items, updateQuantity, removeItem, getTotal } = useCartStore();
+  const { items, updateQuantity, removeItem, getTotal, hydrateCart } = useCartStore();
+  const [loading, setLoading] = useState(false);
+  
+  // Hydrate cart from localStorage when component mounts
+  useEffect(() => {
+    hydrateCart();
+  }, [hydrateCart]);
   
   const total = getTotal();
   const deliveryAmountNeeded = DELIVERY_THRESHOLD - total;

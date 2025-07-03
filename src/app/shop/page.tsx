@@ -26,7 +26,7 @@ interface ShopProduct {
 }
 
 export default function ShopPage() {
-  const { addItem, items } = useCartStore();
+  const { addItem, hydrateCart, items } = useCartStore();
   const [products, setProducts] = useState<ShopProduct[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<ShopProduct[]>([]);
   const [loading, setLoading] = useState(true);
@@ -164,6 +164,8 @@ export default function ShopPage() {
     setLoading(false);
   }, []);
 
+  // Hydration now happens in the product fetch useEffect
+
   // Filter products based on search term and selected tier
   useEffect(() => {
     let filtered = products;
@@ -187,10 +189,8 @@ export default function ShopPage() {
   const handleAddToCart = (product: ShopProduct) => {
     const quantity = quantities[product.id] || 1;
     
-    // Add the product to cart multiple times based on quantity
-    for (let i = 0; i < quantity; i++) {
-      addItem(product as unknown as DatabaseProduct);
-    }
+    // Add the product to cart with specified quantity in one operation
+    addItem(product as unknown as DatabaseProduct, quantity);
     
     toast.success(`${quantity} ${product.name} added to cart!`);
     
