@@ -2,6 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Prevent flash of white during theme switch */
+.no-flash {
+  visibility: visible;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+/* Apply smooth transition only after page is loaded */
+.no-flash body {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
 .marquee-mask {
   -webkit-mask-image: linear-gradient(to right, transparent, black 20%, black 80%, transparent);
   mask-image: linear-gradient(to right, transparent, black 20%, black 80%, transparent);
