@@ -69,25 +69,29 @@ export const useCartStore = create<CartStore>((set, get) => ({
   // Hydrate cart from localStorage on client-side
   hydrateCart: () => {
     const storedItems = loadCartFromStorage();
-    set({ items: storedItems });
+    // Ensure we're setting a valid array
+    set({ items: Array.isArray(storedItems) ? storedItems : [] });
   },
   
   // Add an item to the cart with optional quantity
   addItem: (product: Product, quantity = 1) => {
     set((state) => {
-      const existingItem = state.items.find(item => item.product.id === product.id);
+      // Ensure items is always an array
+      const items = Array.isArray(state.items) ? state.items : [];
+      
+      const existingItem = items.find(item => item.product.id === product.id);
       
       let newItems;
       if (existingItem) {
         // Update quantity if item already exists
-        newItems = state.items.map(item =>
+        newItems = items.map(item =>
           item.product.id === product.id
             ? { ...item, quantity: item.quantity + quantity }
             : item
         );
       } else {
         // Add new item
-        newItems = [...state.items, { product, quantity }];
+        newItems = [...items, { product, quantity }];
       }
       
       // Save to localStorage
@@ -100,7 +104,9 @@ export const useCartStore = create<CartStore>((set, get) => ({
   // Remove an item from the cart
   removeItem: (productId: string) => {
     set((state) => {
-      const newItems = state.items.filter(item => item.product.id !== productId);
+      // Ensure items is always an array
+      const items = Array.isArray(state.items) ? state.items : [];
+      const newItems = items.filter(item => item.product.id !== productId);
       saveCartToStorage(newItems);
       return { items: newItems };
     });
@@ -109,12 +115,15 @@ export const useCartStore = create<CartStore>((set, get) => ({
   // Update item quantity
   updateQuantity: (productId: string, quantity: number) => {
     set((state) => {
+      // Ensure items is always an array
+      const items = Array.isArray(state.items) ? state.items : [];
+      
       let newItems;
       if (quantity <= 0) {
         // Remove item if quantity is 0 or less
-        newItems = state.items.filter(item => item.product.id !== productId);
+        newItems = items.filter(item => item.product.id !== productId);
       } else {
-        newItems = state.items.map(item =>
+        newItems = items.map(item =>
           item.product.id === productId
             ? { ...item, quantity }
             : item
@@ -136,10 +145,11 @@ export const useCartStore = create<CartStore>((set, get) => ({
   
   // Calculate the total price of items in the cart
   getTotal: () => {
-    return get().items.reduce(
+    const items = get().items || [];
+    return Array.isArray(items) ? items.reduce(
       (total, item) => total + (item.product.price * item.quantity),
       0
-    );
+    ) : 0;
   },
   
   // Get the total number of items in the cart

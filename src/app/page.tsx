@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Header from '@/components/Header';
 import ProductsPresenter from '@/components/ProductsPresenter';
-import SupabaseConnectionTest from '@/components/SupabaseConnectionTest';
+
 import { motion, Variants } from 'framer-motion';
 import { Brush, CreditCard, Package, Sparkles } from 'lucide-react';
 
@@ -180,10 +180,7 @@ export default function Home() {
           {/* Products Section using MCP */}
           <ProductsPresenter />
           
-          {/* Supabase Connection Test */}
-          <div className="container mx-auto px-4 py-8">
-            <SupabaseConnectionTest />
-          </div>
+
         </div>
 
         {/* Our Collection Section */}

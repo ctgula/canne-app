@@ -13,32 +13,29 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  // Use a function to initialize theme to prevent hydration mismatch
-  const [theme, setTheme] = useState<Theme>(() => {
-    // For SSR, default to light (this will be quickly overridden on client)
-    if (typeof window === 'undefined') return 'light';
+  const [theme, setTheme] = useState<Theme>('light');
+  const [mounted, setMounted] = useState(false);
+  
+  // Initialize theme on client side only
+  useEffect(() => {
+    setMounted(true);
     
     // Check localStorage first
     const storedTheme = localStorage.getItem('theme') as Theme | null;
-    if (storedTheme === 'light' || storedTheme === 'dark') return storedTheme;
+    if (storedTheme === 'light' || storedTheme === 'dark') {
+      setTheme(storedTheme);
+      return;
+    }
     
     // Fall back to system preference
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  });
-  
-  // Ensure theme is synchronized with localStorage when component mounts
-  useEffect(() => {
-    const storedTheme = localStorage.getItem('theme') as Theme | null;
-    
-    if (storedTheme && storedTheme !== theme) {
-      setTheme(storedTheme);
-    } else if (!storedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches && theme !== 'dark') {
-      setTheme('dark');
-    }
-  }, [theme]);
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    setTheme(systemPrefersDark ? 'dark' : 'light');
+  }, []);
 
-  // Update document when theme changes
+  // Update document when theme changes (only after mounted)
   useEffect(() => {
+    if (!mounted) return;
+    
     const root = document.documentElement;
     if (theme === 'dark') {
       root.classList.add('dark');
@@ -50,7 +47,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     
     // Save to localStorage
     localStorage.setItem('theme', theme);
-  }, [theme]);
+  }, [theme, mounted]);
 
   // Add loaded class after initial render to enable transitions
   useEffect(() => {

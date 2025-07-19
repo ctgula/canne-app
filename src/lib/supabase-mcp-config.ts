@@ -10,7 +10,7 @@
 
 export const SUPABASE_MCP_CONFIG = {
   // Your Supabase project reference ID - this should match what's in your .env.local
-  projectRef: process.env.NEXT_PUBLIC_SUPABASE_PROJECT_REF || 'shfaxsmyxhlzzdmzmqwo',
+  projectRef: process.env.NEXT_PUBLIC_SUPABASE_PROJECT_REF || 'radtljksnoznrsyntazx',
   
   // The region where your Supabase project is hosted
   // Common regions: 'us-east-1', 'us-west-1', 'eu-central-1', 'ap-southeast-1'
@@ -48,9 +48,29 @@ export function isMCPSupabaseAvailable(): boolean {
   // Check if we're in a browser environment
   if (typeof window === 'undefined') return false;
   
-  // Check if MCP is available
-  const mcp = (window as any).mcp;
-  return Boolean(mcp && mcp.supabase);
+  try {
+    // Check if MCP is available - more thorough check
+    const mcp = (window as any).mcp;
+    
+    // Check if the mcp object exists and has the supabase property
+    if (!mcp || typeof mcp !== 'object') {
+      console.log('MCP object not found or not an object');
+      return false;
+    }
+    
+    // Check if the supabase property exists
+    if (!mcp.supabase) {
+      console.log('MCP object exists but supabase property is missing');
+      return false;
+    }
+    
+    // All checks passed
+    console.log('MCP Supabase integration available');
+    return true;
+  } catch (error) {
+    console.error('Error checking MCP availability:', error);
+    return false;
+  }
 }
 
 // Get the current MCP Supabase configuration

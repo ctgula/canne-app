@@ -1,5 +1,4 @@
-import { ProductModel, Product } from '@/models/Product';
-import { SupabaseMCPResponse } from '@/lib/supabase-mcp';
+import { ProductModel, Product, ProductResponse } from '@/models/Product';
 
 /**
  * Product Controller class for handling product-related business logic
@@ -9,21 +8,21 @@ export class ProductController {
   /**
    * Get all products
    */
-  static async getAllProducts(): Promise<SupabaseMCPResponse<Product[]>> {
+  static async getAllProducts(): Promise<ProductResponse<Product[]>> {
     return ProductModel.getAll();
   }
 
   /**
    * Get a product by ID
    */
-  static async getProductById(id: string): Promise<SupabaseMCPResponse<Product>> {
+  static async getProductById(id: string): Promise<ProductResponse<Product>> {
     return ProductModel.getById(id);
   }
 
   /**
    * Get products by tier
    */
-  static async getProductsByTier(tier: string): Promise<SupabaseMCPResponse<Product[]>> {
+  static async getProductsByTier(tier: string): Promise<ProductResponse<Product[]>> {
     return ProductModel.getByTier(tier);
   }
 
@@ -31,7 +30,7 @@ export class ProductController {
    * Get products grouped by tier
    * This adds business logic on top of the model layer
    */
-  static async getProductsByTierGrouped(): Promise<SupabaseMCPResponse<Record<string, Product[]>>> {
+  static async getProductsByTierGrouped(): Promise<ProductResponse<Record<string, Product[]>>> {
     const result = await ProductModel.getAll();
     
     if (result.error || !result.data) {

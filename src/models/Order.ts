@@ -1,4 +1,4 @@
-import { executeQuery, SupabaseMCPResponse } from '@/lib/supabase-mcp';
+import { supabase } from '@/lib/supabase';
 
 /**
  * Order status type
@@ -47,124 +47,142 @@ export interface OrderItem {
 }
 
 /**
+ * Response type for Order operations
+ */
+export type OrderResponse<T = any> = {
+  data?: T;
+  error?: string;
+  count?: number;
+};
+
+/**
  * Order model class for interacting with the orders table
- * This follows the Model part of the MCP pattern
+ * Uses direct Supabase client for better reliability
  */
 export class OrderModel {
   /**
    * Create a new order
    */
-  static async create(order: Omit<Order, 'id' | 'created_at'>, items: Omit<OrderItem, 'id' | 'order_id' | 'created_at'>[]): Promise<SupabaseMCPResponse<{orderId: string}>> {
+  static async create(order: Omit<Order, 'id' | 'created_at'>, items: Omit<OrderItem, 'id' | 'order_id' | 'created_at'>[]): Promise<OrderResponse<{orderId: string}>> {
     try {
-      // Start a transaction to create the order and its items
-      const result = await executeQuery<{id: string}[]>(`
-        WITH new_order AS (
-          INSERT INTO orders (
-            user_id, status, total, customer_name, customer_email, 
-            customer_phone, delivery_address, delivery_city, 
-            delivery_state, delivery_zip, is_delivery, 
-            delivery_notes, payment_method
-          ) VALUES (
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13
-          ) RETURNING id
-        )
-        SELECT id FROM new_order;
-      `, [
-        order.user_id || null,
-        order.status,
-        order.total,
-        order.customer_name,
-        order.customer_email,
-        order.customer_phone || null,
-        order.delivery_address || null,
-        order.delivery_city || null,
-        order.delivery_state || null,
-        order.delivery_zip || null,
-        order.is_delivery,
-        order.delivery_notes || null,
-        order.payment_method
-      ]);
+      // First, create the order
+      const { data: orderData, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          user_id: order.user_id,
+          status: order.status,
+          total: order.total,
+          customer_name: order.customer_name,
+          customer_email: order.customer_email,
+          customer_phone: order.customer_phone,
+          delivery_address: order.delivery_address,
+          delivery_city: order.delivery_city,
+          delivery_state: order.delivery_state,
+          delivery_zip: order.delivery_zip,
+          is_delivery: order.is_delivery,
+          delivery_notes: order.delivery_notes,
+          payment_method: order.payment_method
+        })
+        .select('id')
+        .single();
 
-      if (result.error || !result.data || result.data.length === 0) {
-        return { error: result.error || 'Failed to create order' };
+      if (orderError) {
+        console.error('Error creating order:', orderError);
+        return { error: orderError.message };
       }
 
-      const orderId = result.data[0].id;
+      const orderId = orderData.id;
 
-      // Insert order items
-      for (const item of items) {
-        const itemResult = await executeQuery(`
-          INSERT INTO order_items (
-            order_id, product_id, quantity, price, tier, weight, color_theme
-          ) VALUES (
-            $1, $2, $3, $4, $5, $6, $7
-          )
-        `, [
-          orderId,
-          item.product_id,
-          item.quantity,
-          item.price,
-          item.tier,
-          item.weight,
-          item.color_theme
-        ]);
+      // Then, create the order items
+      if (items.length > 0) {
+        const orderItems = items.map(item => ({
+          order_id: orderId,
+          product_id: item.product_id,
+          quantity: item.quantity,
+          price: item.price,
+          tier: item.tier,
+          weight: item.weight,
+          color_theme: item.color_theme
+        }));
 
-        if (itemResult.error) {
-          return { error: `Failed to create order item: ${itemResult.error}` };
+        const { error: itemsError } = await supabase
+          .from('order_items')
+          .insert(orderItems);
+
+        if (itemsError) {
+          console.error('Error creating order items:', itemsError);
+          // Try to rollback the order creation
+          await supabase.from('orders').delete().eq('id', orderId);
+          return { error: itemsError.message };
         }
       }
 
       return { data: { orderId } };
-    } catch (error) {
-      console.error('Error creating order:', error);
-      return { error: error instanceof Error ? error.message : String(error) };
+    } catch (err) {
+      console.error('Unexpected error creating order:', err);
+      return { error: err instanceof Error ? err.message : 'Unknown error' };
     }
   }
 
   /**
    * Get an order by ID including its items
    */
-  static async getById(id: string): Promise<SupabaseMCPResponse<{ order: Order, items: OrderItem[] }>> {
+  static async getById(id: string): Promise<OrderResponse<Order & { items: OrderItem[] }>> {
     try {
       // Get the order
-      const orderResult = await executeQuery<Order[]>(
-        'SELECT * FROM orders WHERE id = $1 LIMIT 1',
-        [id]
-      );
+      const { data: orderData, error: orderError } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('id', id)
+        .single();
 
-      if (orderResult.error || !orderResult.data || orderResult.data.length === 0) {
-        return { error: orderResult.error || 'Order not found' };
+      if (orderError) {
+        console.error('Error fetching order:', orderError);
+        return { error: orderError.message };
       }
 
       // Get the order items
-      const itemsResult = await executeQuery<OrderItem[]>(
-        'SELECT * FROM order_items WHERE order_id = $1',
-        [id]
-      );
+      const { data: itemsData, error: itemsError } = await supabase
+        .from('order_items')
+        .select('*')
+        .eq('order_id', id);
 
-      if (itemsResult.error) {
-        return { error: itemsResult.error };
+      if (itemsError) {
+        console.error('Error fetching order items:', itemsError);
+        return { error: itemsError.message };
       }
 
       return {
         data: {
-          order: orderResult.data[0],
-          items: itemsResult.data || []
+          ...orderData,
+          items: itemsData || []
         }
       };
-    } catch (error) {
-      console.error('Error getting order:', error);
-      return { error: error instanceof Error ? error.message : String(error) };
+    } catch (err) {
+      console.error('Unexpected error fetching order:', err);
+      return { error: err instanceof Error ? err.message : 'Unknown error' };
     }
   }
 
   /**
    * Update order status
    */
-  static async updateStatus(id: string, status: OrderStatus): Promise<SupabaseMCPResponse<null>> {
-    return executeQuery(
-      'UPDATE orders SET status = $1 WHERE id = $2',
-      [status, id]
-    );
+  static async updateStatus(id: string, status: OrderStatus): Promise<OrderResponse<void>> {
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ status })
+        .eq('id', id);
+
+      if (error) {
+        console.error('Error updating order status:', error);
+        return { error: error.message };
+      }
+
+      return { data: undefined };
+    } catch (err) {
+      console.error('Unexpected error updating order status:', err);
+      return { error: err instanceof Error ? err.message : 'Unknown error' };
+    }
   }
 }

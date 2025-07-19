@@ -1,4 +1,4 @@
-import { executeQuery, SupabaseMCPResponse } from '@/lib/supabase-mcp';
+import { supabase } from '@/lib/supabase';
 
 /**
  * Product model representing the products table in Supabase
@@ -17,41 +17,87 @@ export interface Product {
 }
 
 /**
+ * Response type for Product operations
+ */
+export type ProductResponse<T = any> = {
+  data?: T;
+  error?: string;
+  count?: number;
+};
+
+/**
  * Product model class for interacting with the products table
- * This follows the Model part of the MCP pattern
+ * Uses direct Supabase client for better reliability
  */
 export class ProductModel {
   /**
    * Get all products
    */
-  static async getAll(): Promise<SupabaseMCPResponse<Product[]>> {
-    return executeQuery<Product[]>('SELECT * FROM products WHERE is_active = true ORDER BY price ASC');
+  static async getAll(): Promise<ProductResponse<Product[]>> {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('is_active', true)
+        .order('price', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching products:', error);
+        return { error: error.message };
+      }
+
+      return { data: data || [] };
+    } catch (err) {
+      console.error('Unexpected error fetching products:', err);
+      return { error: err instanceof Error ? err.message : 'Unknown error' };
+    }
   }
 
   /**
    * Get a product by ID
    */
-  static async getById(id: string): Promise<SupabaseMCPResponse<Product>> {
-    const result = await executeQuery<Product[]>(
-      'SELECT * FROM products WHERE id = $1 LIMIT 1',
-      [id]
-    );
-    
-    // Convert the array result to a single object or null
-    if (result.data && result.data.length > 0) {
-      return { data: result.data[0] };
+  static async getById(id: string): Promise<ProductResponse<Product>> {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('id', id)
+        .eq('is_active', true)
+        .single();
+
+      if (error) {
+        console.error('Error fetching product:', error);
+        return { error: error.message };
+      }
+
+      return { data };
+    } catch (err) {
+      console.error('Unexpected error fetching product:', err);
+      return { error: err instanceof Error ? err.message : 'Product not found' };
     }
-    
-    return { error: 'Product not found' };
   }
 
   /**
    * Get products by tier
    */
-  static async getByTier(tier: string): Promise<SupabaseMCPResponse<Product[]>> {
-    return executeQuery<Product[]>(
-      'SELECT * FROM products WHERE tier = $1 AND is_active = true',
-      [tier]
-    );
+  static async getByTier(tier: string): Promise<ProductResponse<Product[]>> {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('tier', tier.toLowerCase())
+        .eq('is_active', true)
+        .order('price', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching products by tier:', error);
+        return { error: error.message };
+      }
+
+      return { data: data || [] };
+    } catch (err) {
+      console.error('Unexpected error fetching products by tier:', err);
+      return { error: err instanceof Error ? err.message : 'Unknown error' };
+    }
   }
 }

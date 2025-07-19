@@ -18,16 +18,33 @@ export default function SupabaseConnectionTest() {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://shfaxsmyxhlzzdmzmgwo.supabase.co';
     setSupabaseUrl(url);
 
-    // Check if MCP Supabase integration is available
-    const mcpAvailable = isMCPSupabaseAvailable();
-    if (!mcpAvailable) {
-      setStatus('missing-mcp');
-      return;
-    }
-
-    // Get MCP Supabase configuration
-    const config = getMCPSupabaseConfig();
-    setMcpConfig(config);
+    // Check if MCP Supabase integration is available with retries
+    // Sometimes MCP takes a moment to initialize fully
+    let retries = 0;
+    const maxRetries = 3;
+    const retryInterval = 1000; // 1 second
+    
+    const checkMcpAvailability = () => {
+      const mcpAvailable = isMCPSupabaseAvailable();
+      
+      if (mcpAvailable) {
+        // MCP is available, continue with the connection test
+        const config = getMCPSupabaseConfig();
+        setMcpConfig(config);
+        checkConnection();
+      } else if (retries < maxRetries) {
+        // Retry after delay
+        retries++;
+        console.log(`MCP not available, retrying (${retries}/${maxRetries})...`);
+        setTimeout(checkMcpAvailability, retryInterval);
+      } else {
+        // After all retries, set as missing
+        setStatus('missing-mcp');
+      }
+    };
+    
+    // Start checking
+    checkMcpAvailability();
     
     async function checkConnection() {
       try {

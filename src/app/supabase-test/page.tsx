@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import SupabaseConnectionTest from '@/components/SupabaseConnectionTest';
-import { executeQuery } from '@/lib/supabase-mcp';
+import { supabase } from '@/lib/supabase';
 import { isMCPSupabaseAvailable } from '@/lib/supabase-mcp-config';
 
 export default function SupabaseTestPage() {
@@ -15,11 +15,15 @@ export default function SupabaseTestPage() {
     setError(null);
     
     try {
-      const result = await executeQuery('SELECT * FROM products LIMIT 5;');
-      if (result.error) {
-        setError(result.error);
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .limit(5);
+      
+      if (error) {
+        setError(error.message);
       } else {
-        setTestResult(result.data);
+        setTestResult(data);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));

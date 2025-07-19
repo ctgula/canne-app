@@ -3,9 +3,15 @@
 import { useCartStore } from '@/services/CartService';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import toast from 'react-hot-toast';
 
 export default function CartDisplay() {
-  const { items, removeItem, updateQuantity, getTotal, getItemCount } = useCartStore();
+  const { items, removeItem, updateQuantity, clearCart, getTotal, getItemCount } = useCartStore();
+
+  const handleClearCart = () => {
+    clearCart();
+    toast.success('Cart cleared successfully!');
+  };
 
   // If cart is empty
   if (items.length === 0) {
@@ -89,17 +95,26 @@ export default function CartDisplay() {
       </div>
       
       <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-        <div className="flex justify-between mb-2">
+        <div className="flex justify-between mb-4">
           <span>Subtotal</span>
           <span>${getTotal().toFixed(2)}</span>
         </div>
         
-        <Link 
-          href="/checkout" 
-          className="w-full mt-4 px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-medium rounded-lg text-center block hover:opacity-90 transition-opacity"
-        >
-          Proceed to Checkout
-        </Link>
+        <div className="flex gap-2">
+          <button
+            onClick={handleClearCart}
+            className="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-medium rounded-lg transition-colors"
+          >
+            Clear Cart
+          </button>
+          
+          <Link 
+            href="/checkout" 
+            className="flex-1 px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-medium rounded-lg text-center hover:opacity-90 transition-opacity"
+          >
+            Checkout
+          </Link>
+        </div>
       </div>
     </div>
   );

@@ -6,7 +6,8 @@
       "config": {
         "url": "${NEXT_PUBLIC_SUPABASE_URL}",
         "key": "${NEXT_PUBLIC_SUPABASE_ANON_KEY}",
-        "region": "us-east-1"
+        "region": "us-east-1",
+        "project_ref": "radtljksnoznrsyntazx"
       }
     }
   }
