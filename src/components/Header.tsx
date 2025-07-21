@@ -50,8 +50,25 @@ export default function Header({scrollToCollection}: HeaderProps) {
     };
   }, [cartRef]);
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
+  const openMenu = () => {
+    setIsMenuOpen(true);
+    document.body.classList.add('overflow-hidden');
+  };
+  
+  const closeMenu = () => {
+    setIsMenuOpen(false);
+    document.body.classList.remove('overflow-hidden');
+  };
+  
+  const navPath = (item: string) => {
+    switch(item) {
+      case 'Home': return '/';
+      case 'Shop': return '/shop';
+      case 'How it Works': return '/how-it-works';
+      case 'I-71 Compliance': return '/i71';
+      case 'About': return '/about';
+      default: return '/';
+    }
   };
   
   const toggleCart = () => {
@@ -64,12 +81,12 @@ export default function Header({scrollToCollection}: HeaderProps) {
         <div className="flex items-center justify-between">
           <Link href="/" className="flex items-center group">
             <div className="flex items-center">
-              <div className="h-24 w-auto relative mr-3 transition-transform duration-300 hover:scale-105">
+              <div className="h-48 w-auto relative mr-5 transition-transform duration-300 hover:scale-105">
                 <Image 
                   src="/images/canne_logo.svg" 
                   alt="Cannè Art Collective" 
-                  width={96}
-                  height={96}
+                  width={192}
+                  height={192}
                   className="h-full w-auto drop-shadow-lg" 
                   priority
                 />
@@ -111,10 +128,12 @@ export default function Header({scrollToCollection}: HeaderProps) {
           
           <div className="md:hidden flex items-center">
             <button 
-              onClick={toggleMenu}
-              className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-800"
+              aria-label="Open menu"
+              aria-expanded={isMenuOpen}
+              onClick={openMenu}
+              className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-800 transition-colors"
             >
-              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              <Menu size={24} />
             </button>
           </div>
           
@@ -126,71 +145,61 @@ export default function Header({scrollToCollection}: HeaderProps) {
           )}
           
           {isMenuOpen && (
-            <div className="md:hidden fixed inset-0 z-[999] bg-black bg-opacity-50 backdrop-blur-sm" onClick={toggleMenu}>
-              <div className="fixed top-0 left-0 w-full h-full bg-white dark:bg-gray-900 overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-                <div className="p-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
-                  <span className="font-bold text-pink-500">Menu</span>
-                  <button 
-                    onClick={toggleMenu}
-                    className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
-                  >
-                    <X size={20} className="text-gray-600 dark:text-gray-300" />
-                  </button>
-                </div>
+            <div
+              id="mobile-menu"
+              className="fixed inset-0 z-50 flex flex-col space-y-8 backdrop-blur-sm bg-white/95 dark:bg-gray-900/95 px-6 pt-24 pb-10 text-2xl font-semibold transition-transform duration-300"
+            >
+              <button
+                aria-label="Close menu"
+                onClick={closeMenu}
+                className="absolute top-6 right-6 text-3xl text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+              >
+                ×
+              </button>
+              
+              {['Home', 'Shop', 'How it Works', 'I-71 Compliance', 'About'].map((item) => (
+                <Link
+                  key={item}
+                  href={navPath(item)}
+                  onClick={closeMenu}
+                  className="w-full border-b border-gray-200 dark:border-gray-700 pb-4 text-gray-900 dark:text-white hover:text-pink-500 transition-colors"
+                >
+                  {item}
+                </Link>
+              ))}
+              
+              <div className="mt-auto space-y-4">
+                <button 
+                  onClick={() => {
+                    closeMenu();
+                    if (scrollToCollection) scrollToCollection();
+                  }}
+                  className="w-full py-4 px-6 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl text-lg"
+                >
+                  View Art Collection
+                </button>
                 
-                <nav className="px-4 py-6 flex flex-col h-full">
-                  <div className="flex flex-col space-y-2 flex-1">
-                    <Link href="/" className="flex items-center p-4 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" onClick={toggleMenu}>
-                      <Home size={18} className="mr-3" />Home
-                    </Link>
-                    <Link href="/shop" className="flex items-center p-4 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" onClick={toggleMenu}>
-                      <ShoppingBag size={18} className="mr-3" />Shop
-                    </Link>
-                    <Link href="/how-it-works" className="flex items-center p-4 rounded-lg text-pink-500 hover:bg-pink-50 dark:hover:bg-pink-900/20 transition-colors" onClick={toggleMenu}>
-                      <Info size={18} className="mr-3" />How it Works
-                    </Link>
-                    <Link href="/i71" className="flex items-center p-4 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" onClick={toggleMenu}>
-                      <Shield size={18} className="mr-3" />I71 Compliance
-                    </Link>
-                    <Link href="/about" className="flex items-center p-4 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" onClick={toggleMenu}>
-                      <Info size={18} className="mr-3" />About
-                    </Link>
-                  </div>
-                  
-                  <div className="mt-auto pt-6 space-y-3">
-                    <button 
-                      onClick={() => {
-                        toggleMenu();
-                        if (scrollToCollection) scrollToCollection();
-                      }}
-                      className="w-full py-4 px-6 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl"
-                    >
-                      View Art Collection
-                    </button>
-                    
-                    <button 
-                      onClick={() => {
-                        toggleMenu();
-                        toggleCart();
-                      }}
-                      className="w-full py-4 px-6 flex items-center justify-center space-x-2 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white font-semibold rounded-lg transition-all duration-300 hover:bg-gray-200 dark:hover:bg-gray-700"
-                    >
-                      <ShoppingBag size={18} />
-                      <span>View Cart ({getItemCount()})</span>
-                    </button>
-                    
-                    <button 
-                      onClick={() => {
-                        toggleMenu();
-                        toggleTheme();
-                      }}
-                      className="w-full py-3 px-6 flex items-center justify-center space-x-2 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded-lg transition-all duration-300 hover:bg-gray-50 dark:hover:bg-gray-800"
-                    >
-                      {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
-                      <span>{isDarkMode ? 'Light Mode' : 'Dark Mode'}</span>
-                    </button>
-                  </div>
-                </nav>
+                <button 
+                  onClick={() => {
+                    closeMenu();
+                    toggleCart();
+                  }}
+                  className="w-full py-4 px-6 flex items-center justify-center space-x-2 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white font-semibold rounded-lg transition-all duration-300 hover:bg-gray-200 dark:hover:bg-gray-700 text-lg"
+                >
+                  <ShoppingBag size={20} />
+                  <span>View Cart ({getItemCount()})</span>
+                </button>
+                
+                <button 
+                  onClick={() => {
+                    closeMenu();
+                    toggleTheme();
+                  }}
+                  className="w-full py-3 px-6 flex items-center justify-center space-x-2 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded-lg transition-all duration-300 hover:bg-gray-50 dark:hover:bg-gray-800 text-lg"
+                >
+                  {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+                  <span>{isDarkMode ? 'Light Mode' : 'Dark Mode'}</span>
+                </button>
               </div>
             </div>
           )}
