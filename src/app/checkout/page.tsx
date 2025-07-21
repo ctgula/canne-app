@@ -174,8 +174,8 @@ export default function CheckoutPage() {
         status: 'pending',
       };
 
-      // Submit order to API
-      const response = await fetch('/api/orders', {
+      // Submit order to secure API
+      const response = await fetch('/api/place-order', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
