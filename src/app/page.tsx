@@ -199,34 +199,34 @@ export default function Home() {
               </p>
             </motion.div>
             
-            <div className="overflow-hidden relative h-32">
-              <div className="absolute top-0 py-12 animate-marquee whitespace-nowrap flex space-x-16">
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
+            <div className="overflow-hidden relative h-20 sm:h-24 md:h-32">
+              <div className="absolute top-0 py-6 sm:py-8 md:py-12 animate-marquee whitespace-nowrap flex space-x-8 sm:space-x-12 md:space-x-16">
+                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-12 sm:h-16 md:h-24 w-auto flex-shrink-0" />
+                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-12 sm:h-16 md:h-24 w-auto flex-shrink-0" />
+                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-12 sm:h-16 md:h-24 w-auto flex-shrink-0" />
+                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-12 sm:h-16 md:h-24 w-auto flex-shrink-0" />
+                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-12 sm:h-16 md:h-24 w-auto flex-shrink-0" />
+                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-12 sm:h-16 md:h-24 w-auto flex-shrink-0" />
+                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-12 sm:h-16 md:h-24 w-auto flex-shrink-0" />
+                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-12 sm:h-16 md:h-24 w-auto flex-shrink-0" />
+                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-12 sm:h-16 md:h-24 w-auto flex-shrink-0" />
+                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-12 sm:h-16 md:h-24 w-auto flex-shrink-0" />
+                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-12 sm:h-16 md:h-24 w-auto flex-shrink-0" />
+                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-12 sm:h-16 md:h-24 w-auto flex-shrink-0" />
               </div>
-              <div className="absolute top-0 py-12 animate-marquee2 whitespace-nowrap flex space-x-16">
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
+              <div className="absolute top-0 py-6 sm:py-8 md:py-12 animate-marquee2 whitespace-nowrap flex space-x-8 sm:space-x-12 md:space-x-16">
+                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-12 sm:h-16 md:h-24 w-auto flex-shrink-0" />
+                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-12 sm:h-16 md:h-24 w-auto flex-shrink-0" />
+                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-12 sm:h-16 md:h-24 w-auto flex-shrink-0" />
+                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-12 sm:h-16 md:h-24 w-auto flex-shrink-0" />
+                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-12 sm:h-16 md:h-24 w-auto flex-shrink-0" />
+                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-12 sm:h-16 md:h-24 w-auto flex-shrink-0" />
+                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-12 sm:h-16 md:h-24 w-auto flex-shrink-0" />
+                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-12 sm:h-16 md:h-24 w-auto flex-shrink-0" />
+                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-12 sm:h-16 md:h-24 w-auto flex-shrink-0" />
+                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-12 sm:h-16 md:h-24 w-auto flex-shrink-0" />
+                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-12 sm:h-16 md:h-24 w-auto flex-shrink-0" />
+                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-12 sm:h-16 md:h-24 w-auto flex-shrink-0" />
               </div>
             </div>
           </div>
