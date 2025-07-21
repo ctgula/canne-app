@@ -70,7 +70,6 @@ export default function ShopPage() {
         }));
         
         setProducts(transformedProducts);
-        setFilteredProducts(transformedProducts);
       } catch (err) {
         console.error('Unexpected error:', err);
         toast.error('Failed to load products');
@@ -311,6 +310,32 @@ export default function ShopPage() {
                   <div className={`absolute top-3 right-3 px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${badge.bg}`}>
                     {badge.icon}
                     {product.tier}
+                  </div>
+                  
+                  {/* Product Image */}
+                  <div className="w-32 h-32 rounded-lg mb-4 overflow-hidden shadow-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                    <img 
+                      src={product.image || `/images/placeholder-${
+                        product.tier === 'Starter' ? 'pink' :
+                        product.tier === 'Classic' ? 'violet' :
+                        product.tier === 'Black' ? 'black' :
+                        'indigo'
+                      }.svg`}
+                      alt={product.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        console.log('Image failed to load:', e.currentTarget.src);
+                        const target = e.target as HTMLImageElement;
+                        // Try the Cannè logo as ultimate fallback
+                        if (!target.src.includes('canne_logo.svg')) {
+                          target.src = '/images/canne_logo.svg';
+                          target.className = 'w-20 h-20 object-contain';
+                        }
+                      }}
+                      onLoad={() => {
+                        console.log('Image loaded successfully');
+                      }}
+                    />
                   </div>
                   
                   {/* Price with better formatting */}

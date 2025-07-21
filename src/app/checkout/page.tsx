@@ -48,6 +48,7 @@ export default function CheckoutPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOrderComplete, setIsOrderComplete] = useState(false);
   const [orderId, setOrderId] = useState<string>('');
+  const [phoneError, setPhoneError] = useState<string>('');
 
   const [deliveryDetails, setDeliveryDetails] = useState<DeliveryDetails>({
     name: '',
@@ -84,16 +85,70 @@ export default function CheckoutPage() {
   const hasDelivery = cartTotal >= 40;
   const finalTotal = hasDelivery ? cartTotal : cartTotal + 10;
 
+  // Phone number validation functions
+  const formatPhoneNumber = (value: string) => {
+    // Remove all non-digit characters
+    const phoneNumber = value.replace(/\D/g, '');
+    
+    // Format as (XXX) XXX-XXXX
+    if (phoneNumber.length >= 6) {
+      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
+    } else if (phoneNumber.length >= 3) {
+      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
+    } else {
+      return phoneNumber;
+    }
+  };
+
+  const validatePhoneNumber = (phone: string) => {
+    // Remove all non-digit characters for validation
+    const digits = phone.replace(/\D/g, '');
+    
+    if (digits.length === 0) {
+      return 'Phone number is required';
+    } else if (digits.length < 10) {
+      return 'Phone number must be at least 10 digits';
+    } else if (digits.length > 11) {
+      return 'Phone number is too long';
+    } else if (digits.length === 11 && !digits.startsWith('1')) {
+      return 'Invalid phone number format';
+    }
+    
+    return '';
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setDeliveryDetails(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    
+    if (name === 'phone') {
+      // Format and validate phone number
+      const formattedPhone = formatPhoneNumber(value);
+      const error = validatePhoneNumber(formattedPhone);
+      
+      setPhoneError(error);
+      setDeliveryDetails(prev => ({
+        ...prev,
+        [name]: formattedPhone
+      }));
+    } else {
+      setDeliveryDetails(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate phone number before submission
+    const phoneValidationError = validatePhoneNumber(deliveryDetails.phone);
+    if (phoneValidationError) {
+      setPhoneError(phoneValidationError);
+      alert('Please provide a valid phone number before submitting your order.');
+      return;
+    }
+    
     setIsSubmitting(true);
 
     try {
@@ -254,9 +309,26 @@ export default function CheckoutPage() {
                       required
                       value={deliveryDetails.phone}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:border-transparent transition-all ${
+                        phoneError 
+                          ? 'border-red-300 focus:ring-red-500 bg-red-50' 
+                          : 'border-gray-300 focus:ring-purple-500'
+                      }`}
                       placeholder="(202) 555-0123"
+                      maxLength={14}
                     />
+                    {phoneError && (
+                      <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                        <span className="text-red-500">⚠️</span>
+                        {phoneError}
+                      </p>
+                    )}
+                    {deliveryDetails.phone && !phoneError && (
+                      <p className="mt-2 text-sm text-green-600 flex items-center gap-1">
+                        <span className="text-green-500">✅</span>
+                        Valid phone number
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>

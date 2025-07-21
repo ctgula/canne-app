@@ -186,29 +186,21 @@ export default function Home() {
         {/* Our Collection Section */}
         <section id="collection" className="py-16 md:py-20 bg-gray-50 dark:bg-gray-800/50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">Our Collection</h2>
-              <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-                <>
-                Explore our curated selection of digital art. Each piece comes with a special complimentary gift.
-                <span className="text-red-500 font-semibold ml-2">(coming soon)</span>
-              </>
+            <motion.div 
+              className="text-center mb-12"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+            >
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Art Collection</h2>
+              <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+                Explore our curated selection of digital art. Each piece comes with a special <span className="font-semibold text-green-600">FREE cannabis gift</span>.
               </p>
-            </div>
-            <div className="relative flex overflow-x-hidden marquee-mask">
-              <div className="py-12 animate-marquee whitespace-nowrap flex space-x-16">
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
+            </motion.div>
+            
+            <div className="overflow-hidden relative h-32">
+              <div className="absolute top-0 py-12 animate-marquee whitespace-nowrap flex space-x-16">
                 <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
                 <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
                 <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
@@ -223,18 +215,6 @@ export default function Home() {
                 <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
               </div>
               <div className="absolute top-0 py-12 animate-marquee2 whitespace-nowrap flex space-x-16">
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
-                <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
                 <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
                 <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />
                 <img src="/images/canne_logo.svg" alt="Cannè Logo" className="h-24 w-auto" />

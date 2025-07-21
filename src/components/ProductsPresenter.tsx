@@ -119,9 +119,21 @@ export default function ProductsPresenter() {
                     {product.tier}
                   </div>
                   <img 
-                    src={product.image_url || `/images/products/${product.tier.toLowerCase()}.jpg`} 
+                    src={product.image_url || `/images/placeholder-${
+                      product.tier.toLowerCase() === 'starter' ? 'pink' :
+                      product.tier.toLowerCase() === 'classic' ? 'violet' :
+                      product.tier.toLowerCase() === 'black' ? 'black' :
+                      'indigo'
+                    }.svg`} 
                     alt={product.name}
                     className="w-full h-64 object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      // Fallback to Cannè mural if placeholder fails
+                      if (!target.src.includes('canne-mural.svg')) {
+                        target.src = '/images/canne-mural.svg';
+                      }
+                    }}
                   />
                 </div>
                 
