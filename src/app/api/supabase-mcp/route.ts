@@ -9,19 +9,25 @@ export async function POST(request: Request) {
   try {
     const { query, params, action, payload } = await request.json();
     
-    // Initialize Supabase client with environment variables
+    // Initialize Supabase client with SERVICE ROLE KEY for server-side operations
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     
-    if (!supabaseUrl || !supabaseKey) {
+    if (!supabaseUrl || !supabaseServiceKey) {
       return NextResponse.json(
         { error: 'Supabase configuration is missing', 
-          details: 'Please check your environment variables' },
+          details: 'Please check your environment variables (SERVICE_ROLE_KEY required)' },
         { status: 503 }
       );
     }
     
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    // Create admin client that bypasses RLS
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
 
     // Handle different action types
     if (action) {
