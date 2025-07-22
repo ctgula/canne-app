@@ -1,6 +1,31 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  
+  // Development-specific settings
+  ...(process.env.NODE_ENV === 'development' && {
+    // Suppress hydration warnings in development for better DX
+    experimental: {
+      suppressHydrationWarning: true,
+    },
+    // Custom webpack config for development
+    webpack: (config, { dev, isServer }) => {
+      if (dev && !isServer) {
+        // Suppress specific warnings in development
+        config.stats = {
+          ...config.stats,
+          warningsFilter: [
+            /data-windsurf-page-id/,
+            /data-windsurf-extension-id/,
+            /Extension ID not available/,
+            /BrowserPreview/,
+          ],
+        };
+      }
+      return config;
+    },
+  }),
+  
   typescript: {
     // !! WARN !!
     // Dangerously allow production builds to successfully complete even if
@@ -13,6 +38,16 @@ const nextConfig = {
     // your project has ESLint errors.
     ignoreDuringBuilds: true,
   },
+  
+  // Additional development optimizations
+  ...(process.env.NODE_ENV === 'development' && {
+    onDemandEntries: {
+      // Period (in ms) where the server will keep pages in the buffer
+      maxInactiveAge: 25 * 1000,
+      // Number of pages that should be kept simultaneously without being disposed
+      pagesBufferLength: 2,
+    },
+  }),
 }
 
 module.exports = nextConfig
