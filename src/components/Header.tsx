@@ -70,9 +70,9 @@ export default function Header({scrollToCollection}: HeaderProps) {
   };
 
   return (
-    <header className="sticky top-0 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md shadow-sm z-50 py-2 sm:py-3 transition-colors duration-200">
+    <header className="sticky top-0 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md shadow-sm z-50 py-2 sm:py-3 transition-colors duration-200 safe-top will-change-transform">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between min-h-[44px]">
           <Link href="/" className="flex items-center group">
             <div className="flex items-center">
               <div className="h-48 w-auto relative mr-5 transition-transform duration-300 hover:scale-105">
@@ -121,13 +121,18 @@ export default function Header({scrollToCollection}: HeaderProps) {
           </nav>
           
           <div className="md:hidden flex items-center">
-            <button 
-              aria-label="Open menu"
+            {/* Mobile menu button - Apple-optimized touch target */}
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 active:scale-95 min-w-[44px] min-h-[44px] flex items-center justify-center will-change-transform"
+              aria-label="Toggle menu"
               aria-expanded={isMenuOpen}
-              onClick={openMenu}
-              className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-800 transition-colors"
             >
-              <Menu size={24} />
+              {isMenuOpen ? (
+                <X className="h-6 w-6 text-gray-700 dark:text-gray-300" />
+              ) : (
+                <Menu className="h-6 w-6 text-gray-700 dark:text-gray-300" />
+              )}
             </button>
           </div>
           
