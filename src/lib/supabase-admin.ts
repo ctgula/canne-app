@@ -3,41 +3,40 @@ import { createClient } from '@supabase/supabase-js';
 // Initialize the Supabase admin client with service role key for server-side operations
 // This client has admin privileges and should only be used in secure server contexts
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-if (!supabaseServiceKey) {
-  console.warn('Supabase Service Role Key is missing. Please check your environment variables.');
+// Validate environment variables but don't throw during build
+if (!supabaseUrl && process.env.NODE_ENV !== 'development') {
+  console.error('Missing NEXT_PUBLIC_SUPABASE_URL environment variable');
 }
 
-// Create the Supabase admin client with service role key, but make it optional for builds
-export let supabaseAdmin: ReturnType<typeof createClient>;
-
-// Only create the client if we have both URL and key
-if (supabaseUrl && supabaseServiceKey) {
-  supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
-} else {
-  // Create a mock client for build time that won't actually make API calls
-  // This prevents build failures when environment variables are not available
-  supabaseAdmin = {
-    from: () => ({
-      select: () => ({
-        eq: () => ({ single: () => ({ data: null, error: null }) }),
-        single: () => ({ data: null, error: null })
-      }),
-      insert: () => ({
-        select: () => ({
-          single: () => ({ data: null, error: null })
-        })
-      }),
-      upsert: () => ({
-        select: () => ({
-          single: () => ({ data: null, error: null })
-        })
-      })
-    })
-  } as any; // Type assertion to match the expected interface
+if (!supabaseServiceKey && process.env.NODE_ENV !== 'development') {
+  console.error('Missing SUPABASE_SERVICE_ROLE_KEY environment variable');
 }
+
+// Create the Supabase admin client
+export const supabaseAdmin = createClient(
+  supabaseUrl || 'https://placeholder.supabase.co',
+  supabaseServiceKey || 'placeholder-key',
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  }
+);
+
+// Export a function to validate environment variables at runtime
+export const validateSupabaseConfig = () => {
+  if (!supabaseUrl) {
+    throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL environment variable');
+  }
+  if (!supabaseServiceKey) {
+    throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY environment variable');
+  }
+  return { supabaseUrl, supabaseServiceKey };
+};
 
 // Helper functions for common admin operations
 
