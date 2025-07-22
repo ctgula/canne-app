@@ -141,11 +141,37 @@ export default function CheckoutPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate phone number before submission
+    // Comprehensive form validation
     const phoneValidationError = validatePhoneNumber(deliveryDetails.phone);
     if (phoneValidationError) {
       setPhoneError(phoneValidationError);
       alert('Please provide a valid phone number before submitting your order.');
+      return;
+    }
+    
+    // Validate required fields
+    if (!deliveryDetails.name.trim()) {
+      alert('Please enter your full name.');
+      return;
+    }
+    
+    if (!deliveryDetails.address.trim()) {
+      alert('Please enter your delivery address.');
+      return;
+    }
+    
+    if (!deliveryDetails.city.trim()) {
+      alert('Please enter your city.');
+      return;
+    }
+    
+    if (!deliveryDetails.zipCode.trim()) {
+      alert('Please enter your ZIP code.');
+      return;
+    }
+    
+    if (items.length === 0) {
+      alert('Your cart is empty. Please add items before checking out.');
       return;
     }
     
@@ -157,10 +183,10 @@ export default function CheckoutPage() {
         product: {
           id: item.product.id,
           name: item.product.name,
-          description: item.product.tier,
+          description: item.product.tier || item.product.description || '',
           price: item.product.price,
           artworkUrl: item.product.image_url || '',
-          giftSize: item.product.weight,
+          giftSize: item.product.weight || `${item.product.tier} tier`,
           hasDelivery: hasDelivery
         },
         quantity: item.quantity
@@ -168,11 +194,16 @@ export default function CheckoutPage() {
       
       const order: Omit<Order, 'id' | 'createdAt' | 'updatedAt'> = {
         items: orderItems,
-        deliveryDetails,
+        deliveryDetails: {
+          ...deliveryDetails,
+          phone: deliveryDetails.phone.replace(/\D/g, ''), // Clean phone number
+        },
         total: finalTotal,
         hasDelivery: hasDelivery,
         status: 'pending',
       };
+
+      console.log('Submitting order:', order);
 
       // Submit order to secure API
       const response = await fetch('/api/place-order', {
@@ -183,17 +214,22 @@ export default function CheckoutPage() {
         body: JSON.stringify(order),
       });
 
-      if (response.ok) {
-        const { orderId: newOrderId } = await response.json();
+      const responseData = await response.json();
+      console.log('API Response:', responseData);
+
+      if (response.ok && responseData.success) {
+        const { orderId: newOrderId } = responseData;
         setOrderId(newOrderId);
         setIsOrderComplete(true);
         clearCart();
       } else {
-        throw new Error('Failed to submit order');
+        const errorMessage = responseData.error || 'Failed to submit order';
+        throw new Error(errorMessage);
       }
     } catch (error) {
       console.error('Error submitting order:', error);
-      alert('There was an error submitting your order. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      alert(`Order submission failed: ${errorMessage}. Please try again or contact support.`);
     } finally {
       setIsSubmitting(false);
     }
@@ -260,7 +296,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Header />
       
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -294,8 +330,8 @@ export default function CheckoutPage() {
                       required
                       value={deliveryDetails.name}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                      placeholder="Enter your full name"
+                      className="w-full px-3 sm:px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-base"
+                      placeholder="John Doe"
                     />
                   </div>
                   
@@ -309,7 +345,7 @@ export default function CheckoutPage() {
                       required
                       value={deliveryDetails.phone}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:border-transparent transition-all ${
+                      className={`w-full px-3 sm:px-4 py-3 border rounded-xl focus:ring-2 focus:border-transparent transition-all text-base ${
                         phoneError 
                           ? 'border-red-300 focus:ring-red-500 bg-red-50' 
                           : 'border-gray-300 focus:ring-purple-500'
@@ -350,12 +386,12 @@ export default function CheckoutPage() {
                       required
                       value={deliveryDetails.address}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                      className="w-full px-3 sm:px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-base"
                       placeholder="123 Main Street"
                     />
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         City *
@@ -366,7 +402,7 @@ export default function CheckoutPage() {
                         required
                         value={deliveryDetails.city}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                        className="w-full px-3 sm:px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-base"
                         placeholder="Washington"
                       />
                     </div>
@@ -381,7 +417,7 @@ export default function CheckoutPage() {
                         required
                         value={deliveryDetails.zipCode}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                        className="w-full px-3 sm:px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-base"
                         placeholder="20001"
                       />
                     </div>
@@ -402,10 +438,9 @@ export default function CheckoutPage() {
                     </label>
                     <select
                       name="timePreference"
-                      required
                       value={deliveryDetails.timePreference}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                      className="w-full px-3 sm:px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-base"
                     >
                       <option value="morning">Morning (9 AM - 12 PM)</option>
                       <option value="afternoon">Afternoon (12 PM - 5 PM)</option>
@@ -422,7 +457,7 @@ export default function CheckoutPage() {
                       value={deliveryDetails.specialInstructions}
                       onChange={handleInputChange}
                       rows={3}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all resize-none"
+                      className="w-full px-3 sm:px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all resize-none text-base"
                       placeholder="Any special delivery instructions..."
                     />
                   </div>

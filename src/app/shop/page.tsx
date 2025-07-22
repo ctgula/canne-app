@@ -199,92 +199,82 @@ export default function ShopPage() {
     <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
       <Header />
       
-      <main className="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-transparent bg-clip-text mb-6">
-            Digital Art Collection
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            Each art purchase includes a <span className="font-semibold text-green-600">FREE premium cannabis gift</span>. I-71 compliant.
-          </p>
-          
-          {/* Enhanced filters and sorting */}
-          <div className="mt-8 space-y-4">
-            {/* Tier filter buttons */}
-            <div className="flex gap-3 justify-center flex-wrap">
-              {['Starter', 'Classic', 'Black', 'Ultra'].map(tier => {
-                const badge = getTierBadge(tier);
-                return (
-                  <button
-                    key={tier}
-                    onClick={() => setSelectedTier(selectedTier === tier ? null : tier)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium border transition-all flex items-center gap-2 ${
-                      selectedTier === tier 
-                        ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white border-transparent' 
-                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border-gray-300 dark:border-gray-600'
-                    }`}
-                  >
-                    {badge.icon}
-                    {tier}
-                  </button>
-                );
-              })}
-            </div>
-            
+      <main className="flex-1 container mx-auto px-3 sm:px-4 py-6 sm:py-8 pt-20 sm:pt-24">
+        {/* Enhanced header with search and filters */}
+        <div className="mb-6 sm:mb-8">
+          <motion.h1 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-2 bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent px-2"
+          >
+            Art Collection & Cannabis Gifts
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-center text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-4 sm:mb-6 px-2"
+          >
+            I-71 Compliant • Premium Art • FREE Cannabis Gifts
+          </motion.p>
+        </div>
+        
+        {/* Search and filter controls */}
+        <div className="flex flex-col gap-3 sm:gap-4 mb-4 sm:mb-6">
+          {/* Search bar */}
+          <div className="w-full">
+            <input
+              type="text"
+              placeholder="Search products..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-3 sm:px-4 py-2.5 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-base"
+            />
+          </div>
+          {/* Tier filter and sort controls */}
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full">
+            {/* Tier filter */}
+            <select
+              value={selectedTier || ''}
+              onChange={(e) => setSelectedTier(e.target.value || null)}
+              className="flex-1 px-3 sm:px-4 py-2.5 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-base"
+            >
+              <option value="">All Tiers</option>
+              <option value="Starter">Starter ($25)</option>
+              <option value="Classic">Classic ($45)</option>
+              <option value="Black">Black ($75)</option>
+              <option value="Ultra">Ultra ($140)</option>
+            </select>
             {/* Sort controls */}
-            <div className="flex gap-3 justify-center items-center flex-wrap">
-              <span className="text-sm text-gray-600 dark:text-gray-400">Sort by:</span>
-              <select 
-                value={sortBy} 
+            <div className="flex gap-2 flex-1 sm:flex-initial">
+              <select
+                value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as 'price' | 'name' | 'tier')}
-                className="px-3 py-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
+                className="flex-1 sm:flex-initial px-3 sm:px-4 py-2.5 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-base"
               >
                 <option value="price">Price</option>
                 <option value="name">Name</option>
                 <option value="tier">Tier</option>
               </select>
-              <button
-                onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                className="px-3 py-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              
+              <select
+                value={sortOrder}
+                onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
+                className="flex-1 sm:flex-initial px-3 sm:px-4 py-2.5 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-base"
               >
-                {sortOrder === 'asc' ? '↑' : '↓'}
-              </button>
+                <option value="asc">↑</option>
+                <option value="desc">↓</option>
+              </select>
             </div>
           </div>
         </div>
         
-        {/* Search Bar */}
-        <div className="mb-8">
-          <div className="relative max-w-md mx-auto">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-              </svg>
-            </div>
-            <input
-              type="text"
-              placeholder="Search digital art collection..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-10 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-500"
-            />
-            {searchTerm && (
-              <button 
-                onClick={() => setSearchTerm('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-              >
-                ✕
-              </button>
-            )}
-          </div>
-        </div>
-        
-        {/* Grid of product cards */}
+        {/* Products grid with enhanced loading and empty states */}
         <motion.div 
-          className="mt-12 grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6"
         >
           {loading ? (
             <div className="col-span-full flex justify-center items-center py-20">
@@ -304,7 +294,7 @@ export default function ShopPage() {
                 <motion.div
                   key={product.id}
                   variants={itemVariants}
-                  className="rounded-xl shadow-md border px-6 py-8 flex flex-col items-center text-center bg-white dark:bg-gray-800 hover:shadow-xl transition-all duration-300 relative overflow-hidden group"
+                  className="rounded-xl shadow-md border px-4 sm:px-6 py-6 sm:py-8 flex flex-col items-center text-center bg-white dark:bg-gray-800 hover:shadow-xl transition-all duration-300 relative overflow-hidden group"
                 >
                   {/* Tier badge */}
                   <div className={`absolute top-3 right-3 px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${badge.bg}`}>
@@ -313,7 +303,7 @@ export default function ShopPage() {
                   </div>
                   
                   {/* Product Image */}
-                  <div className="w-32 h-32 rounded-lg mb-4 overflow-hidden shadow-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                  <div className="w-24 sm:w-32 h-24 sm:h-32 rounded-lg mb-3 sm:mb-4 overflow-hidden shadow-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
                     <img 
                       src={product.image || `/images/placeholder-${
                         product.tier === 'Starter' ? 'pink' :
@@ -339,17 +329,17 @@ export default function ShopPage() {
                   </div>
                   
                   {/* Price with better formatting */}
-                  <div className="text-3xl font-bold text-gray-800 dark:text-white">
+                  <div className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white">
                     ${product.price}
                     {currentQuantity > 1 && (
-                      <div className="text-sm font-normal text-gray-500 dark:text-gray-400 mt-1">
+                      <div className="text-xs sm:text-sm font-normal text-gray-500 dark:text-gray-400 mt-1">
                         Total: ${itemTotal}
                       </div>
                     )}
                   </div>
                   
-                  <div className="text-lg mt-2 font-semibold text-gray-900 dark:text-white">{product.name}</div>
-                  <div className="mt-2 text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{product.description}</div>
+                  <div className="text-base sm:text-lg mt-2 font-semibold text-gray-900 dark:text-white px-2">{product.name}</div>
+                  <div className="mt-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400 line-clamp-2 px-2">{product.description}</div>
                   
                   {/* Enhanced features list */}
                   <ul className="mt-4 space-y-1 text-sm text-gray-500 dark:text-gray-400 text-left w-full">
@@ -370,18 +360,18 @@ export default function ShopPage() {
                     FREE Cannabis Gift
                   </div>
                   {/* Enhanced quantity selector */}
-                  <div className="mt-4 flex items-center justify-center space-x-2 border rounded-lg overflow-hidden w-full bg-gray-50 dark:bg-gray-700">
+                  <div className="mt-3 sm:mt-4 flex items-center justify-center space-x-2 border rounded-lg overflow-hidden w-full bg-gray-50 dark:bg-gray-700">
                     <button 
                       onClick={() => updateQuantity(product.id, Math.max(1, currentQuantity - 1))}
                       disabled={currentQuantity <= 1}
-                      className="w-10 h-10 flex items-center justify-center bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-200 font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-10 h-10 flex items-center justify-center bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-200 font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
                       aria-label="Decrease quantity"
                     >
                       -
                     </button>
                     
-                    <div className="w-16 text-center">
-                      <span className="font-medium text-gray-900 dark:text-white">{currentQuantity}</span>
+                    <div className="w-12 sm:w-16 text-center">
+                      <span className="font-medium text-gray-900 dark:text-white text-sm sm:text-base">{currentQuantity}</span>
                       {currentQuantity > 1 && (
                         <div className="text-xs text-gray-500 dark:text-gray-400">items</div>
                       )}
@@ -390,7 +380,7 @@ export default function ShopPage() {
                     <button 
                       onClick={() => updateQuantity(product.id, currentQuantity + 1)}
                       disabled={currentQuantity >= 10}
-                      className="w-10 h-10 flex items-center justify-center bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-200 font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-10 h-10 flex items-center justify-center bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-200 font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
                       aria-label="Increase quantity"
                     >
                       +
@@ -399,12 +389,12 @@ export default function ShopPage() {
                 
                   {/* Enhanced add to cart button */}
                   <button
-                    className="mt-4 px-4 py-3 rounded-lg text-white w-full font-semibold transition bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 transform hover:scale-105 active:scale-95 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl"
+                    className="mt-3 sm:mt-4 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg text-white w-full font-semibold transition bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 active:scale-95 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl touch-manipulation min-h-[44px]"
                     onClick={() => handleAddToCart(product)}
                   >
-                    <ShoppingBag size={16} />
-                    <span>
-                      {currentQuantity > 1 ? `Add ${currentQuantity} to Cart` : 'Add to Cart'}
+                    <ShoppingBag size={14} className="sm:w-4 sm:h-4" />
+                    <span className="text-sm sm:text-base">
+                      {currentQuantity > 1 ? `Add ${currentQuantity}` : 'Add to Cart'}
                     </span>
                   </button>
                 </motion.div>
@@ -419,11 +409,11 @@ export default function ShopPage() {
             <motion.button 
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="fixed bottom-6 right-6 bg-gradient-to-r from-pink-500 to-purple-500 text-white px-6 py-4 rounded-xl shadow-2xl z-50 flex items-center space-x-3 hover:from-pink-600 hover:to-purple-600 transform hover:scale-105 transition-all duration-200"
+              className="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 bg-gradient-to-r from-pink-500 to-purple-500 text-white px-4 sm:px-6 py-3 sm:py-4 rounded-xl shadow-2xl z-50 flex items-center space-x-2 sm:space-x-3 hover:from-pink-600 hover:to-purple-600 active:scale-95 transition-all duration-200 touch-manipulation min-h-[44px]"
             >
-              <ShoppingBag className="h-5 w-5" />
+              <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5" />
               <div className="flex flex-col items-start">
-                <span className="font-semibold">Checkout</span>
+                <span className="font-semibold text-sm sm:text-base">Checkout</span>
                 <span className="text-xs opacity-90">
                   {items.length} item{items.length !== 1 ? 's' : ''} • ${cartTotal.toFixed(2)}
                 </span>
