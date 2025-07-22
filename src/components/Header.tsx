@@ -144,49 +144,62 @@ export default function Header({scrollToCollection}: HeaderProps) {
           )}
           
           {isMenuOpen && (
-            <div className="fixed inset-0 z-50 bg-white/90 backdrop-blur-md">
+            <div
+              id="mobile-drawer"
+              className="fixed inset-0 z-[60] flex flex-col bg-white shadow-lg"
+            >
+              {/* Close */}
               <button
-                aria-label="Close"
-                onClick={closeMenu}
-                className="absolute top-5 right-6 text-3xl font-light text-gray-700"
+                aria-label="Close menu"
+                onClick={() => setIsMenuOpen(false)}
+                className="self-end p-6 text-3xl text-gray-600"
               >
                 &times;
               </button>
 
-              <nav className="mt-24 flex flex-col space-y-6 px-8 text-2xl font-semibold text-gray-900">
-                {['Home', 'Shop', 'How it Works', 'I-71 Compliance', 'About'].map((item) => {
-                  const href = navPath(item);
+              {/* Nav links */}
+              <nav className="flex-1 overflow-y-auto px-8 pb-12">
+                {[
+                  { label: 'Home', href: '/' },
+                  { label: 'Shop', href: '/shop' },
+                  { label: 'How it Works', href: '/how-it-works' },
+                  { label: 'I-71 Compliance', href: '/i71' },
+                  { label: 'About', href: '/about' }
+                ].map(({ label, href }) => {
                   const isActive = typeof window !== 'undefined' && window.location.pathname === href;
                   
                   return (
                     <Link
-                      key={item}
+                      key={href}
                       href={href}
-                      className={`border-b border-gray-200 pb-4 ${
-                        isActive ? 'font-bold' : 'font-semibold'
-                      }`}
-                      onClick={closeMenu}
+                      onClick={() => setIsMenuOpen(false)}
+                      className={`block border-b border-gray-200 py-4 text-xl ${
+                        isActive ? 'font-bold text-gray-900' : 'font-semibold text-gray-700'
+                      } hover:text-purple-600 transition-colors`}
                     >
-                      {item}
+                      {label}
                     </Link>
                   );
                 })}
 
-                <Link
-                  href="/collection"
-                  className="mt-8 w-full rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 py-4 text-center text-white shadow-lg"
-                  onClick={closeMenu}
-                >
-                  View Art Collection
-                </Link>
+                {/* Action buttons */}
+                <div className="mt-8 space-y-4">
+                  <Link
+                    href="/collection"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="block w-full rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 py-4 text-center text-white font-semibold shadow-lg hover:shadow-xl transition-all"
+                  >
+                    View Art Collection
+                  </Link>
 
-                <Link
-                  href="/cart"
-                  className="w-full rounded-xl border border-gray-300 py-4 text-center shadow-sm"
-                  onClick={closeMenu}
-                >
-                  View Cart ({getItemCount()})
-                </Link>
+                  <Link
+                    href="/cart"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="block w-full rounded-xl border border-gray-300 py-4 text-center font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition-all"
+                  >
+                    View Cart ({getItemCount()})
+                  </Link>
+                </div>
               </nav>
             </div>
           )}
