@@ -64,7 +64,7 @@ export default function Header({ scrollToCollection }: HeaderProps) {
 
   return (
     <>
-      <header className="fixed top-0 z-50 w-full bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-sm border-b border-gray-100 dark:border-gray-800 h-16">
+      <header className="fixed top-0 z-40 w-full bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-sm border-b border-gray-100 dark:border-gray-800 h-16">
         <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center group">
             <div className="flex items-center">
@@ -178,7 +178,7 @@ export default function Header({ scrollToCollection }: HeaderProps) {
         
         {/* Enhanced Cart Dropdown */}
         {isCartOpen && (
-          <div className="absolute right-2 sm:right-4 lg:right-8 top-full mt-2 w-[calc(100vw-1rem)] max-w-sm sm:w-80 bg-white dark:bg-gray-900 rounded-xl sm:rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 z-50 overflow-hidden" ref={cartRef}>
+          <div className="absolute right-2 sm:right-4 lg:right-8 top-full mt-2 w-[calc(100vw-1rem)] max-w-sm sm:w-80 bg-white dark:bg-gray-900 rounded-xl sm:rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 z-45 overflow-hidden" ref={cartRef}>
             <CartDisplay />
           </div>
         )}
@@ -189,12 +189,12 @@ export default function Header({ scrollToCollection }: HeaderProps) {
         <>
           {/* Backdrop */}
           <div 
-            className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[2px] lg:hidden"
+            className="fixed top-0 left-0 w-full h-full z-50 bg-black bg-opacity-80 lg:hidden"
             onClick={() => setIsMenuOpen(false)}
           />
           
           {/* Drawer */}
-          <div className={`fixed top-0 right-0 z-60 h-full w-80 max-w-[85vw] bg-white dark:bg-gray-900 shadow-2xl border-l border-gray-200 dark:border-gray-700 lg:hidden transform transition-transform duration-300 ease-in-out ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+          <div className={`fixed top-0 right-0 z-60 h-full w-80 max-w-[85vw] bg-white dark:bg-gray-900 shadow-2xl border-l border-gray-200 dark:border-gray-700 lg:hidden transform transition-all duration-300 ease-in-out ${isMenuOpen ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-90'}`}>
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
               <span className="font-bold text-lg bg-gradient-to-r from-pink-500 to-purple-600 text-transparent bg-clip-text">Menu</span>
