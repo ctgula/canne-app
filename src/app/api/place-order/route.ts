@@ -28,11 +28,7 @@ if (!supabaseServiceKey) {
 
 console.log('✅ Environment variables validated successfully');
 
-// Debug: Log actual environment variable values (REMOVE BEFORE COMMITTING TO PRODUCTION)
-console.log('🔍 ACTUAL ENV VALUES (REMOVE BEFORE COMMIT):');
-console.log({ supabaseUrl, supabaseServiceKey });
-console.log('supabaseUrl length:', supabaseUrl?.length);
-console.log('supabaseServiceKey length:', supabaseServiceKey?.length);
+// Environment variables validated - ready for production
 
 // Create admin client that bypasses RLS
 let supabaseAdmin;
@@ -195,14 +191,15 @@ export async function POST(request: NextRequest) {
     const orderPayload = {
       order_number: orderNumber,
       customer_id: customerData.id,
-      total_amount: orderData.total,
+      subtotal: orderData.total,
+      delivery_fee: orderData.hasDelivery ? 0 : 10, // Free delivery or $10 fee
+      total: orderData.total + (orderData.hasDelivery ? 0 : 10),
       status: 'pending',
-      delivery_address: orderData.deliveryDetails.address,
+      delivery_address_line1: orderData.deliveryDetails.address,
       delivery_city: orderData.deliveryDetails.city,
+      delivery_state: 'DC', // Default to DC for I-71 compliance
       delivery_zip: orderData.deliveryDetails.zipCode,
-      delivery_time_preference: orderData.deliveryDetails.timePreference,
-      special_instructions: orderData.deliveryDetails.specialInstructions || null,
-      has_free_delivery: orderData.hasDelivery
+      delivery_instructions: orderData.deliveryDetails.specialInstructions || null
     };
     console.log('Order payload:', JSON.stringify(orderPayload, null, 2));
     
