@@ -70,9 +70,8 @@ export default function Header({scrollToCollection}: HeaderProps) {
   };
 
   return (
-    <header className="sticky top-0 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md shadow-sm z-50 py-2 sm:py-3 transition-colors duration-200 safe-top will-change-transform">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between min-h-[44px]">
+    <header className="fixed top-0 z-50 w-full bg-white shadow-sm h-16 md:h-20">
+      <div className="mx-auto flex h-full max-w-screen-lg items-center justify-between px-4">
           <Link href="/" className="flex items-center group">
             <div className="flex items-center">
               <div className="h-48 w-auto relative mr-5 transition-transform duration-300 hover:scale-105">
@@ -121,17 +120,19 @@ export default function Header({scrollToCollection}: HeaderProps) {
           </nav>
           
           <div className="md:hidden flex items-center">
-            {/* Mobile menu button - Apple-optimized touch target */}
+            {/* Mobile menu button */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 active:scale-95 min-w-[44px] min-h-[44px] flex items-center justify-center will-change-transform"
+              className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
               aria-label="Toggle menu"
               aria-expanded={isMenuOpen}
             >
               {isMenuOpen ? (
-                <X className="h-6 w-6 text-gray-700 dark:text-gray-300" />
+                <X className="h-6 w-6 text-gray-700" />
               ) : (
-                <Menu className="h-6 w-6 text-gray-700 dark:text-gray-300" />
+                <svg width="28" height="20" viewBox="0 0 18 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-gray-700">
+                  <path d="M1 1h16M1 6h16M1 11h16"/>
+                </svg>
               )}
             </button>
           </div>
@@ -144,11 +145,7 @@ export default function Header({scrollToCollection}: HeaderProps) {
           )}
           
           {isMenuOpen && (
-            <div
-              id="mobile-drawer"
-              className="fixed inset-0 z-[60] flex flex-col bg-white shadow-lg"
-            >
-              {/* Close */}
+            <div id="drawer" className="fixed inset-0 z-60 bg-white">
               <button
                 aria-label="Close menu"
                 onClick={() => setIsMenuOpen(false)}
@@ -157,23 +154,23 @@ export default function Header({scrollToCollection}: HeaderProps) {
                 &times;
               </button>
 
-              {/* Nav links */}
-              <nav className="flex-1 overflow-y-auto px-8 pb-12">
+              <nav className="pt-20 flex flex-col space-y-6 px-8 text-lg font-semibold">
                 {[
-                  { label: 'Home', href: '/' },
-                  { label: 'Shop', href: '/shop' },
-                  { label: 'How it Works', href: '/how-it-works' },
-                  { label: 'I-71 Compliance', href: '/i71' },
-                  { label: 'About', href: '/about' }
-                ].map(({ label, href }) => {
-                  const isActive = typeof window !== 'undefined' && window.location.pathname === href;
+                  { href: '/', label: 'Home' },
+                  { href: '/shop', label: 'Shop' },
+                  { href: '/how-it-works', label: 'How it Works' },
+                  { href: '/i71', label: 'I-71 Compliance' },
+                  { href: '/about', label: 'About' }
+                ].map(({ href, label }) => {
+                  const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
+                  const isActive = pathname === href;
                   
                   return (
                     <Link
                       key={href}
                       href={href}
                       onClick={() => setIsMenuOpen(false)}
-                      className={`block border-b border-gray-200 py-4 text-xl ${
+                      className={`border-b border-gray-200 pb-4 ${
                         isActive ? 'font-bold text-gray-900' : 'font-semibold text-gray-700'
                       } hover:text-purple-600 transition-colors`}
                     >
