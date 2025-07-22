@@ -184,38 +184,50 @@ export default function Header({ scrollToCollection }: HeaderProps) {
         )}
       </header>
       
-      {/* Enhanced Mobile Drawer */}
+      {/* Full-Screen Mobile Navigation */}
       {isMenuOpen && (
-        <>
+        <div
+          className="fixed inset-0 z-[1100] flex lg:hidden"
+          onClick={() => setIsMenuOpen(false)}
+        >
           {/* Backdrop */}
-          <div 
-            className="fixed top-0 left-0 w-full h-full z-50 bg-black bg-opacity-80 lg:hidden"
-            onClick={() => setIsMenuOpen(false)}
-          />
-          
-          {/* Drawer */}
-          <div className={`fixed top-0 right-0 z-60 h-full w-80 max-w-[85vw] bg-white dark:bg-gray-900 shadow-2xl border-l border-gray-200 dark:border-gray-700 lg:hidden transform transition-all duration-300 ease-in-out ${isMenuOpen ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-90'}`}>
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-              <span className="font-bold text-lg bg-gradient-to-r from-pink-500 to-purple-600 text-transparent bg-clip-text">Menu</span>
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-md" />
+
+          {/* Panel */}
+          <nav
+            className="relative ml-auto w-full max-w-none sm:max-w-xs h-full bg-white dark:bg-zinc-900 shadow-xl px-6 pt-20 space-y-6 overflow-y-auto transform transition-transform duration-300 ease-in-out"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <div className="absolute top-4 right-4">
               <button
                 onClick={() => setIsMenuOpen(false)}
-                className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="p-3 rounded-full bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors"
                 aria-label="Close menu"
               >
-                <X className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+                <X className="h-5 w-5 text-gray-600 dark:text-gray-300" />
               </button>
             </div>
 
-            {/* Navigation */}
-            <nav className="flex flex-col p-4 space-y-1 overflow-y-auto flex-1">
+            {/* Menu Header */}
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 text-transparent bg-clip-text mb-2">
+                Navigation
+              </h2>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">
+                Explore our art & gifting collection
+              </p>
+            </div>
+
+            {/* Navigation Links */}
+            <div className="space-y-2">
               {[
-                { href: '/', label: 'Home', icon: Home },
-                { href: '/shop', label: 'Shop', icon: ShoppingBag },
-                { href: '/how-it-works', label: 'How it Works', icon: Info, featured: true },
-                { href: '/i71', label: 'I-71 Compliance', icon: Shield },
-                { href: '/about', label: 'About', icon: Info }
-              ].map(({ href, label, icon: Icon, featured }) => {
+                { href: '/', label: 'Home', icon: Home, description: 'Welcome to Cannè' },
+                { href: '/shop', label: 'Shop Collection', icon: ShoppingBag, description: 'Browse our art tiers' },
+                { href: '/how-it-works', label: 'How It Works', icon: Info, featured: true, description: 'Learn about our process' },
+                { href: '/i71', label: 'I-71 Compliance', icon: Shield, description: 'Legal information' },
+                { href: '/about', label: 'About Us', icon: Info, description: 'Our story & mission' }
+              ].map(({ href, label, icon: Icon, featured, description }) => {
                 const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
                 const isActive = pathname === href;
                 
@@ -224,56 +236,79 @@ export default function Header({ scrollToCollection }: HeaderProps) {
                     key={href}
                     href={href}
                     onClick={() => setIsMenuOpen(false)}
-                    className={`flex items-center gap-3 px-3 py-3 rounded-lg font-medium transition-all duration-200 ${
+                    className={`group flex items-center gap-4 p-4 rounded-xl transition-all duration-200 ${
                       isActive 
-                        ? 'bg-pink-50 dark:bg-pink-900/20 text-pink-600 dark:text-pink-400 font-semibold' 
+                        ? 'bg-pink-50 dark:bg-pink-900/20 text-pink-600 dark:text-pink-400' 
                         : featured
                         ? 'text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20'
-                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-zinc-800/50'
                     }`}
                   >
-                    <Icon size={18} className="opacity-70" />
-                    <span className="text-sm">{label}</span>
+                    <div className={`p-2 rounded-lg transition-colors ${
+                      isActive
+                        ? 'bg-pink-100 dark:bg-pink-800/30'
+                        : featured
+                        ? 'bg-purple-100 dark:bg-purple-800/30 group-hover:bg-purple-200 dark:group-hover:bg-purple-700/40'
+                        : 'bg-gray-100 dark:bg-zinc-700 group-hover:bg-gray-200 dark:group-hover:bg-zinc-600'
+                    }`}>
+                      <Icon size={20} />
+                    </div>
+                    <div className="flex-1">
+                      <div className={`font-semibold ${isActive ? 'font-bold' : ''}`}>
+                        {label}
+                      </div>
+                      <div className="text-xs opacity-70 mt-0.5">
+                        {description}
+                      </div>
+                    </div>
                     {isActive && (
-                      <div className="ml-auto w-2 h-2 bg-pink-500 rounded-full" />
+                      <div className="w-2 h-2 bg-pink-500 rounded-full" />
                     )}
                   </Link>
                 );
               })}
-            </nav>
+            </div>
 
             {/* Utilities */}
-            <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700">
-              <div className="flex items-center gap-2">
+            <div className="mt-8 pt-6 border-t border-gray-200 dark:border-zinc-700">
+              <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
+                Preferences
+              </h3>
+              <div className="grid grid-cols-2 gap-3">
                 <button 
-                  className="flex-1 flex items-center justify-center gap-2 p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                  className="flex items-center justify-center gap-2 p-3 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-xl transition-colors"
                   title="Search"
                 >
-                  <Search size={16} />
-                  <span className="text-xs">Search</span>
+                  <Search size={18} />
+                  <span className="text-sm font-medium">Search</span>
                 </button>
                 <button 
                   onClick={toggleTheme}
-                  className="flex-1 flex items-center justify-center gap-2 p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                  className="flex items-center justify-center gap-2 p-3 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-xl transition-colors"
                   title={isDarkMode ? 'Light mode' : 'Dark mode'}
                 >
-                  {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
-                  <span className="text-xs">{isDarkMode ? 'Light' : 'Dark'}</span>
+                  {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
+                  <span className="text-sm font-medium">{isDarkMode ? 'Light' : 'Dark'}</span>
                 </button>
               </div>
             </div>
 
-            {/* CTA Buttons */}
-            <div className="p-4 space-y-2 border-t border-gray-200 dark:border-gray-700">
+            {/* Call-to-Action */}
+            <div className="mt-8 pt-6 border-t border-gray-200 dark:border-zinc-700 space-y-3">
               <Link
                 href="/shop"
                 onClick={() => setIsMenuOpen(false)}
-                className="block w-full rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 py-3 text-center text-white font-semibold shadow-lg transition-all"
+                className="group block w-full rounded-2xl bg-gradient-to-r from-pink-500 to-purple-600 p-4 text-white font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02]"
               >
-                <span className="flex items-center justify-center gap-2">
-                  <Sparkles size={16} />
-                  <span className="text-sm">Explore Collection</span>
-                </span>
+                <div className="flex items-center justify-center gap-3">
+                  <div className="p-1 bg-white/20 rounded-lg group-hover:bg-white/30 transition-colors">
+                    <Sparkles size={18} />
+                  </div>
+                  <span>Explore Collection</span>
+                </div>
+                <div className="text-xs text-white/80 text-center mt-1">
+                  Discover our art & gifting tiers
+                </div>
               </Link>
 
               {getItemCount() > 0 && (
@@ -282,17 +317,22 @@ export default function Header({ scrollToCollection }: HeaderProps) {
                     setIsMenuOpen(false);
                     toggleCart();
                   }}
-                  className="block w-full rounded-xl border border-gray-300 dark:border-gray-600 py-3 text-center font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all"
+                  className="group block w-full rounded-2xl border-2 border-gray-200 dark:border-zinc-700 p-4 font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-700 transition-all duration-300 hover:scale-[1.02]"
                 >
-                  <span className="flex items-center justify-center gap-2">
-                    <ShoppingBag size={16} />
-                    <span className="text-sm">View Cart ({getItemCount()})</span>
-                  </span>
+                  <div className="flex items-center justify-center gap-3">
+                    <div className="p-1 bg-gray-100 dark:bg-zinc-700 rounded-lg group-hover:bg-gray-200 dark:group-hover:bg-zinc-600 transition-colors">
+                      <ShoppingBag size={18} />
+                    </div>
+                    <span>View Cart ({getItemCount()})</span>
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400 text-center mt-1">
+                    Review your selected items
+                  </div>
                 </button>
               )}
             </div>
-          </div>
-        </>
+          </nav>
+        </div>
       )}
     </>
   );
