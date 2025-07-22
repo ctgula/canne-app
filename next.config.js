@@ -4,10 +4,6 @@ const nextConfig = {
   
   // Development-specific settings
   ...(process.env.NODE_ENV === 'development' && {
-    // Suppress hydration warnings in development for better DX
-    experimental: {
-      suppressHydrationWarning: true,
-    },
     // Custom webpack config for development
     webpack: (config, { dev, isServer }) => {
       if (dev && !isServer) {
