@@ -28,6 +28,12 @@ if (!supabaseServiceKey) {
 
 console.log('✅ Environment variables validated successfully');
 
+// Debug: Log actual environment variable values (REMOVE BEFORE COMMITTING TO PRODUCTION)
+console.log('🔍 ACTUAL ENV VALUES (REMOVE BEFORE COMMIT):');
+console.log({ supabaseUrl, supabaseServiceKey });
+console.log('supabaseUrl length:', supabaseUrl?.length);
+console.log('supabaseServiceKey length:', supabaseServiceKey?.length);
+
 // Create admin client that bypasses RLS
 let supabaseAdmin;
 try {
