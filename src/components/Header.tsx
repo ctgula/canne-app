@@ -12,7 +12,7 @@ interface HeaderProps {
   scrollToCollection?: () => void;
 }
 
-export default function Header({scrollToCollection}: HeaderProps) {
+export default function Header({ scrollToCollection }: HeaderProps) {
   const { theme, toggleTheme } = useTheme();
   const isDarkMode = theme === 'dark';
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -44,34 +44,14 @@ export default function Header({scrollToCollection}: HeaderProps) {
     };
   }, [cartRef]);
 
-  const openMenu = () => {
-    setIsMenuOpen(true);
-    document.body.classList.add('overflow-hidden');
-  };
-  
-  const closeMenu = () => {
-    setIsMenuOpen(false);
-    document.body.classList.remove('overflow-hidden');
-  };
-  
-  const navPath = (item: string) => {
-    switch(item) {
-      case 'Home': return '/';
-      case 'Shop': return '/shop';
-      case 'How it Works': return '/how-it-works';
-      case 'I-71 Compliance': return '/i71';
-      case 'About': return '/about';
-      default: return '/';
-    }
-  };
-  
   const toggleCart = () => {
     setIsCartOpen(!isCartOpen);
   };
 
   return (
-    <header className="fixed top-0 z-50 w-full bg-white shadow-sm h-16 md:h-20">
-      <div className="mx-auto flex h-full max-w-screen-lg items-center justify-between px-4">
+    <>
+      <header className="fixed top-0 z-50 w-full bg-white shadow-sm h-16 md:h-20">
+        <div className="mx-auto flex h-full max-w-screen-lg items-center justify-between px-4">
           <Link href="/" className="flex items-center group">
             <div className="flex items-center">
               <div className="h-48 w-auto relative mr-5 transition-transform duration-300 hover:scale-105">
@@ -120,10 +100,9 @@ export default function Header({scrollToCollection}: HeaderProps) {
           </nav>
           
           <div className="md:hidden flex items-center">
-            {/* Mobile menu button */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
               aria-label="Toggle menu"
               aria-expanded={isMenuOpen}
             >
@@ -136,72 +115,72 @@ export default function Header({scrollToCollection}: HeaderProps) {
               )}
             </button>
           </div>
-          
-          {/* Cart Dropdown */}
-          {isCartOpen && (
-            <div className="absolute right-0 top-full mt-2 w-80 bg-white dark:bg-gray-900 rounded-lg shadow-xl z-50 overflow-hidden" ref={cartRef}>
-              <CartDisplay />
-            </div>
-          )}
-          
-          {isMenuOpen && (
-            <div id="drawer" className="fixed inset-0 z-60 bg-white">
-              <button
-                aria-label="Close menu"
-                onClick={() => setIsMenuOpen(false)}
-                className="self-end p-6 text-3xl text-gray-600"
-              >
-                &times;
-              </button>
-
-              <nav className="pt-20 flex flex-col space-y-6 px-8 text-lg font-semibold">
-                {[
-                  { href: '/', label: 'Home' },
-                  { href: '/shop', label: 'Shop' },
-                  { href: '/how-it-works', label: 'How it Works' },
-                  { href: '/i71', label: 'I-71 Compliance' },
-                  { href: '/about', label: 'About' }
-                ].map(({ href, label }) => {
-                  const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
-                  const isActive = pathname === href;
-                  
-                  return (
-                    <Link
-                      key={href}
-                      href={href}
-                      onClick={() => setIsMenuOpen(false)}
-                      className={`border-b border-gray-200 pb-4 ${
-                        isActive ? 'font-bold text-gray-900' : 'font-semibold text-gray-700'
-                      } hover:text-purple-600 transition-colors`}
-                    >
-                      {label}
-                    </Link>
-                  );
-                })}
-
-                {/* Action buttons */}
-                <div className="mt-8 space-y-4">
-                  <Link
-                    href="/collection"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="block w-full rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 py-4 text-center text-white font-semibold shadow-lg hover:shadow-xl transition-all"
-                  >
-                    View Art Collection
-                  </Link>
-
-                  <Link
-                    href="/cart"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="block w-full rounded-xl border border-gray-300 py-4 text-center font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition-all"
-                  >
-                    View Cart ({getItemCount()})
-                  </Link>
-                </div>
-              </nav>
-            </div>
-          )}
         </div>
-      </div>
-    </header>
+        
+        {/* Cart Dropdown */}
+        {isCartOpen && (
+          <div className="absolute right-0 top-full mt-2 w-80 bg-white dark:bg-gray-900 rounded-lg shadow-xl z-50 overflow-hidden" ref={cartRef}>
+            <CartDisplay />
+          </div>
+        )}
+      </header>
+      
+      {/* Mobile Drawer */}
+      {isMenuOpen && (
+        <div id="drawer" className="fixed inset-0 z-60 bg-white">
+          <button
+            aria-label="Close menu"
+            onClick={() => setIsMenuOpen(false)}
+            className="self-end p-6 text-3xl text-gray-600"
+          >
+            &times;
+          </button>
+
+          <nav className="pt-20 flex flex-col space-y-6 px-8 text-lg font-semibold">
+            {[
+              { href: '/', label: 'Home' },
+              { href: '/shop', label: 'Shop' },
+              { href: '/how-it-works', label: 'How it Works' },
+              { href: '/i71', label: 'I-71 Compliance' },
+              { href: '/about', label: 'About' }
+            ].map(({ href, label }) => {
+              const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
+              const isActive = pathname === href;
+              
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  onClick={() => setIsMenuOpen(false)}
+                  className={`border-b border-gray-200 pb-4 ${
+                    isActive ? 'font-bold text-gray-900' : 'font-semibold text-gray-700'
+                  } hover:text-purple-600 transition-colors`}
+                >
+                  {label}
+                </Link>
+              );
+            })}
+
+            <div className="mt-8 space-y-4">
+              <Link
+                href="/collection"
+                onClick={() => setIsMenuOpen(false)}
+                className="block w-full rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 py-4 text-center text-white font-semibold shadow-lg hover:shadow-xl transition-all"
+              >
+                View Art Collection
+              </Link>
+
+              <Link
+                href="/cart"
+                onClick={() => setIsMenuOpen(false)}
+                className="block w-full rounded-xl border border-gray-300 py-4 text-center font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition-all"
+              >
+                View Cart ({getItemCount()})
+              </Link>
+            </div>
+          </nav>
+        </div>
+      )}
+    </>
   );
 }
