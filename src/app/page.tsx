@@ -51,7 +51,7 @@ export default function Home() {
       <Header scrollToCollection={scrollToCollection} />
       <main className="overflow-x-hidden">
         {/* Hero Section - Enhanced with Parallax */}
-        <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
           {/* Enhanced Background Elements */}
           <div className="absolute inset-0 overflow-hidden">
             <motion.div 
@@ -127,12 +127,12 @@ export default function Home() {
             animate={isLoaded ? "visible" : "hidden"}
           >
             <motion.div 
-              className="flex flex-col items-center text-center py-8 sm:py-12 md:py-16"
+              className="flex flex-col items-center text-center py-4 px-4 sm:py-8 sm:px-6 md:py-12 md:px-8"
               variants={itemVariants}
             >
               {/* Logo with enhanced animation */}
               <motion.div
-                className="relative mb-6 sm:mb-8"
+                className="relative mb-4 sm:mb-6 md:mb-8"
                 whileHover={{ scale: 1.05, rotate: 1 }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
               >
@@ -151,16 +151,16 @@ export default function Home() {
                 <Image 
                   src="/images/canne_logo_web.svg" 
                   alt="Cannè Logo" 
-                  width={240} 
-                  height={240} 
-                  className="relative w-32 h-32 sm:w-40 sm:h-40 md:w-52 md:h-52 lg:w-60 lg:h-60 drop-shadow-2xl" 
+                  width={200} 
+                  height={200} 
+                  className="relative w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 lg:w-48 lg:h-48 drop-shadow-2xl" 
                   priority
                 />
               </motion.div>
               
               {/* Enhanced Typography */}
               <motion.h1 
-                className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold mb-4 sm:mb-6"
+                className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-3 sm:mb-4 md:mb-6"
                 variants={itemVariants}
               >
                 <span className="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-600 text-transparent bg-clip-text leading-tight block">
@@ -172,14 +172,14 @@ export default function Home() {
               </motion.h1>
               
               <motion.p 
-                className="text-lg sm:text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-2 font-medium"
+                className="text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-2 font-medium px-2"
                 variants={itemVariants}
               >
                 Premium Digital Art with Complimentary Gifts
               </motion.p>
               
               <motion.p 
-                className="text-sm sm:text-base text-gray-500 dark:text-gray-400 mb-8 sm:mb-10 max-w-2xl"
+                className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-6 sm:mb-8 max-w-2xl px-2"
                 variants={itemVariants}
               >
                 I-71 compliant • 21+ only • DC delivery available
@@ -187,12 +187,12 @@ export default function Home() {
               
               {/* Enhanced CTA Section */}
               <motion.div 
-                className="flex flex-col sm:flex-row gap-4 sm:gap-6 w-full sm:w-auto mb-8"
+                className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full max-w-sm sm:max-w-none sm:w-auto mb-6 sm:mb-8 px-4 sm:px-0"
                 variants={itemVariants}
               >
-                <Link href="/shop">
+                <Link href="/shop" className="flex-1 sm:flex-none">
                   <motion.button 
-                    className="group relative w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-2xl shadow-lg font-semibold text-lg overflow-hidden"
+                    className="group relative w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl sm:rounded-2xl shadow-lg font-semibold text-base sm:text-lg overflow-hidden"
                     whileHover={{ scale: 1.02, y: -2 }}
                     whileTap={{ scale: 0.98 }}
                     transition={{ type: "spring", stiffness: 400, damping: 17 }}
@@ -201,21 +201,21 @@ export default function Home() {
                       className="absolute inset-0 bg-gradient-to-r from-pink-400 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                     />
                     <span className="relative z-10 flex items-center justify-center gap-2">
-                      <Sparkles className="w-5 h-5" />
-                      Explore Collection
+                      <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <span className="text-sm sm:text-base">Explore Collection</span>
                     </span>
                   </motion.button>
                 </Link>
-                <Link href="/how-it-works">
+                <Link href="/how-it-works" className="flex-1 sm:flex-none">
                   <motion.button 
-                    className="group w-full sm:w-auto px-8 py-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-600 rounded-2xl shadow-lg hover:shadow-xl font-semibold text-lg text-gray-700 dark:text-gray-200 transition-all duration-300"
+                    className="group w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-600 rounded-xl sm:rounded-2xl shadow-lg hover:shadow-xl font-semibold text-base sm:text-lg text-gray-700 dark:text-gray-200 transition-all duration-300"
                     whileHover={{ scale: 1.02, y: -2 }}
                     whileTap={{ scale: 0.98 }}
                     transition={{ type: "spring", stiffness: 400, damping: 17 }}
                   >
                     <span className="flex items-center justify-center gap-2">
-                      <Shield className="w-5 h-5" />
-                      How It Works
+                      <Shield className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <span className="text-sm sm:text-base">How It Works</span>
                     </span>
                   </motion.button>
                 </Link>
@@ -223,7 +223,7 @@ export default function Home() {
               
               {/* Scroll Indicator */}
               <motion.div
-                className="flex flex-col items-center gap-2 text-gray-400 dark:text-gray-500"
+                className="hidden sm:flex flex-col items-center gap-2 text-gray-400 dark:text-gray-500"
                 variants={itemVariants}
                 animate={{
                   y: [0, 10, 0],

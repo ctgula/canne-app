@@ -24,9 +24,23 @@ export default function Header({ scrollToCollection }: HeaderProps) {
   
   // Body scroll lock for mobile menu
   useEffect(() => {
-    document.body.classList.toggle('overflow-hidden', isMenuOpen);
+    if (isMenuOpen) {
+      document.body.classList.add('mobile-menu-open');
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+    } else {
+      document.body.classList.remove('mobile-menu-open');
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+    }
+    
     return () => {
-      document.body.classList.remove('overflow-hidden');
+      document.body.classList.remove('mobile-menu-open');
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
     };
   }, [isMenuOpen]);
   
@@ -50,22 +64,22 @@ export default function Header({ scrollToCollection }: HeaderProps) {
 
   return (
     <>
-      <header className="fixed top-0 z-50 w-full bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-sm border-b border-gray-100 dark:border-gray-800 h-16 md:h-20">
+      <header className="fixed top-0 z-50 w-full bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-sm border-b border-gray-100 dark:border-gray-800 h-16">
         <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center group">
             <div className="flex items-center">
-              <div className="h-12 w-12 md:h-14 md:w-14 relative mr-3 transition-all duration-300 hover:scale-110 hover:rotate-3">
+              <div className="h-10 w-10 relative mr-2 transition-all duration-300 hover:scale-105">
                 <Image 
                   src="/images/canne_logo.svg" 
                   alt="Cannè Art Collective" 
-                  width={56}
-                  height={56}
+                  width={40}
+                  height={40}
                   className="h-full w-auto drop-shadow-lg" 
                   priority
                 />
               </div>
-              <div className="ml-2">
-                <span className="font-bold text-xl md:text-2xl bg-gradient-to-r from-pink-500 to-purple-600 text-transparent bg-clip-text tracking-wide">CANNÈ</span>
+              <div className="ml-1">
+                <span className="font-bold text-lg bg-gradient-to-r from-pink-500 to-purple-600 text-transparent bg-clip-text tracking-wide">CANNÈ</span>
                 <span className="hidden sm:block text-xs text-gray-500 dark:text-gray-400 font-medium tracking-wider">ART COLLECTIVE</span>
               </div>
             </div>
@@ -180,21 +194,10 @@ export default function Header({ scrollToCollection }: HeaderProps) {
           />
           
           {/* Drawer */}
-          <div className="fixed top-0 right-0 z-50 h-full w-80 max-w-[85vw] bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-2xl border-l border-gray-200 dark:border-gray-700 lg:hidden">
+          <div className={`fixed top-0 right-0 z-60 h-full w-80 max-w-[85vw] bg-white dark:bg-gray-900 shadow-2xl border-l border-gray-200 dark:border-gray-700 lg:hidden transform transition-transform duration-300 ease-in-out ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
             {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-              <div className="flex items-center gap-3">
-                <div className="h-8 w-8 relative">
-                  <Image 
-                    src="/images/canne_logo.svg" 
-                    alt="Cannè" 
-                    width={32}
-                    height={32}
-                    className="h-full w-auto" 
-                  />
-                </div>
-                <span className="font-bold text-lg bg-gradient-to-r from-pink-500 to-purple-600 text-transparent bg-clip-text">Menu</span>
-              </div>
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+              <span className="font-bold text-lg bg-gradient-to-r from-pink-500 to-purple-600 text-transparent bg-clip-text">Menu</span>
               <button
                 onClick={() => setIsMenuOpen(false)}
                 className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
@@ -205,7 +208,7 @@ export default function Header({ scrollToCollection }: HeaderProps) {
             </div>
 
             {/* Navigation */}
-            <nav className="flex flex-col p-6 space-y-2">
+            <nav className="flex flex-col p-4 space-y-1 overflow-y-auto flex-1">
               {[
                 { href: '/', label: 'Home', icon: Home },
                 { href: '/shop', label: 'Shop', icon: ShoppingBag },
@@ -221,7 +224,7 @@ export default function Header({ scrollToCollection }: HeaderProps) {
                     key={href}
                     href={href}
                     onClick={() => setIsMenuOpen(false)}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
+                    className={`flex items-center gap-3 px-3 py-3 rounded-lg font-medium transition-all duration-200 ${
                       isActive 
                         ? 'bg-pink-50 dark:bg-pink-900/20 text-pink-600 dark:text-pink-400 font-semibold' 
                         : featured
@@ -229,8 +232,8 @@ export default function Header({ scrollToCollection }: HeaderProps) {
                         : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50'
                     }`}
                   >
-                    <Icon size={20} className="opacity-70" />
-                    <span>{label}</span>
+                    <Icon size={18} className="opacity-70" />
+                    <span className="text-sm">{label}</span>
                     {isActive && (
                       <div className="ml-auto w-2 h-2 bg-pink-500 rounded-full" />
                     )}
@@ -240,39 +243,36 @@ export default function Header({ scrollToCollection }: HeaderProps) {
             </nav>
 
             {/* Utilities */}
-            <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Settings</span>
-              </div>
+            <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700">
               <div className="flex items-center gap-2">
                 <button 
-                  className="flex-1 flex items-center justify-center gap-2 p-3 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors"
+                  className="flex-1 flex items-center justify-center gap-2 p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
                   title="Search"
                 >
-                  <Search size={18} />
-                  <span className="text-sm">Search</span>
+                  <Search size={16} />
+                  <span className="text-xs">Search</span>
                 </button>
                 <button 
                   onClick={toggleTheme}
-                  className="flex-1 flex items-center justify-center gap-2 p-3 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors"
+                  className="flex-1 flex items-center justify-center gap-2 p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
                   title={isDarkMode ? 'Light mode' : 'Dark mode'}
                 >
-                  {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
-                  <span className="text-sm">{isDarkMode ? 'Light' : 'Dark'}</span>
+                  {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
+                  <span className="text-xs">{isDarkMode ? 'Light' : 'Dark'}</span>
                 </button>
               </div>
             </div>
 
             {/* CTA Buttons */}
-            <div className="p-6 space-y-3 border-t border-gray-200 dark:border-gray-700 mt-auto">
+            <div className="p-4 space-y-2 border-t border-gray-200 dark:border-gray-700">
               <Link
                 href="/shop"
                 onClick={() => setIsMenuOpen(false)}
-                className="block w-full rounded-2xl bg-gradient-to-r from-pink-500 to-purple-600 py-4 text-center text-white font-semibold shadow-lg hover:shadow-xl transition-all"
+                className="block w-full rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 py-3 text-center text-white font-semibold shadow-lg transition-all"
               >
                 <span className="flex items-center justify-center gap-2">
-                  <Sparkles size={18} />
-                  Explore Collection
+                  <Sparkles size={16} />
+                  <span className="text-sm">Explore Collection</span>
                 </span>
               </Link>
 
@@ -282,11 +282,11 @@ export default function Header({ scrollToCollection }: HeaderProps) {
                     setIsMenuOpen(false);
                     toggleCart();
                   }}
-                  className="block w-full rounded-2xl border border-gray-300 dark:border-gray-600 py-4 text-center font-semibold text-gray-700 dark:text-gray-300 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-all"
+                  className="block w-full rounded-xl border border-gray-300 dark:border-gray-600 py-3 text-center font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all"
                 >
                   <span className="flex items-center justify-center gap-2">
-                    <ShoppingBag size={18} />
-                    View Cart ({getItemCount()})
+                    <ShoppingBag size={16} />
+                    <span className="text-sm">View Cart ({getItemCount()})</span>
                   </span>
                 </button>
               )}

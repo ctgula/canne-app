@@ -610,5 +610,72 @@ body.menu-open header {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
-} 
+}
+
+/* Mobile Menu Fixes */
+.mobile-menu-open {
+  overflow: hidden !important;
+  position: fixed !important;
+  width: 100% !important;
+}
+
+/* Ensure mobile menu slides in properly */
+.mobile-drawer {
+  transform: translateX(100%);
+  transition: transform 0.3s ease-in-out;
+}
+
+.mobile-drawer.open {
+  transform: translateX(0);
+}
+
+/* Mobile layout improvements */
+@media (max-width: 1024px) {
+  /* Ensure main content doesn't overlap with header */
+  main {
+    padding-top: 0;
+  }
+  
+  /* Better mobile spacing */
+  .hero-section {
+    min-height: calc(100vh - 4rem);
+    padding-top: 4rem;
+  }
+  
+  /* Mobile-specific button sizing */
+  .mobile-cta {
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Extra small mobile adjustments */
+  .hero-section {
+    min-height: calc(100vh - 3rem);
+    padding-top: 3rem;
+  }
+  
+  /* Ensure text is readable on mobile */
+  .mobile-text {
+    font-size: clamp(0.875rem, 2.5vw, 1rem);
+    line-height: 1.5;
+  }
+  
+  /* Mobile-optimized gradients */
+  .mobile-gradient-text {
+    background-size: 200% 200%;
+    animation: gradient-shift 3s ease infinite;
+  }
+}
+
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
