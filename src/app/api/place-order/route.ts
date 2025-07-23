@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
       city: orderData.deliveryDetails.city,
       zip: orderData.deliveryDetails.zipCode,
       preferred_time: orderData.deliveryDetails.preferredTime,
-      instructions: orderData.deliveryDetails.specialInstructions || null,
+      delivery_instructions: orderData.deliveryDetails.specialInstructions || null,
       subtotal: subtotal,
       total: total,
       status: 'pending'
@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
     const { data: orderRecord, error: orderError } = await supabaseAdmin
       .from('orders')
       .insert(orderPayload)
-      .select('id, order_number, full_name, phone, street, city, zip, preferred_time, instructions, subtotal, total, created_at')
+      .select('id, order_number, full_name, phone, street, city, zip, preferred_time, delivery_instructions, subtotal, total, created_at')
       .single();
 
     if (orderError) {
@@ -178,27 +178,53 @@ export async function POST(request: NextRequest) {
     try {
       const discordWebhook = process.env.DISCORD_WEBHOOK;
       if (discordWebhook) {
+        // Create detailed item descriptions for Discord
+        const itemDescriptions = orderData.items.map(item => {
+          let itemText = `**${item.name}** (${item.quantity}x) - $${item.price.toFixed(2)} each`;
+          if (item.description) {
+            itemText += `\n  └ ${item.description}`;
+          }
+          if (item.giftSize) {
+            itemText += `\n  └ Gift: ${item.giftSize}`;
+          }
+          return itemText;
+        }).join('\n\n');
+
         const embed = {
-          title: "📦 New Cannè Order!",
+          title: "🎨 New Cannè Order!",
+          color: 0x8B5CF6, // Purple color matching your brand
           fields: [
-            { name: "Order ID", value: orderRecord.order_number, inline: true },
-            { name: "Customer", value: orderRecord.full_name, inline: true },
-            { name: "Phone", value: orderRecord.phone, inline: true },
-            { name: "Address", value: `${orderRecord.street}\n${orderRecord.city}, DC ${orderRecord.zip}` },
-            { name: "Delivery Time", value: orderRecord.preferred_time },
-            { 
-              name: "Order Details",
-              value: orderItems.map(i => `• ${i.quantity} × ${i.name} – $${i.unit_price}`).join("\n")
-            },
-            { name: "Total", value: `$${orderRecord.total.toFixed(2)}` }
+            { name: "📋 Order ID", value: orderRecord.order_number, inline: true },
+            { name: "👤 Customer", value: orderRecord.full_name, inline: true },
+            { name: "📞 Phone", value: orderRecord.phone, inline: true },
+            { name: "📍 Delivery Address", value: `${orderRecord.street}\n${orderRecord.city}, DC ${orderRecord.zip}`, inline: false },
+            { name: "⏰ Preferred Time", value: orderRecord.preferred_time, inline: true },
+            { name: "💰 Total", value: `$${orderRecord.total.toFixed(2)}`, inline: true },
+            { name: "🛍️ Items Ordered", value: itemDescriptions, inline: false }
           ],
+          footer: {
+            text: "Cannè - Art & Cannabis Gifts | I-71 Compliant"
+          },
           timestamp: orderRecord.created_at
         };
+
+        // Add special instructions if provided
+        if (orderRecord.delivery_instructions) {
+          embed.fields.push({
+            name: "📝 Special Instructions",
+            value: orderRecord.delivery_instructions,
+            inline: false
+          });
+        }
         
         await fetch(discordWebhook, {
           method: "POST",
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username: "Captain Hook", embeds: [embed] })
+          body: JSON.stringify({ 
+            username: "Cannè Order Bot", 
+            avatar_url: "https://your-domain.com/logo.png", // Optional: add your logo
+            embeds: [embed] 
+          })
         });
       }
     } catch (discordError) {
