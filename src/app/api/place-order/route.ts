@@ -1,14 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-// Debug: Log environment variables (mask sensitive data)
-console.log('=== ENVIRONMENT VARIABLES DEBUG ===');
-console.log('NEXT_PUBLIC_SUPABASE_URL:', process.env.NEXT_PUBLIC_SUPABASE_URL ? `${process.env.NEXT_PUBLIC_SUPABASE_URL.substring(0, 30)}...` : 'UNDEFINED');
-console.log('SUPABASE_SERVICE_ROLE_KEY:', process.env.SUPABASE_SERVICE_ROLE_KEY ? `${process.env.SUPABASE_SERVICE_ROLE_KEY.substring(0, 20)}...` : 'UNDEFINED');
-console.log('NODE_ENV:', process.env.NODE_ENV);
-console.log('VERCEL_ENV:', process.env.VERCEL_ENV);
-console.log('=====================================');
-
 // Initialize Supabase admin client with service role key for server-side operations
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -51,20 +43,18 @@ interface DeliveryDetails {
   address: string;
   city: string;
   zipCode: string;
-  timePreference: 'morning' | 'afternoon' | 'evening';
-  specialInstructions: string;
+  preferredTime: string;
+  specialInstructions?: string;
 }
 
 interface OrderItem {
-  product: {
-    id: string;
-    name: string;
-    description: string;
-    price: number;
-    artworkUrl: string;
-    giftSize: string;
-    hasDelivery: boolean;
-  };
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  artworkUrl: string;
+  giftSize: string;
+  hasDelivery: boolean;
   quantity: number;
 }
 
@@ -77,149 +67,78 @@ interface OrderRequest {
 }
 
 export async function POST(request: NextRequest) {
-  console.log('\n🚀 === ORDER SUBMISSION DEBUG START ===');
-  console.log('Timestamp:', new Date().toISOString());
-  console.log('Request method:', request.method);
-  console.log('Request URL:', request.url);
-  
   try {
-    // Debug: Re-check environment variables at runtime
-    console.log('\n🔍 Runtime Environment Check:');
-    console.log('supabaseUrl defined:', !!supabaseUrl);
-    console.log('supabaseServiceKey defined:', !!supabaseServiceKey);
-    console.log('supabaseAdmin client defined:', !!supabaseAdmin);
-    
-    // Validate request content type
-    const contentType = request.headers.get('content-type');
-    console.log('Content-Type:', contentType);
-    
-    if (!contentType?.includes('application/json')) {
-      console.log('❌ Invalid content type');
-      return NextResponse.json(
-        { success: false, error: 'Content-Type must be application/json' },
-        { status: 400 }
-      );
-    }
-
     const orderData: OrderRequest = await request.json();
 
-    // Validate required fields
+    // Validate cart is not empty
     if (!orderData.items || orderData.items.length === 0) {
       return NextResponse.json(
-        { success: false, error: 'Order must contain at least one item' },
+        { success: false, error: 'Cart cannot be empty' },
         { status: 400 }
       );
     }
 
+    // Validate required delivery details
     if (!orderData.deliveryDetails || !orderData.deliveryDetails.name || !orderData.deliveryDetails.phone) {
       return NextResponse.json(
-        { success: false, error: 'Delivery details with name and phone are required' },
+        { success: false, error: 'Name and phone are required' },
         { status: 400 }
       );
     }
 
-    // Validate phone number format (basic validation)
-    const phoneRegex = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/;
-    if (!phoneRegex.test(orderData.deliveryDetails.phone.replace(/\s/g, ''))) {
+    // Front-end DC ZIP validation (backup - main validation is in database trigger)
+    const dcZipRegex = /^20(0\d\d|1\d\d)$/;
+    if (!dcZipRegex.test(orderData.deliveryDetails.zipCode)) {
       return NextResponse.json(
-        { success: false, error: 'Invalid phone number format' },
+        { success: false, error: 'Only Washington DC ZIP codes (20000-20199) are allowed' },
         { status: 400 }
       );
     }
 
-    // Start database transaction
-    console.log('Creating order for:', orderData.deliveryDetails.name);
-
-    // Step 1: Create customer record
-    const nameParts = orderData.deliveryDetails.name.trim().split(' ');
-    const firstName = nameParts[0] || '';
-    const lastName = nameParts.slice(1).join(' ') || '';
-
-    console.log('\n👤 Creating customer record...');
-    const customerPayload = {
-      first_name: firstName,
-      last_name: lastName,
-      email: `customer_${Date.now()}@temp.com`, // Temporary email until we collect real one
-      phone: orderData.deliveryDetails.phone,
-      address: orderData.deliveryDetails.address,
-      city: orderData.deliveryDetails.city,
-      zip_code: orderData.deliveryDetails.zipCode,
-      is_verified_21: true // Assuming verification happens during checkout
-    };
-    console.log('Customer payload:', JSON.stringify(customerPayload, null, 2));
-    
-    const { data: customerData, error: customerError } = await supabaseAdmin
-      .from('customers')
-      .insert(customerPayload)
-      .select('id')
-      .single();
-
-    if (customerError) {
-      console.error('❌ Error creating customer:');
-      console.error('Error details:', JSON.stringify(customerError, null, 2));
-      console.error('Error code:', customerError.code);
-      console.error('Error message:', customerError.message);
-      console.error('Error hint:', customerError.hint);
-      return NextResponse.json(
-        { success: false, error: `Failed to create customer record: ${customerError.message}` },
-        { status: 500 }
-      );
-    }
-    
-    console.log('✅ Customer created successfully:', customerData);
-
-    // Step 2: Generate unique order number
-    console.log('\n🔢 Generating order number...');
-    const { data: orderNumberData, error: orderNumberError } = await supabaseAdmin
+    // Generate unique order number
+    const { data: orderNumber, error: orderNumberError } = await supabaseAdmin
       .rpc('generate_order_number');
     
     if (orderNumberError) {
-      console.error('❌ Error generating order number:');
-      console.error('Error details:', JSON.stringify(orderNumberError, null, 2));
       return NextResponse.json(
         { success: false, error: `Failed to generate order number: ${orderNumberError.message}` },
         { status: 500 }
       );
     }
-    
-    console.log('✅ Order number generated:', orderNumberData);
 
-    const orderNumber = orderNumberData;
+    // Calculate totals
+    const subtotal = orderData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const deliveryFee = orderData.hasDelivery ? 0 : 10;
+    const total = subtotal + deliveryFee;
 
-    // Step 3: Create order record
-    console.log('\n📋 Creating order record...');
+    // Create order record with new structure
     const orderPayload = {
       order_number: orderNumber,
-      customer_id: customerData.id,
-      subtotal: orderData.total,
-      delivery_fee: orderData.hasDelivery ? 0 : 10, // Free delivery or $10 fee
-      total: orderData.total + (orderData.hasDelivery ? 0 : 10),
-      status: 'pending',
-      delivery_address_line1: orderData.deliveryDetails.address,
-      delivery_city: orderData.deliveryDetails.city,
-      delivery_state: 'DC', // Default to DC for I-71 compliance
-      delivery_zip: orderData.deliveryDetails.zipCode,
-      delivery_instructions: orderData.deliveryDetails.specialInstructions || null
+      full_name: orderData.deliveryDetails.name,
+      phone: orderData.deliveryDetails.phone,
+      street: orderData.deliveryDetails.address,
+      city: orderData.deliveryDetails.city,
+      zip: orderData.deliveryDetails.zipCode,
+      preferred_time: orderData.deliveryDetails.preferredTime,
+      instructions: orderData.deliveryDetails.specialInstructions || null,
+      subtotal: subtotal,
+      total: total,
+      status: 'pending'
     };
-    console.log('Order payload:', JSON.stringify(orderPayload, null, 2));
     
     const { data: orderRecord, error: orderError } = await supabaseAdmin
       .from('orders')
       .insert(orderPayload)
-      .select('id, order_number')
+      .select('id, order_number, full_name, phone, street, city, zip, preferred_time, instructions, subtotal, total, created_at')
       .single();
 
     if (orderError) {
-      console.error('❌ Error creating order:');
-      console.error('Error details:', JSON.stringify(orderError, null, 2));
-      console.error('Error code:', orderError.code);
-      console.error('Error message:', orderError.message);
-      console.error('Error hint:', orderError.hint);
-      
-      // Check if it's a permission/RLS issue
-      if (orderError.code === '42501' || orderError.message?.includes('permission denied')) {
-        console.error('🚨 PERMISSION DENIED - Check RLS policies on orders table!');
-        console.error('Ensure RLS policy allows: role() = \'anonymous\' OR auth.role() = \'service_role\'');
+      // Handle DC ZIP validation error from database trigger
+      if (orderError.message?.includes('Out-of-zone address')) {
+        return NextResponse.json(
+          { success: false, error: 'Only Washington DC ZIP codes (20000-20199) are allowed' },
+          { status: 400 }
+        );
       }
       
       return NextResponse.json(
@@ -227,31 +146,23 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
-    
-    console.log('✅ Order created successfully:', orderRecord);
 
-    // Step 4: Create order items
+    // Create order items with product names
     const orderItems = orderData.items.map(item => ({
       order_id: orderRecord.id,
-      product_id: item.product.id,
+      product_id: item.id,
+      name: item.name,
       quantity: item.quantity,
-      unit_price: item.product.price,
-      total_price: item.product.price * item.quantity
+      unit_price: item.price,
+      total_price: item.price * item.quantity
     }));
-
-    console.log('\n🛍️ Creating order items...');
-    console.log('Order items payload:', JSON.stringify(orderItems, null, 2));
     
     const { error: itemsError } = await supabaseAdmin
       .from('order_items')
       .insert(orderItems);
 
     if (itemsError) {
-      console.error('❌ Error creating order items:');
-      console.error('Error details:', JSON.stringify(itemsError, null, 2));
-      
       // Cleanup: Delete the order if items creation failed
-      console.log('🧹 Cleaning up order due to items error...');
       await supabaseAdmin
         .from('orders')
         .delete()
@@ -262,11 +173,38 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
-    
-    console.log('✅ Order items created successfully');
 
-    console.log('\n🎉 Order created successfully:', orderRecord.order_number);
-    console.log('=== ORDER SUBMISSION DEBUG END ===\n');
+    // Send Discord notification with embed format
+    try {
+      const discordWebhook = process.env.DISCORD_WEBHOOK;
+      if (discordWebhook) {
+        const embed = {
+          title: "📦 New Cannè Order!",
+          fields: [
+            { name: "Order ID", value: orderRecord.order_number, inline: true },
+            { name: "Customer", value: orderRecord.full_name, inline: true },
+            { name: "Phone", value: orderRecord.phone, inline: true },
+            { name: "Address", value: `${orderRecord.street}\n${orderRecord.city}, DC ${orderRecord.zip}` },
+            { name: "Delivery Time", value: orderRecord.preferred_time },
+            { 
+              name: "Order Details",
+              value: orderItems.map(i => `• ${i.quantity} × ${i.name} – $${i.unit_price}`).join("\n")
+            },
+            { name: "Total", value: `$${orderRecord.total.toFixed(2)}` }
+          ],
+          timestamp: orderRecord.created_at
+        };
+        
+        await fetch(discordWebhook, {
+          method: "POST",
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: "Captain Hook", embeds: [embed] })
+        });
+      }
+    } catch (discordError) {
+      // Don't fail the order if Discord notification fails
+      console.warn('Discord notification failed:', discordError);
+    }
 
     // Return success response
     return NextResponse.json({
