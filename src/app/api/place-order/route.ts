@@ -111,9 +111,46 @@ export async function POST(request: NextRequest) {
     const deliveryFee = orderData.hasDelivery ? 0 : 10;
     const total = subtotal + deliveryFee;
 
-    // Create order record with new structure
+    // Create or find customer record
+    let customerId: string;
+    
+    // Check if customer already exists by phone number
+    const { data: existingCustomer } = await supabaseAdmin
+      .from('customers')
+      .select('id')
+      .eq('phone', orderData.deliveryDetails.phone)
+      .single();
+    
+    if (existingCustomer) {
+      customerId = existingCustomer.id;
+    } else {
+      // Create new guest customer
+      const { data: newCustomer, error: customerError } = await supabaseAdmin
+        .from('customers')
+        .insert({
+          name: orderData.deliveryDetails.name,
+          phone: orderData.deliveryDetails.phone,
+          email: null, // Guest customers don't require email
+          date_of_birth: null, // Will be updated when they verify age
+          is_verified: false // Guest status
+        })
+        .select('id')
+        .single();
+      
+      if (customerError) {
+        return NextResponse.json(
+          { success: false, error: `Failed to create customer: ${customerError.message}` },
+          { status: 500 }
+        );
+      }
+      
+      customerId = newCustomer.id;
+    }
+
+    // Create order record with customer_id
     const orderPayload = {
       order_number: orderNumber,
+      customer_id: customerId,
       full_name: orderData.deliveryDetails.name,
       phone: orderData.deliveryDetails.phone,
       street: orderData.deliveryDetails.address,
