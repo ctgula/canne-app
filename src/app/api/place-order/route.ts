@@ -51,15 +51,28 @@ interface DeliveryDetails {
   termsAccepted?: boolean;
 }
 
-interface OrderItem {
+interface Product {
   id: string;
   name: string;
-  description: string;
+  description?: string;
   price: number;
-  artworkUrl: string;
-  giftSize: string;
-  hasDelivery: boolean;
+  artworkUrl?: string;
+  giftSize?: string;
+  hasDelivery?: boolean;
+}
+
+interface OrderItem {
+  // Support both flat structure (legacy) and nested product structure (current)
+  id?: string;
+  name?: string;
+  description?: string;
+  price?: number;
+  artworkUrl?: string;
+  giftSize?: string;
+  hasDelivery?: boolean;
   quantity: number;
+  // Nested product structure (current cart format)
+  product?: Product;
 }
 
 interface OrderRequest {
@@ -103,10 +116,16 @@ export async function POST(request: NextRequest) {
     console.log('Order data items:', JSON.stringify(orderData.items, null, 2));
     
     const subtotal = orderData.items.reduce((sum, item) => {
-      const itemPrice = typeof item.price === 'number' ? item.price : parseFloat(item.price) || 0;
+      // Handle both flat item structure and nested product structure
+      const itemPrice = item.product ? 
+        (typeof item.product.price === 'number' ? item.product.price : parseFloat(item.product.price) || 0) :
+        (typeof item.price === 'number' ? item.price : parseFloat(item.price) || 0);
+      
       const itemQuantity = typeof item.quantity === 'number' ? item.quantity : parseInt(item.quantity) || 0;
+      const itemName = item.product ? item.product.name : item.name;
       const itemTotal = itemPrice * itemQuantity;
-      console.log(`Item: ${item.name}, Price: ${itemPrice}, Quantity: ${itemQuantity}, Total: ${itemTotal}`);
+      
+      console.log(`Item: ${itemName}, Price: ${itemPrice}, Quantity: ${itemQuantity}, Total: ${itemTotal}`);
       return sum + itemTotal;
     }, 0);
     
@@ -125,10 +144,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Create customer record first (using verified schema fields)
+    // Use unique email with timestamp to avoid duplicates during testing
+    const customerEmail = orderData.deliveryDetails.email ? 
+      `${orderData.deliveryDetails.email.split('@')[0]}_${Date.now()}@${orderData.deliveryDetails.email.split('@')[1]}` :
+      `guest_${Date.now()}@canne.local`;
+    
     const customerPayload = {
       first_name: orderData.deliveryDetails.name.split(' ')[0] || orderData.deliveryDetails.name,
       last_name: orderData.deliveryDetails.name.split(' ').slice(1).join(' ') || 'Guest',
-      email: orderData.deliveryDetails.email || `guest_${Date.now()}@canne.local`,
+      email: customerEmail,
       phone: orderData.deliveryDetails.phone
     };
     
