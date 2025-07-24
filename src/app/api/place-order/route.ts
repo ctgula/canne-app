@@ -197,28 +197,31 @@ export async function POST(request: NextRequest) {
           .eq('id', customerRecord.id)
           .single();
 
-        // Fetch complete order items with product details from database
-        const { data: orderItemsData } = await supabaseAdmin
+        // Fetch complete order items with product details using proper JOIN
+        const { data: orderItemsData, error: orderItemsError } = await supabaseAdmin
           .from('order_items')
           .select(`
             quantity,
             unit_price,
             total_price,
-            products (
+            product_id,
+            products!inner (
               name,
               tier,
               description,
-              weight,
+              gift_amount,
               color_theme
             )
           `)
           .eq('order_id', orderRecord.id);
 
+        console.log('Order items query result:', { orderItemsData, orderItemsError, orderId: orderRecord.id });
+
         const customerName = `${customerData?.first_name || ''} ${customerData?.last_name || ''}`.trim();
         const customerPhone = customerData?.phone || 'Not provided';
         
-        // Create detailed order items description with proper tier names and weights
-        const orderDetailsText = orderItemsData?.map(item => {
+        // Create detailed order items description with proper tier names and gift amounts
+        const orderDetailsText = orderItemsData?.length > 0 ? orderItemsData.map(item => {
           const product = item.products;
           const tierName = {
             'starter': 'Starter Collection',
@@ -227,12 +230,12 @@ export async function POST(request: NextRequest) {
             'ultra': 'Ultra Premium'
           }[product?.tier] || product?.name || 'Unknown Product';
           
-          const weight = product?.weight || '7g';
+          const giftAmount = product?.gift_amount || '7g';
           const unitPrice = parseFloat(item.unit_price).toFixed(2);
           const totalPrice = parseFloat(item.total_price).toFixed(2);
           
-          return `• **${item.quantity}x ${tierName}** (${weight} complimentary)\n   $${unitPrice} each = $${totalPrice} total`;
-        }).join('\n\n') || 'No items found';
+          return `• **${item.quantity}x ${tierName}** (${giftAmount} complimentary)\n   $${unitPrice} each = $${totalPrice} total`;
+        }).join('\n\n') : `No items found (Error: ${orderItemsError?.message || 'Unknown error'})`;
 
         const embed = {
           title: "🌿 New Cannè Order Received!",

@@ -13,12 +13,16 @@ const testFormData = {
   ],
   deliveryDetails: {
     name: "Sarah Johnson", // Contact Information
+    email: "sarah.johnson@example.com", // Contact Information
     phone: "(202) 555-0199", // Contact Information  
     address: "1600 Pennsylvania Avenue NW", // Delivery Address
+    apartment: "Suite 100", // Delivery Address
     city: "Washington", // Delivery Address
     zipCode: "20001", // Delivery Address (Valid DC ZIP)
     preferredTime: "Evening (5 PM - 8 PM)", // Delivery Preferences
-    specialInstructions: "Please ring doorbell twice. Test order from Windsurf browser form simulation." // Special Instructions
+    specialInstructions: "Please ring doorbell twice. Test order from enhanced Apple-level checkout with email field.", // Special Instructions
+    ageVerification: true,
+    termsAccepted: true
   },
   total: 315, // Matches the form total
   hasDelivery: true
