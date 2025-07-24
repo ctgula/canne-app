@@ -95,78 +95,54 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate unique order number
-    const { data: orderNumber, error: orderNumberError } = await supabaseAdmin
-      .rpc('generate_order_number');
-    
-    if (orderNumberError) {
-      return NextResponse.json(
-        { success: false, error: `Failed to generate order number: ${orderNumberError.message}` },
-        { status: 500 }
-      );
-    }
-
     // Calculate totals
     const subtotal = orderData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const deliveryFee = orderData.hasDelivery ? 0 : 10;
     const total = subtotal + deliveryFee;
 
-    // Create or find customer record
-    let customerId: string;
-    
-    // Check if customer already exists by phone number
-    const { data: existingCustomer } = await supabaseAdmin
+    // Create customer record first (using verified schema fields)
+    const customerPayload = {
+      first_name: orderData.deliveryDetails.name.split(' ')[0] || orderData.deliveryDetails.name,
+      last_name: orderData.deliveryDetails.name.split(' ').slice(1).join(' ') || 'Guest',
+      email: `guest_${Date.now()}@canne.local`,
+      phone: orderData.deliveryDetails.phone
+    };
+
+    const { data: customerRecord, error: customerError } = await supabaseAdmin
       .from('customers')
+      .insert(customerPayload)
       .select('id')
-      .eq('phone', orderData.deliveryDetails.phone)
       .single();
-    
-    if (existingCustomer) {
-      customerId = existingCustomer.id;
-    } else {
-      // Create new guest customer
-      const { data: newCustomer, error: customerError } = await supabaseAdmin
-        .from('customers')
-        .insert({
-          name: orderData.deliveryDetails.name,
-          phone: orderData.deliveryDetails.phone,
-          email: null, // Guest customers don't require email
-          date_of_birth: null, // Will be updated when they verify age
-          is_verified: false // Guest status
-        })
-        .select('id')
-        .single();
-      
-      if (customerError) {
-        return NextResponse.json(
-          { success: false, error: `Failed to create customer: ${customerError.message}` },
-          { status: 500 }
-        );
-      }
-      
-      customerId = newCustomer.id;
+
+    if (customerError) {
+      console.log('Customer creation error:', customerError);
+      return NextResponse.json(
+        { success: false, error: `Failed to create customer: ${customerError.message}` },
+        { status: 500 }
+      );
     }
 
-    // Create order record with customer_id
+    // Generate order number
+    const orderNumber = `CN-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
+    
+    // Create order with minimal essential fields that we know work
     const orderPayload = {
+      customer_id: customerRecord.id,
       order_number: orderNumber,
-      customer_id: customerId,
-      full_name: orderData.deliveryDetails.name,
-      phone: orderData.deliveryDetails.phone,
-      street: orderData.deliveryDetails.address,
-      city: orderData.deliveryDetails.city,
-      zip: orderData.deliveryDetails.zipCode,
-      preferred_time: orderData.deliveryDetails.preferredTime,
-      delivery_instructions: orderData.deliveryDetails.specialInstructions || null,
       subtotal: subtotal,
+      delivery_fee: deliveryFee,
       total: total,
-      status: 'pending'
+      status: 'pending',
+      delivery_address_line1: orderData.deliveryDetails.address,
+      delivery_city: orderData.deliveryDetails.city,
+      delivery_state: 'DC',
+      delivery_zip: orderData.deliveryDetails.zipCode
     };
     
     const { data: orderRecord, error: orderError } = await supabaseAdmin
       .from('orders')
       .insert(orderPayload)
-      .select('id, order_number, full_name, phone, street, city, zip, preferred_time, delivery_instructions, subtotal, total, created_at')
+      .select('id, created_at, status, total, subtotal, delivery_fee, order_number, delivery_address_line1, delivery_city, delivery_zip')
       .single();
 
     if (orderError) {
@@ -184,11 +160,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create order items with product names
+    // Create order items with all required fields
     const orderItems = orderData.items.map(item => ({
       order_id: orderRecord.id,
       product_id: item.id,
-      name: item.name,
       quantity: item.quantity,
       unit_price: item.price,
       total_price: item.price * item.quantity
@@ -211,45 +186,93 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Send Discord notification with embed format
+    // Send Apple-level Discord notification with real database data
     try {
       const discordWebhook = process.env.DISCORD_WEBHOOK;
       if (discordWebhook) {
-        // Create detailed item descriptions for Discord
-        const itemDescriptions = orderData.items.map(item => {
-          let itemText = `**${item.name}** (${item.quantity}x) - $${item.price.toFixed(2)} each`;
-          if (item.description) {
-            itemText += `\n  └ ${item.description}`;
-          }
-          if (item.giftSize) {
-            itemText += `\n  └ Gift: ${item.giftSize}`;
-          }
-          return itemText;
-        }).join('\n\n');
+        // Fetch complete customer information from database
+        const { data: customerData } = await supabaseAdmin
+          .from('customers')
+          .select('first_name, last_name, phone, email')
+          .eq('id', customerRecord.id)
+          .single();
+
+        // Fetch complete order items with product details from database
+        const { data: orderItemsData } = await supabaseAdmin
+          .from('order_items')
+          .select(`
+            quantity,
+            unit_price,
+            total_price,
+            products (
+              name,
+              tier,
+              description,
+              weight,
+              color_theme
+            )
+          `)
+          .eq('order_id', orderRecord.id);
+
+        const customerName = `${customerData?.first_name || ''} ${customerData?.last_name || ''}`.trim();
+        const customerPhone = customerData?.phone || 'Not provided';
+        
+        // Create detailed order items description with proper tier names and weights
+        const orderDetailsText = orderItemsData?.map(item => {
+          const product = item.products;
+          const tierName = {
+            'starter': 'Starter Collection',
+            'classic': 'Classic Series', 
+            'black': 'Black Edition',
+            'ultra': 'Ultra Premium'
+          }[product?.tier] || product?.name || 'Unknown Product';
+          
+          const weight = product?.weight || '7g';
+          const unitPrice = parseFloat(item.unit_price).toFixed(2);
+          const totalPrice = parseFloat(item.total_price).toFixed(2);
+          
+          return `• **${item.quantity}x ${tierName}** (${weight} complimentary)\n   $${unitPrice} each = $${totalPrice} total`;
+        }).join('\n\n') || 'No items found';
 
         const embed = {
-          title: "🎨 New Cannè Order!",
-          color: 0x8B5CF6, // Purple color matching your brand
+          title: "🌿 New Cannè Order Received!",
+          description: `Order **${orderRecord.order_number}** has been placed and is ready for processing.`,
           fields: [
-            { name: "📋 Order ID", value: orderRecord.order_number, inline: true },
-            { name: "👤 Customer", value: orderRecord.full_name, inline: true },
-            { name: "📞 Phone", value: orderRecord.phone, inline: true },
-            { name: "📍 Delivery Address", value: `${orderRecord.street}\n${orderRecord.city}, DC ${orderRecord.zip}`, inline: false },
-            { name: "⏰ Preferred Time", value: orderRecord.preferred_time, inline: true },
-            { name: "💰 Total", value: `$${orderRecord.total.toFixed(2)}`, inline: true },
-            { name: "🛍️ Items Ordered", value: itemDescriptions, inline: false }
+            { 
+              name: "👤 Customer Information", 
+              value: `**Name:** ${customerName || 'Guest Customer'}\n**Phone:** ${customerPhone}\n**Email:** ${customerData?.email || 'Not provided'}`,
+              inline: false 
+            },
+            { 
+              name: "📍 Delivery Details", 
+              value: `**Address:** ${orderRecord.delivery_address_line1}\n${orderRecord.delivery_city}, DC ${orderRecord.delivery_zip}\n**Preferred Time:** ${orderData.deliveryDetails.preferredTime || 'Not specified'}`,
+              inline: false 
+            },
+            { 
+              name: "📦 Order Details", 
+              value: orderDetailsText,
+              inline: false 
+            },
+            { name: "Subtotal", value: `$${orderRecord.subtotal.toFixed(2)}`, inline: true },
+            { name: "Delivery", value: orderRecord.delivery_fee > 0 ? `$${orderRecord.delivery_fee.toFixed(2)}` : 'FREE', inline: true },
+            { name: "**Total**", value: `**$${orderRecord.total.toFixed(2)}**`, inline: true }
           ],
-          footer: {
-            text: "Cannè - Art & Cannabis Gifts | I-71 Compliant"
+          timestamp: orderRecord.created_at,
+          color: 0x8B5CF6,
+          footer: { 
+            text: "Cannè Art Collective • I-71 Compliant • Washington, DC",
+            icon_url: "https://raw.githubusercontent.com/twemoji/twemoji/master/assets/72x72/1f33f.png"
           },
-          timestamp: orderRecord.created_at
+          thumbnail: {
+            url: "https://raw.githubusercontent.com/twemoji/twemoji/master/assets/72x72/1f4e6.png"
+          }
         };
-
+        
         // Add special instructions if provided
-        if (orderRecord.delivery_instructions) {
+        if (orderData.deliveryDetails.specialInstructions) {
           embed.fields.push({
             name: "📝 Special Instructions",
-            value: orderRecord.delivery_instructions,
+            value: orderData.deliveryDetails.specialInstructions,
             inline: false
           });
         }
@@ -258,21 +281,20 @@ export async function POST(request: NextRequest) {
           method: "POST",
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
-            username: "Cannè Order Bot", 
-            avatar_url: "https://your-domain.com/logo.png", // Optional: add your logo
+            username: "Cannè Order System",
+            avatar_url: "https://raw.githubusercontent.com/twemoji/twemoji/master/assets/72x72/1f33f.png",
             embeds: [embed] 
           })
         });
       }
-    } catch (discordError) {
-      // Don't fail the order if Discord notification fails
-      console.warn('Discord notification failed:', discordError);
+    } catch (error) {
+      console.error('Discord notification failed:', error);
     }
 
     // Return success response
     return NextResponse.json({
       success: true,
-      orderId: orderRecord.order_number,
+      orderId: orderRecord.id,
       message: 'Order placed successfully'
     });
 

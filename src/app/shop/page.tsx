@@ -5,82 +5,50 @@ import { motion } from 'framer-motion';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useCartStore } from '@/services/CartService';
-import { Product as DatabaseProduct } from '@/models/Product';
+import { DatabaseProduct } from '@/services/DatabaseService';
+import { useProducts } from '@/hooks/useProducts';
 import toast from 'react-hot-toast';
-import { ShoppingBag, Star, Zap, Shield, Gift } from 'lucide-react';
+import { ShoppingBag, Star, Zap, Shield, Gift, Loader2, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase';
-
-// Extended product interface for the shop page
-interface ShopProduct {
-  id: string;
-  name: string;
-  tier: 'Starter' | 'Classic' | 'Black' | 'Ultra';
-  price: number;
-  description: string;
-  image: string;
-  strain?: string;
-  type?: 'art' | 'tie' | 'flower';
-  color?: string;
-  pattern?: string;
-  features?: string[];
-}
 
 export default function ShopPage() {
   const { addItem, hydrateCart, items } = useCartStore();
-  const [products, setProducts] = useState<ShopProduct[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTier, setSelectedTier] = useState<string | null>(null);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [sortBy, setSortBy] = useState<'price' | 'name' | 'tier'>('price');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
+  // Use MCP-aligned products hook
+  const {
+    products,
+    loading,
+    error,
+    count,
+    searchProducts,
+    getProductsByTier,
+    testConnection,
+    refresh,
+    clearError
+  } = useProducts({
+    autoFetch: true,
+    searchTerm,
+    sortBy,
+    sortOrder
+  });
+
+  // Test database connection on mount
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('products')
-          .select('*')
-          .eq('is_active', true)
-          .order('price', { ascending: true });
-
-        if (error) {
-          console.error('Error fetching products:', error);
-          toast.error('Failed to load products');
-          return;
-        }
-
-        // Transform database products to ShopProduct format
-        const transformedProducts: ShopProduct[] = data.map(product => ({
-          id: product.id,
-          name: product.name,
-          tier: product.tier.charAt(0).toUpperCase() + product.tier.slice(1) as 'Starter' | 'Classic' | 'Black' | 'Ultra',
-          price: parseFloat(product.price),
-          description: `${product.description} + FREE premium flower (${product.gift_amount})`,
-          image: product.image_url,
-          type: 'art' as const,
-          features: [
-            `${product.tier.charAt(0).toUpperCase() + product.tier.slice(1)} tier digital artwork`,
-            `FREE premium flower (${product.gift_amount})`,
-            'I-71 compliant gifting',
-            'Same-day delivery available',
-            ...(product.has_premium_badge ? ['Premium badge included'] : [])
-          ]
-        }));
-        
-        setProducts(transformedProducts);
-      } catch (err) {
-        console.error('Unexpected error:', err);
-        toast.error('Failed to load products');
-      } finally {
-        setLoading(false);
+    const initializeDatabase = async () => {
+      const isConnected = await testConnection();
+      if (!isConnected) {
+        toast.error('Database connection failed. Please check your internet connection.');
       }
     };
 
-    fetchProducts();
-    hydrateCart(); // Hydrate cart when component mounts
-  }, [hydrateCart]);
+    initializeDatabase();
+    hydrateCart();
+  }, [testConnection, hydrateCart]);
 
   // Memoized filtered and sorted products for better performance
   const filteredProducts = useMemo(() => {
@@ -125,15 +93,28 @@ export default function ShopPage() {
     return filtered;
   }, [products, selectedTier, searchTerm, sortBy, sortOrder]);
 
-  const handleAddToCart = useCallback((product: ShopProduct) => {
+  const handleAddToCart = useCallback((product: DatabaseProduct) => {
     const quantity = quantities[product.id] || 1;
     
-    // Add the product to cart with specified quantity in one operation
-    addItem(product as unknown as DatabaseProduct, quantity);
+    // Convert DatabaseProduct to Product format for cart
+    const productForCart = {
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      tier: product.tier,
+      weight: product.weight || '0g',
+      color_theme: product.color_theme || '#8B5CF6',
+      image_url: product.image_url || '/placeholder-product.jpg',
+      is_active: product.is_active,
+      created_at: product.created_at
+    };
+    
+    addItem(productForCart, quantity);
     
     // Enhanced success message with value proposition
     toast.success(
-      `🎨 ${quantity} ${product.name} added! FREE cannabis gift included!`,
+      ` ${quantity} ${product.name} added! FREE cannabis gift included!`,
       {
         duration: 4000,
         style: {
@@ -172,7 +153,7 @@ export default function ShopPage() {
   
   // Calculate total cart value for display
   const cartTotal = useMemo(() => {
-    return items.reduce((total, item) => total + (item.price * item.quantity), 0);
+    return items.reduce((total, item) => total + (item.product.price * item.quantity), 0);
   }, [items]);
 
   // Framer Motion variants
@@ -305,7 +286,7 @@ export default function ShopPage() {
                   {/* Product Image */}
                   <div className="w-24 sm:w-32 h-24 sm:h-32 rounded-lg mb-3 sm:mb-4 overflow-hidden shadow-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
                     <img 
-                      src={product.image || `/images/placeholder-${
+                      src={product.image_url || `/images/placeholder-${
                         product.tier === 'Starter' ? 'pink' :
                         product.tier === 'Classic' ? 'violet' :
                         product.tier === 'Black' ? 'black' :

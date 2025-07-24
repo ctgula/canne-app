@@ -2,33 +2,35 @@
 const testOrder = {
   items: [
     {
-      product: {
-        id: "ddc696a0-a537-4d10-b820-584c6c512bff", // Starter Collection ID from database
-        name: "Starter Collection",
-        description: "starter",
-        price: 25,
-        artworkUrl: "/images/starter-collection.jpg",
-        giftSize: "3.5g",
-        hasDelivery: true
-      },
-      quantity: 1
+      id: 'ddc696a0-a537-4d10-b820-584c6c512bff', // Starter Collection
+      name: 'Starter Collection',
+      price: 25,
+      quantity: 2,
+      giftSize: '3.5g'
+    },
+    {
+      id: '4e08d8c4-bc92-451c-b1fb-d2898070462f', // Classic Series
+      name: 'Classic Series',
+      price: 45,
+      quantity: 1,
+      giftSize: '7g'
     }
   ],
   deliveryDetails: {
     name: "Test Customer",
-    phone: "(555) 123-4567",
-    address: "123 Test Street",
+    phone: "(202) 555-0123",
+    address: "1234 Test Street NW",
     city: "Washington",
     zipCode: "20001",
-    timePreference: "afternoon",
-    specialInstructions: "Test order for Sunday launch"
+    preferredTime: "Evening (5 PM - 8 PM)",
+    specialInstructions: "Test order for debugging Discord notifications"
   },
-  total: 25,
+  total: 45,
   hasDelivery: true
 };
 
 // Test the API endpoint
-fetch('http://localhost:4001/api/orders', {
+fetch('http://localhost:4000/api/place-order', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',

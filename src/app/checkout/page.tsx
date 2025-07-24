@@ -9,12 +9,17 @@ import Link from 'next/link';
 // Types for checkout
 interface DeliveryDetails {
   name: string;
+  email: string;
   phone: string;
   address: string;
+  apartment?: string;
   city: string;
   zipCode: string;
   timePreference: 'morning' | 'afternoon' | 'evening';
   specialInstructions: string;
+  ageVerification?: boolean;
+  termsAccepted?: boolean;
+  preferredTime?: string;
 }
 
 // Order interface
@@ -52,12 +57,16 @@ export default function CheckoutPage() {
 
   const [deliveryDetails, setDeliveryDetails] = useState<DeliveryDetails>({
     name: '',
+    email: '',
     phone: '',
     address: '',
     city: '',
     zipCode: '',
     timePreference: 'afternoon',
     specialInstructions: '',
+    ageVerification: false,
+    termsAccepted: false,
+    preferredTime: ''
   });
 
   // Redirect if cart is empty
@@ -319,7 +328,7 @@ export default function CheckoutPage() {
                   <h2 className="text-xl font-semibold text-gray-900">Contact Information</h2>
                 </div>
                 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Full Name *
@@ -332,39 +341,79 @@ export default function CheckoutPage() {
                       onChange={handleInputChange}
                       className="w-full px-3 sm:px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-base"
                       placeholder="John Doe"
+                      autoComplete="name"
                     />
                   </div>
                   
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Phone Number *
-                    </label>
-                    <input
-                      type="tel"
-                      name="phone"
-                      required
-                      value={deliveryDetails.phone}
-                      onChange={handleInputChange}
-                      className={`w-full px-3 sm:px-4 py-3 border rounded-xl focus:ring-2 focus:border-transparent transition-all text-base ${
-                        phoneError 
-                          ? 'border-red-300 focus:ring-red-500 bg-red-50' 
-                          : 'border-gray-300 focus:ring-purple-500'
-                      }`}
-                      placeholder="(202) 555-0123"
-                      maxLength={14}
-                    />
-                    {phoneError && (
-                      <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
-                        <span className="text-red-500">⚠️</span>
-                        {phoneError}
-                      </p>
-                    )}
-                    {deliveryDetails.phone && !phoneError && (
-                      <p className="mt-2 text-sm text-green-600 flex items-center gap-1">
-                        <span className="text-green-500">✅</span>
-                        Valid phone number
-                      </p>
-                    )}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Email Address *
+                      </label>
+                      <input
+                        type="email"
+                        name="email"
+                        required
+                        value={deliveryDetails.email || ''}
+                        onChange={handleInputChange}
+                        className="w-full px-3 sm:px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-base"
+                        placeholder="john@example.com"
+                        autoComplete="email"
+                      />
+                      <p className="mt-1 text-xs text-gray-500">For order confirmation and updates</p>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Phone Number *
+                      </label>
+                      <input
+                        type="tel"
+                        name="phone"
+                        required
+                        value={deliveryDetails.phone}
+                        onChange={handleInputChange}
+                        className={`w-full px-3 sm:px-4 py-3 border rounded-xl focus:ring-2 focus:border-transparent transition-all text-base ${
+                          phoneError 
+                            ? 'border-red-300 focus:ring-red-500 bg-red-50' 
+                            : 'border-gray-300 focus:ring-purple-500'
+                        }`}
+                        placeholder="(202) 555-0123"
+                        maxLength={14}
+                        autoComplete="tel"
+                      />
+                      {phoneError && (
+                        <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                          <span className="text-red-500">⚠️</span>
+                          {phoneError}
+                        </p>
+                      )}
+                      {deliveryDetails.phone && !phoneError && (
+                        <p className="mt-2 text-sm text-green-600 flex items-center gap-1">
+                          <span className="text-green-500">✅</span>
+                          Valid phone number
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Age Verification */}
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                    <div className="flex items-start gap-3">
+                      <input
+                        type="checkbox"
+                        id="ageVerification"
+                        name="ageVerification"
+                        required
+                        className="mt-1 h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                        onChange={handleInputChange}
+                      />
+                      <label htmlFor="ageVerification" className="text-sm text-gray-700">
+                        <span className="font-medium">Age Verification Required *</span>
+                        <br />
+                        I certify that I am 21 years of age or older and legally permitted to purchase cannabis products in Washington, DC.
+                      </label>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -387,8 +436,10 @@ export default function CheckoutPage() {
                       value={deliveryDetails.address}
                       onChange={handleInputChange}
                       className="w-full px-3 sm:px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-base"
-                      placeholder="123 Main Street"
+                      placeholder="Start typing your address..."
+                      autoComplete="street-address"
                     />
+                    <p className="mt-1 text-xs text-gray-500">🏠 Address autofill available - start typing for suggestions</p>
                   </div>
                   
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -404,6 +455,7 @@ export default function CheckoutPage() {
                         onChange={handleInputChange}
                         className="w-full px-3 sm:px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-base"
                         placeholder="Washington"
+                        autoComplete="address-level2"
                       />
                     </div>
                     
@@ -419,8 +471,27 @@ export default function CheckoutPage() {
                         onChange={handleInputChange}
                         className="w-full px-3 sm:px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-base"
                         placeholder="20001"
+                        autoComplete="postal-code"
+                        maxLength={5}
                       />
+                      <p className="mt-1 text-xs text-gray-500">📍 DC delivery only (20000-20199)</p>
                     </div>
+                  </div>
+                  
+                  {/* Apartment/Unit field */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Apartment, Suite, Unit (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      name="apartment"
+                      value={deliveryDetails.apartment || ''}
+                      onChange={handleInputChange}
+                      className="w-full px-3 sm:px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-base"
+                      placeholder="Apt 4B, Suite 200, etc."
+                      autoComplete="address-line2"
+                    />
                   </div>
                 </div>
               </div>
@@ -522,18 +593,97 @@ export default function CheckoutPage() {
                 </div>
               )}
 
+              {/* Payment Method */}
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-lg">💳</span>
+                  <h3 className="font-medium text-gray-900">Payment Method</h3>
+                </div>
+                <div className="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg">
+                  <input
+                    type="radio"
+                    id="cashOnDelivery"
+                    name="paymentMethod"
+                    value="cash"
+                    defaultChecked
+                    className="h-4 w-4 text-purple-600 focus:ring-purple-500"
+                  />
+                  <label htmlFor="cashOnDelivery" className="flex-1">
+                    <div className="font-medium text-gray-900">Cash on Delivery</div>
+                    <div className="text-sm text-gray-500">Pay with cash when your order arrives</div>
+                  </label>
+                  <span className="text-2xl">💵</span>
+                </div>
+              </div>
+
+              {/* Legal Compliance */}
+              <div className="space-y-4 mb-6">
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    id="termsAccepted"
+                    name="termsAccepted"
+                    required
+                    className="mt-1 h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                    onChange={handleInputChange}
+                  />
+                  <label htmlFor="termsAccepted" className="text-sm text-gray-700">
+                    I agree to the{' '}
+                    <a href="/terms" target="_blank" className="text-purple-600 hover:text-purple-800 underline">
+                      Terms of Service
+                    </a>{' '}
+                    and{' '}
+                    <a href="/privacy" target="_blank" className="text-purple-600 hover:text-purple-800 underline">
+                      Privacy Policy
+                    </a>
+                    *
+                  </label>
+                </div>
+                
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    id="emailUpdates"
+                    name="emailUpdates"
+                    className="mt-1 h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                    onChange={handleInputChange}
+                  />
+                  <label htmlFor="emailUpdates" className="text-sm text-gray-700">
+                    Send me order updates and exclusive offers via email (optional)
+                  </label>
+                </div>
+              </div>
+
               <button
                 type="submit"
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed text-lg py-4"
               >
-                {isSubmitting ? 'Processing Order...' : `Complete Order - $${finalTotal}`}
+                {isSubmitting ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    Processing Order...
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center gap-2">
+                    <span>🔒</span>
+                    Complete Secure Order - ${finalTotal}
+                  </div>
+                )}
               </button>
 
-              <p className="text-xs text-gray-500 text-center mt-4">
-                By completing your order, you agree to our terms of service and confirm you are 21+ years old.
-              </p>
+              <div className="text-center mt-4 space-y-2">
+                <p className="text-xs text-gray-500">
+                  🛡️ Your information is secure and encrypted
+                </p>
+                <p className="text-xs text-gray-500">
+                  📧 Order confirmation will be sent to your email
+                </p>
+                <p className="text-xs text-gray-400">
+                  I-71 Compliant • 21+ Only • Washington, DC
+                </p>
+              </div>
             </div>
           </div>
         </div>
