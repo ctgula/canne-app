@@ -39,12 +39,16 @@ try {
 
 interface DeliveryDetails {
   name: string;
+  email?: string;
   phone: string;
   address: string;
+  apartment?: string;
   city: string;
   zipCode: string;
   preferredTime: string;
   specialInstructions?: string;
+  ageVerification?: boolean;
+  termsAccepted?: boolean;
 }
 
 interface OrderItem {
@@ -95,18 +99,40 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Calculate totals
-    const subtotal = orderData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    // Calculate totals with proper error handling and logging
+    console.log('Order data items:', JSON.stringify(orderData.items, null, 2));
+    
+    const subtotal = orderData.items.reduce((sum, item) => {
+      const itemPrice = typeof item.price === 'number' ? item.price : parseFloat(item.price) || 0;
+      const itemQuantity = typeof item.quantity === 'number' ? item.quantity : parseInt(item.quantity) || 0;
+      const itemTotal = itemPrice * itemQuantity;
+      console.log(`Item: ${item.name}, Price: ${itemPrice}, Quantity: ${itemQuantity}, Total: ${itemTotal}`);
+      return sum + itemTotal;
+    }, 0);
+    
     const deliveryFee = orderData.hasDelivery ? 0 : 10;
     const total = subtotal + deliveryFee;
+    
+    console.log(`Calculated totals - Subtotal: ${subtotal}, Delivery Fee: ${deliveryFee}, Total: ${total}`);
+    
+    // Validate calculated totals
+    if (isNaN(subtotal) || subtotal <= 0) {
+      console.error('Invalid subtotal calculated:', subtotal);
+      return NextResponse.json(
+        { success: false, error: `Invalid subtotal calculated: ${subtotal}. Items: ${JSON.stringify(orderData.items)}` },
+        { status: 400 }
+      );
+    }
 
     // Create customer record first (using verified schema fields)
     const customerPayload = {
       first_name: orderData.deliveryDetails.name.split(' ')[0] || orderData.deliveryDetails.name,
       last_name: orderData.deliveryDetails.name.split(' ').slice(1).join(' ') || 'Guest',
-      email: `guest_${Date.now()}@canne.local`,
+      email: orderData.deliveryDetails.email || `guest_${Date.now()}@canne.local`,
       phone: orderData.deliveryDetails.phone
     };
+    
+    console.log('Customer payload:', JSON.stringify(customerPayload, null, 2));
 
     const { data: customerRecord, error: customerError } = await supabaseAdmin
       .from('customers')
