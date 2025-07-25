@@ -127,7 +127,8 @@ export default function CheckoutPage() {
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
     
     if (name === 'phone') {
       // Format and validate phone number
@@ -138,6 +139,12 @@ export default function CheckoutPage() {
       setDeliveryDetails(prev => ({
         ...prev,
         [name]: formattedPhone
+      }));
+    } else if (type === 'checkbox') {
+      // Handle checkbox inputs properly
+      setDeliveryDetails(prev => ({
+        ...prev,
+        [name]: checked
       }));
     } else {
       setDeliveryDetails(prev => ({
@@ -179,6 +186,17 @@ export default function CheckoutPage() {
       return;
     }
     
+    // Validate required checkboxes
+    if (!deliveryDetails.ageVerification) {
+      alert('Please confirm that you are 21 years of age or older.');
+      return;
+    }
+    
+    if (!deliveryDetails.termsAccepted) {
+      alert('Please accept the Terms of Service and Privacy Policy to continue.');
+      return;
+    }
+    
     if (items.length === 0) {
       alert('Your cart is empty. Please add items before checking out.');
       return;
@@ -212,7 +230,9 @@ export default function CheckoutPage() {
         status: 'pending',
       };
 
-      console.log('Submitting order:', order);
+      console.log('🚀 Frontend: Submitting order:', JSON.stringify(order, null, 2));
+      console.log('🚀 Frontend: Cart items structure:', JSON.stringify(orderItems, null, 2));
+      console.log('🚀 Frontend: Raw cart items from store:', JSON.stringify(items, null, 2));
 
       // Submit order to secure API
       const response = await fetch('/api/place-order', {
@@ -396,25 +416,6 @@ export default function CheckoutPage() {
                       )}
                     </div>
                   </div>
-                  
-                  {/* Age Verification */}
-                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-                    <div className="flex items-start gap-3">
-                      <input
-                        type="checkbox"
-                        id="ageVerification"
-                        name="ageVerification"
-                        required
-                        className="mt-1 h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
-                        onChange={handleInputChange}
-                      />
-                      <label htmlFor="ageVerification" className="text-sm text-gray-700">
-                        <span className="font-medium">Age Verification Required *</span>
-                        <br />
-                        I certify that I am 21 years of age or older and legally permitted to purchase cannabis products in Washington, DC.
-                      </label>
-                    </div>
-                  </div>
                 </div>
               </div>
 
@@ -547,7 +548,7 @@ export default function CheckoutPage() {
                     <div className="flex-1">
                       <h3 className="font-medium text-gray-900">{item.product.name}</h3>
                       <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
-                      <p className="text-sm text-green-600 font-medium">{item.product.weight} complimentary gift</p>
+                      <p className="text-sm text-green-600 font-medium">{item.product.gift_amount || item.product.weight || '0g'} complimentary gift</p>
                     </div>
                     <div className="text-right">
                       <p className="font-medium">${item.product.price * item.quantity}</p>
@@ -616,8 +617,28 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              {/* Legal Compliance */}
+              {/* Legal Compliance - Age Verification and Terms */}
               <div className="space-y-4 mb-6">
+                {/* Age Verification */}
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                  <div className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      id="ageVerification"
+                      name="ageVerification"
+                      required
+                      className="mt-1 h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                      onChange={handleInputChange}
+                    />
+                    <label htmlFor="ageVerification" className="text-sm text-gray-700">
+                      <span className="font-medium">Age Verification Required *</span>
+                      <br />
+                      I certify that I am 21 years of age or older and legally permitted to purchase cannabis products in Washington, DC.
+                    </label>
+                  </div>
+                </div>
+                
+                {/* Terms and Privacy */}
                 <div className="flex items-start gap-3">
                   <input
                     type="checkbox"

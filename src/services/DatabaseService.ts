@@ -57,7 +57,8 @@ export class DatabaseService {
         ...product,
         // Ensure all required fields are present
         image_url: product.image_url || '/placeholder-product.jpg',
-        weight: product.weight || '0g',
+        weight: product.gift_amount || product.weight || '0g', // Use gift_amount from database
+        gift_amount: product.gift_amount || product.weight || '0g', // Ensure gift_amount is available
         color_theme: product.color_theme || '#8B5CF6',
         // Parse metadata if it exists
         ...(product.metadata && typeof product.metadata === 'object' ? product.metadata : {}),

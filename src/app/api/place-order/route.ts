@@ -210,14 +210,41 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Debug: Log the items structure to understand the data format
+    console.log('🔍 Order items structure:', JSON.stringify(orderData.items, null, 2));
+    
     // Create order items with all required fields
-    const orderItems = orderData.items.map(item => ({
-      order_id: orderRecord.id,
-      product_id: item.id,
-      quantity: item.quantity,
-      unit_price: item.price,
-      total_price: item.price * item.quantity
-    }));
+    const orderItems = orderData.items.map((item, index) => {
+      // Enhanced debugging for product ID extraction
+      console.log(`🔍 Raw item ${index}:`, JSON.stringify(item, null, 2));
+      
+      const productId = item.product?.id || item.id;
+      const unitPrice = item.product?.price || item.price;
+      
+      console.log(`🔍 Extracted data for item ${index}:`, {
+        productId,
+        unitPrice,
+        quantity: item.quantity,
+        itemStructure: Object.keys(item),
+        hasProduct: !!item.product,
+        productKeys: item.product ? Object.keys(item.product) : 'no product object'
+      });
+      
+      if (!productId) {
+        console.error(`❌ Missing product_id for item ${index}:`, JSON.stringify(item, null, 2));
+        console.error(`❌ item.product:`, item.product);
+        console.error(`❌ item.id:`, item.id);
+        throw new Error(`Missing product_id for item ${index}. Item structure: ${JSON.stringify(item)}`);
+      }
+      
+      return {
+        order_id: orderRecord.id,
+        product_id: productId,
+        quantity: item.quantity,
+        unit_price: unitPrice,
+        total_price: unitPrice * item.quantity
+      };
+    });
     
     const { error: itemsError } = await supabaseAdmin
       .from('order_items')

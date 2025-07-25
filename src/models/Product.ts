@@ -10,6 +10,7 @@ export interface Product {
   price: number;
   tier: 'Starter' | 'Classic' | 'Black' | 'Ultra';
   weight: string;
+  gift_amount?: string; // Database uses gift_amount for complimentary gift weight
   color_theme: string;
   image_url: string;
   is_active: boolean;
