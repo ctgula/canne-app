@@ -266,7 +266,14 @@ export async function POST(request: NextRequest) {
     // Send Apple-level Discord notification with real database data
     try {
       const discordWebhook = process.env.DISCORD_WEBHOOK;
+      console.log('🔔 Discord webhook check:', {
+        webhookExists: !!discordWebhook,
+        webhookLength: discordWebhook?.length || 0,
+        webhookStart: discordWebhook?.substring(0, 50) || 'undefined'
+      });
+      
       if (discordWebhook) {
+        console.log('✅ Discord webhook found, proceeding with notification...');
         // Fetch complete customer information from database
         const { data: customerData } = await supabaseAdmin
           .from('customers')
@@ -357,7 +364,9 @@ export async function POST(request: NextRequest) {
           });
         }
         
-        await fetch(discordWebhook, {
+        console.log('📤 Sending Discord notification for order:', orderRecord.order_number);
+        
+        const discordResponse = await fetch(discordWebhook, {
           method: "POST",
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
@@ -366,6 +375,22 @@ export async function POST(request: NextRequest) {
             embeds: [embed] 
           })
         });
+        
+        console.log('📬 Discord webhook response:', {
+          status: discordResponse.status,
+          statusText: discordResponse.statusText,
+          ok: discordResponse.ok
+        });
+        
+        if (!discordResponse.ok) {
+          const errorText = await discordResponse.text();
+          console.error('❌ Discord webhook failed:', {
+            status: discordResponse.status,
+            error: errorText
+          });
+        } else {
+          console.log('✅ Discord notification sent successfully!');
+        }
       }
     } catch (error) {
       console.error('Discord notification failed:', error);
