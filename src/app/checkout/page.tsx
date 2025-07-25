@@ -618,60 +618,97 @@ export default function CheckoutPage() {
               </div>
 
               {/* Legal Compliance - Age Verification and Terms */}
-              <div className="space-y-4 mb-6">
+              <div className="space-y-6 mb-8">
                 {/* Age Verification */}
-                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-                  <div className="flex items-start gap-3">
-                    <input
-                      type="checkbox"
-                      id="ageVerification"
-                      name="ageVerification"
-                      required
-                      className="mt-1 h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
-                      onChange={handleInputChange}
-                    />
-                    <label htmlFor="ageVerification" className="text-sm text-gray-700">
-                      <span className="font-medium">Age Verification Required *</span>
+                <div className="bg-amber-50 border-2 border-amber-300 rounded-xl p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="relative flex-shrink-0 mt-1">
+                      <input
+                        type="checkbox"
+                        id="ageVerification"
+                        name="ageVerification"
+                        required
+                        className="appearance-none h-6 w-6 border-2 border-amber-400 rounded-md bg-white checked:bg-purple-600 checked:border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 cursor-pointer transition-all duration-200"
+                        onChange={handleInputChange}
+                      />
+                      <svg 
+                        className="absolute top-0.5 left-0.5 h-5 w-5 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity duration-200" 
+                        fill="currentColor" 
+                        viewBox="0 0 20 20"
+                      >
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <label htmlFor="ageVerification" className="text-sm text-gray-800 cursor-pointer select-none">
+                      <span className="font-semibold text-amber-800">🔞 Age Verification Required *</span>
                       <br />
-                      I certify that I am 21 years of age or older and legally permitted to purchase cannabis products in Washington, DC.
+                      <span className="mt-1 block">I certify that I am 21 years of age or older and legally permitted to purchase cannabis products in Washington, DC.</span>
                     </label>
                   </div>
                 </div>
                 
                 {/* Terms and Privacy */}
-                <div className="flex items-start gap-3">
-                  <input
-                    type="checkbox"
-                    id="termsAccepted"
-                    name="termsAccepted"
-                    required
-                    className="mt-1 h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
-                    onChange={handleInputChange}
-                  />
-                  <label htmlFor="termsAccepted" className="text-sm text-gray-700">
-                    I agree to the{' '}
-                    <a href="/terms" target="_blank" className="text-purple-600 hover:text-purple-800 underline">
-                      Terms of Service
-                    </a>{' '}
-                    and{' '}
-                    <a href="/privacy" target="_blank" className="text-purple-600 hover:text-purple-800 underline">
-                      Privacy Policy
-                    </a>
-                    *
-                  </label>
+                <div className="bg-purple-50 border-2 border-purple-200 rounded-xl p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="relative flex-shrink-0 mt-1">
+                      <input
+                        type="checkbox"
+                        id="termsAccepted"
+                        name="termsAccepted"
+                        required
+                        className="appearance-none h-6 w-6 border-2 border-purple-300 rounded-md bg-white checked:bg-purple-600 checked:border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 cursor-pointer transition-all duration-200"
+                        onChange={handleInputChange}
+                      />
+                      <svg 
+                        className="absolute top-0.5 left-0.5 h-5 w-5 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity duration-200" 
+                        fill="currentColor" 
+                        viewBox="0 0 20 20"
+                      >
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <label htmlFor="termsAccepted" className="text-sm text-gray-800 cursor-pointer select-none">
+                      <span className="font-semibold text-purple-800">📋 Service Agreement *</span>
+                      <br />
+                      <span className="mt-1 block">
+                        I agree to the{' '}
+                        <a href="/terms" target="_blank" className="text-purple-600 hover:text-purple-800 underline font-medium">
+                          Terms of Service
+                        </a>{' '}
+                        and{' '}
+                        <a href="/privacy" target="_blank" className="text-purple-600 hover:text-purple-800 underline font-medium">
+                          Privacy Policy
+                        </a>
+                      </span>
+                    </label>
+                  </div>
                 </div>
                 
-                <div className="flex items-start gap-3">
-                  <input
-                    type="checkbox"
-                    id="emailUpdates"
-                    name="emailUpdates"
-                    className="mt-1 h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
-                    onChange={handleInputChange}
-                  />
-                  <label htmlFor="emailUpdates" className="text-sm text-gray-700">
-                    Send me order updates and exclusive offers via email (optional)
-                  </label>
+                {/* Email Updates - Optional */}
+                <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                  <div className="flex items-start gap-4">
+                    <div className="relative flex-shrink-0 mt-1">
+                      <input
+                        type="checkbox"
+                        id="emailUpdates"
+                        name="emailUpdates"
+                        className="appearance-none h-5 w-5 border-2 border-gray-300 rounded-md bg-white checked:bg-purple-600 checked:border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 cursor-pointer transition-all duration-200"
+                        onChange={handleInputChange}
+                      />
+                      <svg 
+                        className="absolute top-0.5 left-0.5 h-4 w-4 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity duration-200" 
+                        fill="currentColor" 
+                        viewBox="0 0 20 20"
+                      >
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <label htmlFor="emailUpdates" className="text-sm text-gray-700 cursor-pointer select-none">
+                      <span className="font-medium">📧 Email Updates (Optional)</span>
+                      <br />
+                      <span className="text-gray-600">Send me order updates and exclusive offers via email</span>
+                    </label>
+                  </div>
                 </div>
               </div>
 
