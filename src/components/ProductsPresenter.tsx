@@ -6,6 +6,8 @@ import { ProductController } from '@/controllers/ProductController';
 import { useCartStore } from '@/services/CartService';
 import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
+import { Eye, Sparkles, Leaf, Brain, Focus, Smile } from 'lucide-react';
+import ArtSampleModal from './ArtSampleModal';
 
 /**
  * ProductsPresenter component for displaying products
@@ -13,11 +15,48 @@ import { toast } from 'react-hot-toast';
  */
 export default function ProductsPresenter() {
   const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedTier, setSelectedTier] = useState<string>('');
+
   // Access cart store functions
   const { addItem } = useCartStore();
+
+  // Gift tier data with strain types and effects
+  const getTierData = (tier: string) => {
+    const tierData = {
+      starter: {
+        strainType: 'Hybrid',
+        effects: ['Chill', 'Creative'],
+        artStyle: 'Digital Prints',
+        giftAmount: '3.5g',
+        icon: <Leaf className="w-4 h-4" />
+      },
+      classic: {
+        strainType: 'Sativa',
+        effects: ['Focus', 'Creative'],
+        artStyle: 'Signature Series',
+        giftAmount: '7g',
+        icon: <Brain className="w-4 h-4" />
+      },
+      black: {
+        strainType: 'Indica',
+        effects: ['Chill', 'Relax'],
+        artStyle: 'Limited Collection',
+        giftAmount: '14g',
+        icon: <Smile className="w-4 h-4" />
+      },
+      ultra: {
+        strainType: 'Premium Mix',
+        effects: ['Focus', 'Euphoric'],
+        artStyle: 'Exclusive Gallery',
+        giftAmount: '28g',
+        icon: <Sparkles className="w-4 h-4" />
+      }
+    };
+    return tierData[tier.toLowerCase() as keyof typeof tierData] || tierData.starter;
+  };
 
   useEffect(() => {
     async function loadProducts() {
@@ -109,70 +148,138 @@ export default function ProductsPresenter() {
             initial="hidden"
             animate="visible"
           >
-            {products.map((product) => (
-              <motion.div 
-                key={product.id} 
-                className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden transition-all hover:shadow-xl"
-                variants={itemVariants}
-              >
-                <div className="relative">
-                  <div className={`absolute top-0 right-0 ${getTierColorClass(product.tier)} text-white px-3 py-1 text-sm font-medium rounded-bl-lg`}>
-                    {product.tier}
-                  </div>
-                  <img 
-                    src={product.image_url || `/images/placeholder-${
-                      product.tier.toLowerCase() === 'starter' ? 'pink' :
-                      product.tier.toLowerCase() === 'classic' ? 'violet' :
-                      product.tier.toLowerCase() === 'black' ? 'black' :
-                      'indigo'
-                    }.svg`} 
-                    alt={product.name}
-                    className="w-full h-64 object-cover"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      // Fallback to Cannè mural if placeholder fails
-                      if (!target.src.includes('canne-mural.svg')) {
-                        target.src = '/images/canne-mural.svg';
-                      }
-                    }}
-                  />
-                </div>
-                
-                <div className="p-6">
-                  <h3 className="text-xl font-bold mb-2">{product.name}</h3>
-                  <p className="text-gray-600 dark:text-gray-300 mb-4">{product.description}</p>
-                  
-                  <div className="flex justify-between items-center">
-                    <span className="text-2xl font-bold">${product.price}</span>
-                    <button 
-                      onClick={() => {
-                        addItem(product);
-                        toast.success(`Added ${product.tier} tier to cart`);
-                      }}
-                      className={`px-4 py-2 rounded-lg text-white ${getTierColorClass(product.tier)} hover:opacity-90 transition-opacity`}
-                    >
-                      Add to Cart
-                    </button>
-                  </div>
-                  
-                  <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
-                      <span>Weight: {product.weight}</span>
-                      <span className="flex items-center">
-                        <span 
-                          className="inline-block w-3 h-3 rounded-full mr-1"
-                          style={{ backgroundColor: product.color_theme.split('/')[0].toLowerCase() }}
-                        ></span>
-                        {product.color_theme}
-                      </span>
+            {products.map((product) => {
+              const tierData = getTierData(product.tier);
+              return (
+                <motion.div 
+                  key={product.id} 
+                  className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden transition-all hover:shadow-xl hover:scale-[1.02] group"
+                  variants={itemVariants}
+                >
+                  {/* Enhanced Image Section with Real Art */}
+                  <div className="relative overflow-hidden">
+                    {/* Tier Badge */}
+                    <div className={`absolute top-4 right-4 ${getTierColorClass(product.tier)} text-white px-3 py-1.5 text-sm font-semibold rounded-full shadow-lg z-10`}>
+                      {product.tier.toUpperCase()}
+                    </div>
+                    
+                    {/* Gift Tier Tags */}
+                    <div className="absolute top-4 left-4 z-10 space-y-2">
+                      {/* Strain Type Tag */}
+                      <div className="bg-green-500/90 backdrop-blur-sm text-white px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+                        {tierData.icon}
+                        {tierData.strainType}
+                      </div>
+                      
+                      {/* Effects Tags */}
+                      <div className="flex flex-wrap gap-1">
+                        {tierData.effects.map((effect, index) => (
+                          <span key={index} className="bg-purple-500/90 backdrop-blur-sm text-white px-2 py-0.5 rounded-full text-xs font-medium">
+                            {effect}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    {/* Real Art Image */}
+                    <div className="aspect-square bg-gradient-to-br from-pink-100 to-purple-100 dark:from-pink-900/20 dark:to-purple-900/20">
+                      <img 
+                        src={product.image_url || `/images/art-samples/tier-${product.tier.toLowerCase()}-sample.jpg`} 
+                        alt={`${product.name} - ${tierData.artStyle}`}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          // Fallback to tier-specific art sample
+                          if (!target.src.includes('canne-mural.svg')) {
+                            target.src = '/images/canne-mural.svg';
+                          }
+                        }}
+                      />
+                    </div>
+                    
+                    {/* Overlay with Art Style Info */}
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
+                      <p className="text-white text-sm font-medium">{tierData.artStyle}</p>
+                      <p className="text-white/80 text-xs">{tierData.giftAmount} complimentary</p>
                     </div>
                   </div>
-                </div>
-              </motion.div>
-            ))}
+                  
+                  {/* Enhanced Content Section */}
+                  <div className="p-6 space-y-4">
+                    <div>
+                      <h3 className="text-xl font-bold mb-1">{product.name}</h3>
+                      <p className="text-gray-600 dark:text-gray-300 text-sm">{product.description}</p>
+                    </div>
+                    
+                    {/* Price and Gift Amount */}
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-2xl font-bold text-gray-900 dark:text-white">${product.price}</span>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">+ {tierData.giftAmount} gift</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-medium text-green-600 dark:text-green-400">I-71 Compliant</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">DC Delivery</p>
+                      </div>
+                    </div>
+                    
+                    {/* Actionable Prompts */}
+                    <div className="space-y-3">
+                      {/* View Sample Button */}
+                      <button 
+                        onClick={() => {
+                          setSelectedTier(product.tier);
+                          setModalOpen(true);
+                        }}
+                        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors group/btn"
+                      >
+                        <Eye className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
+                        <span className="font-medium">View Sample Art</span>
+                      </button>
+                      
+                      {/* Add to Cart Button */}
+                      <button 
+                        onClick={() => {
+                          addItem(product);
+                          toast.success(`Added ${product.name} to cart! 🎨`, {
+                            icon: '🛍️',
+                            style: {
+                              background: '#8B5CF6',
+                              color: '#fff',
+                            },
+                          });
+                        }}
+                        className={`w-full px-4 py-3 rounded-xl text-white font-semibold ${getTierColorClass(product.tier)} hover:opacity-90 transition-all hover:scale-[1.02] shadow-lg`}
+                      >
+                        Add to Cart • ${product.price}
+                      </button>
+                    </div>
+                    
+                    {/* Additional Info */}
+                    <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                      <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
+                        <span className="flex items-center gap-1">
+                          <span className="w-2 h-2 rounded-full bg-green-400"></span>
+                          In Stock
+                        </span>
+                        <span>{product.weight}</span>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
           </motion.div>
         )}
       </div>
+      
+      {/* Art Sample Modal */}
+      <ArtSampleModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        tier={selectedTier}
+        tierData={getTierData(selectedTier)}
+      />
     </div>
   );
 }
