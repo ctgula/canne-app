@@ -3,7 +3,6 @@ const nextConfig = {
   reactStrictMode: true,
   
   // Performance optimizations
-  swcMinify: true,
   compress: true,
   poweredByHeader: false,
   
@@ -17,8 +16,9 @@ const nextConfig = {
   
   // Experimental features for better performance
   experimental: {
-    optimizeCss: true,
-    scrollRestoration: true,
+    // Removed deprecated options for Next.js 15.3.3 compatibility
+    // CSS optimization is now built-in
+    // Scroll restoration is now default
   },
   
   // Development-specific settings
