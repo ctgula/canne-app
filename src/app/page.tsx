@@ -1,13 +1,18 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, lazy, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import Header from '@/components/Header';
-import ProductsPresenter from '@/components/ProductsPresenter';
-
 import { motion, Variants, useScroll, useTransform } from 'framer-motion';
 import { Brush, CreditCard, Package, Sparkles, ArrowDown, Star, Shield, Zap } from 'lucide-react';
+
+// Lazy load heavy components for better performance
+const ProductsPresenter = lazy(() => import('@/components/ProductsPresenter'));
+const Footer = lazy(() => import('@/components/Footer'));
+
+// Import loading components
+import LoadingSpinner, { ProductsGridSkeleton } from '@/components/LoadingSpinner';
 
 export default function Home() {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -50,104 +55,32 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-br from-white via-pink-50/10 to-purple-50/20 dark:from-gray-900 dark:via-purple-900/10 dark:to-indigo-900/20">
       <Header scrollToCollection={scrollToCollection} />
       <main className="overflow-x-hidden">
-        {/* Hero Section - Enhanced with Parallax */}
-        <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
-          {/* Enhanced Background Elements */}
-          <div className="absolute inset-0 overflow-hidden">
-            <motion.div 
-              className="absolute -top-1/2 -right-1/2 w-[800px] h-[800px] bg-gradient-to-br from-pink-200/30 via-purple-200/20 to-transparent rounded-full filter blur-3xl dark:from-pink-900/30 dark:via-purple-900/20"
-              animate={{
-                x: [0, 50, 0],
-                y: [0, -30, 0],
-                scale: [1, 1.1, 1],
-              }}
-              transition={{
-                duration: 20,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-            />
-            <motion.div 
-              className="absolute -bottom-1/2 -left-1/2 w-[600px] h-[600px] bg-gradient-to-tr from-purple-200/25 via-indigo-200/15 to-transparent rounded-full filter blur-3xl dark:from-purple-900/25 dark:via-indigo-900/15"
-              animate={{
-                x: [0, -40, 0],
-                y: [0, 40, 0],
-                scale: [1, 1.05, 1],
-              }}
-              transition={{
-                duration: 15,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: 2
-              }}
-            />
-            <motion.div 
-              className="absolute top-1/4 right-1/4 w-[400px] h-[400px] bg-gradient-to-bl from-pink-100/20 via-purple-100/10 to-transparent rounded-full filter blur-2xl dark:from-pink-800/20 dark:via-purple-800/10"
-              animate={{
-                rotate: [0, 360],
-                scale: [1, 1.2, 1],
-              }}
-              transition={{
-                duration: 25,
-                repeat: Infinity,
-                ease: "linear"
-              }}
-            />
-          </div>
+        {/* Hero Section - Mobile Optimized */}
+        <section className="relative min-h-[100dvh] flex items-center justify-center pt-16 px-4">
+          {/* Lightweight Background - Static for Performance */}
+          <div className="absolute inset-0 bg-gradient-to-br from-pink-50/30 via-purple-50/20 to-transparent dark:from-pink-900/20 dark:via-purple-900/15" />
           
-          {/* Floating Elements */}
-          <div className="absolute inset-0 pointer-events-none">
-            {[...Array(6)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="absolute w-2 h-2 bg-pink-300/40 dark:bg-pink-400/30 rounded-full"
-                style={{
-                  left: `${20 + (i * 15)}%`,
-                  top: `${30 + (i * 10)}%`,
-                }}
-                animate={{
-                  y: [-20, 20, -20],
-                  opacity: [0.3, 0.8, 0.3],
-                }}
-                transition={{
-                  duration: 3 + i,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: i * 0.5,
-                }}
-              />
-            ))}
-          </div>
+          {/* Subtle Static Decoration */}
+          <div className="absolute top-1/4 right-1/4 w-32 h-32 md:w-64 md:h-64 bg-gradient-to-br from-pink-200/20 to-purple-200/20 rounded-full blur-xl dark:from-pink-800/20 dark:to-purple-800/20" />
+          <div className="absolute bottom-1/4 left-1/4 w-24 h-24 md:w-48 md:h-48 bg-gradient-to-tr from-purple-200/15 to-indigo-200/15 rounded-full blur-lg dark:from-purple-800/15 dark:to-indigo-800/15" />
           
           <motion.div 
-            className="relative z-10 max-w-5xl mx-auto px-4"
-            style={{ y: heroY, opacity: heroOpacity }}
+            className="relative z-10 max-w-4xl mx-auto"
             variants={containerVariants}
             initial="hidden"
             animate={isLoaded ? "visible" : "hidden"}
           >
             <motion.div 
-              className="flex flex-col items-center text-center py-4 px-4 sm:py-8 sm:px-6 md:py-12 md:px-8"
+              className="flex flex-col items-center text-center py-8 px-4 sm:py-12 sm:px-6"
               variants={itemVariants}
             >
-              {/* Logo with enhanced animation */}
+              {/* Logo - Simplified for Performance */}
               <motion.div
-                className="relative mb-4 sm:mb-6 md:mb-8"
-                whileHover={{ scale: 1.05, rotate: 1 }}
-                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                className="relative mb-6 sm:mb-8"
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
               >
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-pink-400/20 to-purple-400/20 rounded-full filter blur-xl"
-                  animate={{
-                    scale: [1, 1.2, 1],
-                    opacity: [0.3, 0.6, 0.3],
-                  }}
-                  transition={{
-                    duration: 4,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                  }}
-                />
                 <Image 
                   src="/images/canne_logo_web.svg" 
                   alt="Cannè Logo" 
@@ -185,39 +118,26 @@ export default function Home() {
                 I-71 compliant • 21+ only • DC delivery available
               </motion.p>
               
-              {/* Enhanced CTA Section */}
+              {/* Mobile-Optimized CTA Section */}
               <motion.div 
-                className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full max-w-sm sm:max-w-none sm:w-auto mb-6 sm:mb-8 px-4 sm:px-0"
+                className="flex flex-col sm:flex-row gap-4 w-full max-w-md sm:max-w-none mb-8"
                 variants={itemVariants}
               >
                 <Link href="/shop" className="flex-1 sm:flex-none">
-                  <motion.button 
-                    className="group relative w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl sm:rounded-2xl shadow-lg font-semibold text-base sm:text-lg overflow-hidden"
-                    whileHover={{ scale: 1.02, y: -2 }}
-                    whileTap={{ scale: 0.98 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                  >
-                    <motion.div
-                      className="absolute inset-0 bg-gradient-to-r from-pink-400 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                    />
-                    <span className="relative z-10 flex items-center justify-center gap-2">
-                      <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
-                      <span className="text-sm sm:text-base">Explore Collection</span>
-                    </span>
-                  </motion.button>
-                </Link>
-                <Link href="/how-it-works" className="flex-1 sm:flex-none">
-                  <motion.button 
-                    className="group w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-600 rounded-xl sm:rounded-2xl shadow-lg hover:shadow-xl font-semibold text-base sm:text-lg text-gray-700 dark:text-gray-200 transition-all duration-300"
-                    whileHover={{ scale: 1.02, y: -2 }}
-                    whileTap={{ scale: 0.98 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                  >
+                  <button className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-2xl shadow-lg font-semibold text-lg hover:shadow-xl transition-all duration-200 active:scale-95 min-h-[56px] touch-manipulation">
                     <span className="flex items-center justify-center gap-2">
-                      <Shield className="w-4 h-4 sm:w-5 sm:h-5" />
-                      <span className="text-sm sm:text-base">How It Works</span>
+                      <Sparkles className="w-5 h-5" />
+                      <span>Explore Collection</span>
                     </span>
-                  </motion.button>
+                  </button>
+                </Link>
+                <Link href="/shop" className="flex-1 sm:flex-none">
+                  <button className="w-full sm:w-auto px-8 py-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-600 rounded-2xl shadow-lg hover:shadow-xl font-semibold text-lg text-gray-700 dark:text-gray-200 transition-all duration-200 active:scale-95 min-h-[56px] touch-manipulation">
+                    <span className="flex items-center justify-center gap-2">
+                      <Shield className="w-5 h-5" />
+                      <span>I-71 Compliant</span>
+                    </span>
+                  </button>
                 </Link>
               </motion.div>
               
@@ -468,8 +388,14 @@ export default function Home() {
               </p>
             </motion.div>
             
-            {/* Products Section using MCP */}
-            <ProductsPresenter />
+            {/* Products Section using MCP - Mobile Optimized */}
+            <Suspense fallback={
+              <div className="py-8">
+                <ProductsGridSkeleton />
+              </div>
+            }>
+              <ProductsPresenter />
+            </Suspense>
           </div>
         </section>
       </main>

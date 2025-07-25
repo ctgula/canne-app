@@ -42,12 +42,13 @@ export default function ProductsPresenter() {
     loadProducts();
   }, []);
 
-  // Animation variants
+  // Simplified animation variants for performance
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
+        duration: 0.4,
         staggerChildren: 0.1
       }
     }

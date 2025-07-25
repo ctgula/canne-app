@@ -22,25 +22,19 @@ export default function Header({ scrollToCollection }: HeaderProps) {
   // Get cart data from our store
   const { getItemCount } = useCartStore();
   
-  // Body scroll lock for mobile menu
+  // Optimized body scroll lock for mobile menu
   useEffect(() => {
     if (isMenuOpen) {
-      document.body.classList.add('mobile-menu-open');
       document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.width = '100%';
+      document.body.style.touchAction = 'none';
     } else {
-      document.body.classList.remove('mobile-menu-open');
       document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
+      document.body.style.touchAction = '';
     }
     
     return () => {
-      document.body.classList.remove('mobile-menu-open');
       document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
+      document.body.style.touchAction = '';
     };
   }, [isMenuOpen]);
   
