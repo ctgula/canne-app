@@ -23,35 +23,47 @@ export default function ProductsPresenter() {
   // Access cart store functions
   const { addItem } = useCartStore();
 
-  // Gift tier data with strain types and effects
+  // Updated tier data with new content and pricing structure
   const getTierData = (tier: string) => {
     const tierData = {
       starter: {
+        subtitle: '1 Digital print + ⅛ oz gift',
+        description: 'Moroccan Peach or Biscotti Pancakes 18–22% THC. Includes 2 premium logo stickers.',
         strainType: 'Hybrid',
         effects: ['Chill', 'Creative'],
         artStyle: 'Digital Prints',
         giftAmount: '3.5g',
+        price: 25,
         icon: <Leaf className="w-4 h-4" />
       },
       classic: {
+        subtitle: '2 Prints + ¼ oz gift',
+        description: 'Same two cultivars, 20–24% THC. Comes with art mini-card + sticker duo.',
         strainType: 'Sativa',
         effects: ['Focus', 'Creative'],
         artStyle: 'Signature Series',
         giftAmount: '7g',
+        price: 45,
         icon: <Brain className="w-4 h-4" />
       },
       black: {
+        subtitle: '4 Prints + ½ oz gift',
+        description: 'Limited foil editions + tote bag + 3 stickers. 24–28% hybrid.',
         strainType: 'Indica',
         effects: ['Chill', 'Relax'],
         artStyle: 'Limited Collection',
         giftAmount: '14g',
+        price: 75,
         icon: <Smile className="w-4 h-4" />
       },
       ultra: {
+        subtitle: 'Gallery set + 1 oz gift',
+        description: 'Holo card + tote + papers + 5 stickers. Split ounce of both strains (22–28% THC).',
         strainType: 'Premium Mix',
         effects: ['Focus', 'Euphoric'],
         artStyle: 'Exclusive Gallery',
         giftAmount: '28g',
+        price: 150,
         icon: <Sparkles className="w-4 h-4" />
       }
     };
@@ -102,17 +114,17 @@ export default function ProductsPresenter() {
     }
   };
 
-  // Helper function to get color class based on tier
+  // Helper function to get color class based on tier - Updated with new brand colors
   const getTierColorClass = (tier: string) => {
-    switch (tier) {
-      case 'Starter':
-        return 'bg-pink-500';
-      case 'Classic':
-        return 'bg-violet-500';
-      case 'Black':
-        return 'bg-gray-800';
-      case 'Ultra':
-        return 'bg-indigo-600';
+    switch (tier.toLowerCase()) {
+      case 'starter':
+        return 'bg-[#38BDF8]'; // Sky blue
+      case 'classic':
+        return 'bg-[#C084FC]'; // Purple
+      case 'black':
+        return 'bg-[#64748B]'; // Slate gray
+      case 'ultra':
+        return 'bg-[#F472B6]'; // Pink
       default:
         return 'bg-gray-500';
     }
@@ -153,7 +165,7 @@ export default function ProductsPresenter() {
               return (
                 <motion.div 
                   key={product.id} 
-                  className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden transition-all hover:shadow-xl hover:scale-[1.02] group"
+                  className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden transition-all hover:shadow-xl hover:scale-[1.02] group min-h-[620px] md:min-h-[560px]"
                   variants={itemVariants}
                 >
                   {/* Enhanced Image Section with Real Art */}
@@ -208,13 +220,14 @@ export default function ProductsPresenter() {
                   <div className="p-6 space-y-4">
                     <div>
                       <h3 className="text-xl font-bold mb-1">{product.name}</h3>
-                      <p className="text-gray-600 dark:text-gray-300 text-sm">{product.description}</p>
+                      <p className="text-purple-600 dark:text-purple-400 text-sm font-medium mb-2">{tierData.subtitle}</p>
+                      <p className="text-gray-600 dark:text-gray-300 text-sm">{tierData.description}</p>
                     </div>
                     
                     {/* Price and Gift Amount */}
                     <div className="flex items-center justify-between">
                       <div>
-                        <span className="text-2xl font-bold text-gray-900 dark:text-white">${product.price}</span>
+                        <span className="text-2xl font-bold text-gray-900 dark:text-white">${tierData.price}</span>
                         <p className="text-xs text-gray-500 dark:text-gray-400">+ {tierData.giftAmount} gift</p>
                       </div>
                       <div className="text-right">
@@ -251,7 +264,7 @@ export default function ProductsPresenter() {
                         }}
                         className={`w-full px-4 py-3 rounded-xl text-white font-semibold ${getTierColorClass(product.tier)} hover:opacity-90 transition-all hover:scale-[1.02] shadow-lg`}
                       >
-                        Add to Cart • ${product.price}
+                        Add to Cart • ${tierData.price}
                       </button>
                     </div>
                     

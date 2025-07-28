@@ -196,7 +196,7 @@ export default function ShopPage() {
             transition={{ delay: 0.1 }}
             className="text-center text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-4 sm:mb-6 px-2"
           >
-            I-71 Compliant • Premium Art • FREE Cannabis Gifts
+            Premium Prints • DC‑Only I‑71 Gifts
           </motion.p>
         </div>
         

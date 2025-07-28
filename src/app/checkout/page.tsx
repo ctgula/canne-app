@@ -594,29 +594,6 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              {/* Payment Method */}
-              <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-lg">💳</span>
-                  <h3 className="font-medium text-gray-900">Payment Method</h3>
-                </div>
-                <div className="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg">
-                  <input
-                    type="radio"
-                    id="cashOnDelivery"
-                    name="paymentMethod"
-                    value="cash"
-                    defaultChecked
-                    className="h-4 w-4 text-purple-600 focus:ring-purple-500"
-                  />
-                  <label htmlFor="cashOnDelivery" className="flex-1">
-                    <div className="font-medium text-gray-900">Cash on Delivery</div>
-                    <div className="text-sm text-gray-500">Pay with cash when your order arrives</div>
-                  </label>
-                  <span className="text-2xl">💵</span>
-                </div>
-              </div>
-
               {/* Legal Compliance - Age Verification and Terms */}
               <div className="space-y-6 mb-8">
                 {/* Age Verification */}
@@ -642,11 +619,45 @@ export default function CheckoutPage() {
                     <label htmlFor="ageVerification" className="text-sm text-gray-800 cursor-pointer select-none">
                       <span className="font-semibold text-amber-800">🔞 Age Verification Required *</span>
                       <br />
+                      <span className="mt-1 block">Must be 21+ and in Washington, DC to order. Delivery ZIPs must start with 200.</span>
+                      <br />
                       <span className="mt-1 block">I certify that I am 21 years of age or older and legally permitted to purchase cannabis products in Washington, DC.</span>
                     </label>
                   </div>
+                  {/* DC ZIP Warning */}
+                  <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-sm text-blue-800 font-medium">
+                      ⚠️ Delivery available only to verified Washington, DC addresses (ZIP must start with 200).
+                    </p>
+                  </div>
                 </div>
-                
+              </div>
+
+              {/* Payment Method */}
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-lg">💳</span>
+                  <h3 className="font-medium text-gray-900">Payment Method</h3>
+                </div>
+                <div className="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg">
+                  <input
+                    type="radio"
+                    id="cashOnDelivery"
+                    name="paymentMethod"
+                    value="cash"
+                    defaultChecked
+                    className="h-4 w-4 text-purple-600 focus:ring-purple-500"
+                  />
+                  <label htmlFor="cashOnDelivery" className="flex-1">
+                    <div className="font-medium text-gray-900">Cash on Delivery</div>
+                    <div className="text-sm text-gray-500">Pay with cash when your order arrives</div>
+                  </label>
+                  <span className="text-2xl">💵</span>
+                </div>
+              </div>
+
+              {/* Terms and Privacy */}
+              <div className="space-y-6 mb-8">
                 {/* Terms and Privacy */}
                 <div className="bg-purple-50 border-2 border-purple-200 rounded-xl p-6">
                   <div className="flex items-start gap-4">

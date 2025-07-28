@@ -20,7 +20,7 @@ export default function Header({ scrollToCollection }: HeaderProps) {
   const cartRef = useRef<HTMLDivElement>(null);
   
   // Get cart data from our store
-  const { getItemCount } = useCartStore();
+  const { getItemCount, getTotal } = useCartStore();
   
   // Optimized body scroll lock for mobile menu
   useEffect(() => {
@@ -134,8 +134,8 @@ export default function Header({ scrollToCollection }: HeaderProps) {
               >
                 <ShoppingBag size={18} />
                 {getItemCount() > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-gradient-to-r from-pink-500 to-purple-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-lg animate-pulse">
-                    {getItemCount()}
+                  <span className="absolute -top-1 -right-1 bg-gradient-to-r from-pink-500 to-purple-500 text-white text-xs font-bold rounded-full min-w-[20px] h-5 px-1 flex items-center justify-center shadow-lg animate-pulse">
+                    ${getTotal()}
                   </span>
                 )}
               </button>
@@ -150,8 +150,8 @@ export default function Header({ scrollToCollection }: HeaderProps) {
             >
               <ShoppingBag size={20} />
               {getItemCount() > 0 && (
-                <span className="absolute -top-1 -right-1 bg-gradient-to-r from-pink-500 to-purple-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-lg">
-                  {getItemCount()}
+                <span className="absolute -top-1 -right-1 bg-gradient-to-r from-pink-500 to-purple-500 text-white text-xs font-bold rounded-full min-w-[20px] h-5 px-1 flex items-center justify-center shadow-lg">
+                  ${getTotal()}
                 </span>
               )}
             </button>
