@@ -73,6 +73,13 @@ interface OrderItem {
   quantity: number;
   // Nested product structure (current cart format)
   product?: Product;
+  // Strain information
+  strain?: {
+    name: string;
+    type: string;
+    thcLow: number;
+    thcHigh: number;
+  };
 }
 
 interface OrderRequest {
@@ -242,7 +249,11 @@ export async function POST(request: NextRequest) {
         product_id: productId,
         quantity: item.quantity,
         unit_price: unitPrice,
-        total_price: unitPrice * item.quantity
+        total_price: unitPrice * item.quantity,
+        // Include strain information (with defaults for backward compatibility)
+        strain: item.strain?.name || 'Moroccan Peach',
+        thc_low: item.strain?.thcLow || 18,
+        thc_high: item.strain?.thcHigh || 22
       };
     });
     
@@ -289,6 +300,9 @@ export async function POST(request: NextRequest) {
             unit_price,
             total_price,
             product_id,
+            strain,
+            thc_low,
+            thc_high,
             products!inner (
               name,
               tier,
@@ -304,7 +318,7 @@ export async function POST(request: NextRequest) {
         const customerName = `${customerData?.first_name || ''} ${customerData?.last_name || ''}`.trim();
         const customerPhone = customerData?.phone || 'Not provided';
         
-        // Create detailed order items description with proper tier names and gift amounts
+        // Create detailed order items description with strain information
         const orderDetailsText = orderItemsData?.length > 0 ? orderItemsData.map(item => {
           const product = item.products;
           const tierName = {
@@ -317,8 +331,9 @@ export async function POST(request: NextRequest) {
           const giftAmount = product?.gift_amount || '7g';
           const unitPrice = parseFloat(item.unit_price).toFixed(2);
           const totalPrice = parseFloat(item.total_price).toFixed(2);
+          const strainInfo = item.strain ? `${item.strain} (${item.thc_low}–${item.thc_high}% THC)` : 'Strain not specified';
           
-          return `• **${item.quantity}x ${tierName}** (${giftAmount} complimentary)\n   $${unitPrice} each = $${totalPrice} total`;
+          return `• **${item.quantity}x ${tierName}** (${giftAmount} complimentary)\n   **Strain:** ${strainInfo}\n   $${unitPrice} each = $${totalPrice} total`;
         }).join('\n\n') : `No items found (Error: ${orderItemsError?.message || 'Unknown error'})`;
 
         const embed = {

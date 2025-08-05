@@ -8,8 +8,21 @@ import { useCartStore } from '@/services/CartService';
 import { DatabaseProduct } from '@/services/DatabaseService';
 import { useProducts } from '@/hooks/useProducts';
 import toast from 'react-hot-toast';
-import { ShoppingBag, Star, Zap, Shield, Gift, Loader2, AlertCircle } from 'lucide-react';
+import { ShoppingBag, Star, Zap, Shield, Gift, Loader2, AlertCircle, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
+
+// Strain options
+interface StrainOption {
+  name: string;
+  type: string;
+  thcLow: number;
+  thcHigh: number;
+}
+
+const strainOptions: StrainOption[] = [
+  { name: 'Moroccan Peach', type: 'sativa', thcLow: 18, thcHigh: 22 },
+  { name: 'Pancake Biscotti', type: 'indica-hybrid', thcLow: 22, thcHigh: 26 }
+];
 
 export default function ShopPage() {
   const { addItem, hydrateCart, items } = useCartStore();
@@ -18,6 +31,9 @@ export default function ShopPage() {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [sortBy, setSortBy] = useState<'price' | 'name' | 'tier'>('price');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  
+  // Strain selection state
+  const [selectedStrains, setSelectedStrains] = useState<Record<string, StrainOption>>({});
 
   // Use MCP-aligned products hook
   const {
@@ -93,8 +109,21 @@ export default function ShopPage() {
     return filtered;
   }, [products, selectedTier, searchTerm, sortBy, sortOrder]);
 
+  // Helper functions for strain management
+  const getSelectedStrain = useCallback((productId: string): StrainOption => {
+    return selectedStrains[productId] || strainOptions[0]; // Default to first strain
+  }, [selectedStrains]);
+
+  const updateSelectedStrain = useCallback((productId: string, strain: StrainOption) => {
+    setSelectedStrains(prev => ({
+      ...prev,
+      [productId]: strain
+    }));
+  }, []);
+
   const handleAddToCart = useCallback((product: DatabaseProduct) => {
     const quantity = quantities[product.id] || 1;
+    const selectedStrain = getSelectedStrain(product.id);
     
     // Convert DatabaseProduct to Product format for cart
     const productForCart = {
@@ -110,12 +139,13 @@ export default function ShopPage() {
       created_at: product.created_at
     };
     
-    addItem(productForCart, quantity);
+    addItem(productForCart, selectedStrain, quantity);
     
-    // Enhanced success message with value proposition
+    // Enhanced success message with strain info
     toast.success(
-      ` ${quantity} ${product.name} added! FREE cannabis gift included!`,
+      `${quantity}x ${product.name} (${selectedStrain.name}) added! FREE cannabis gift included!`,
       {
+        id: `add-to-cart-${product.id}`, // Unique ID for toast replacement
         duration: 4000,
         style: {
           background: 'linear-gradient(135deg, #ec4899, #8b5cf6)',
@@ -129,7 +159,7 @@ export default function ShopPage() {
       ...prev,
       [product.id]: 1
     }));
-  }, [quantities, addItem]);
+  }, [quantities, addItem, getSelectedStrain]);
   
   const updateQuantity = useCallback((productId: string, newQuantity: number) => {
     if (newQuantity < 1 || newQuantity > 10) return; // Limit quantities between 1-10
@@ -320,7 +350,35 @@ export default function ShopPage() {
                   </div>
                   
                   <div className="text-base sm:text-lg mt-2 font-semibold text-gray-900 dark:text-white px-2">{product.name}</div>
-                  <div className="mt-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400 line-clamp-2 px-2">{product.description}</div>
+                  
+                  {/* Dynamic description with strain info */}
+                  <div className="mt-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400 px-2">
+                    {getSelectedStrain(product.id).name} ({getSelectedStrain(product.id).type.charAt(0).toUpperCase() + getSelectedStrain(product.id).type.slice(1)}) · {getSelectedStrain(product.id).thcLow}–{getSelectedStrain(product.id).thcHigh}% THC
+                  </div>
+                  
+                  {/* Strain Selector */}
+                  <div className="mt-3 px-2 space-y-2">
+                    <label className="text-xs font-medium text-gray-700 dark:text-gray-300">Strain</label>
+                    <div className="relative">
+                      <select
+                        value={getSelectedStrain(product.id).name}
+                        onChange={(e) => {
+                          const selectedStrain = strainOptions.find(s => s.name === e.target.value);
+                          if (selectedStrain) {
+                            updateSelectedStrain(product.id, selectedStrain);
+                          }
+                        }}
+                        className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl text-xs focus:ring-2 focus:ring-purple-500 focus:border-transparent appearance-none cursor-pointer"
+                      >
+                        {strainOptions.map((strain) => (
+                          <option key={strain.name} value={strain.name}>
+                            {strain.name} • {strain.type} • {strain.thcLow}–{strain.thcHigh}% THC
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none" />
+                    </div>
+                  </div>
                   
                   {/* Enhanced features list */}
                   <ul className="mt-4 space-y-1 text-sm text-gray-500 dark:text-gray-400 text-left w-full">

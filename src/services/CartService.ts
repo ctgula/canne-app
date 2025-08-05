@@ -5,11 +5,22 @@ import { Product } from '@/models/Product';
 import { isBrowser } from '@/utils/client-utils';
 
 /**
+ * Strain option interface
+ */
+export interface StrainOption {
+  name: string;
+  type: string;
+  thcLow: number;
+  thcHigh: number;
+}
+
+/**
  * Cart item interface
  */
 export interface CartItem {
   product: Product;
   quantity: number;
+  strain: StrainOption;
 }
 
 /**
@@ -17,9 +28,9 @@ export interface CartItem {
  */
 interface CartStore {
   items: CartItem[];
-  addItem: (product: Product, quantity?: number) => void;
-  removeItem: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  addItem: (product: Product, strain: StrainOption, quantity?: number) => void;
+  removeItem: (productId: string, strainName: string) => void;
+  updateQuantity: (productId: string, strainName: string, quantity: number) => void;
   clearCart: () => void;
   getTotal: () => number;
   getItemCount: () => number;
@@ -73,25 +84,29 @@ export const useCartStore = create<CartStore>((set, get) => ({
     set({ items: Array.isArray(storedItems) ? storedItems : [] });
   },
   
-  // Add an item to the cart with optional quantity
-  addItem: (product: Product, quantity = 1) => {
+  // Add an item to the cart with strain and optional quantity
+  addItem: (product: Product, strain: StrainOption, quantity = 1) => {
     set((state) => {
       // Ensure items is always an array
       const items = Array.isArray(state.items) ? state.items : [];
       
-      const existingItem = items.find(item => item.product.id === product.id);
+      // Find existing item with same product and strain
+      const existingItem = items.find(item => 
+        item.product.id === product.id && 
+        item.strain.name === strain.name
+      );
       
       let newItems;
       if (existingItem) {
-        // Update quantity if item already exists
+        // Update quantity if item already exists with same strain
         newItems = items.map(item =>
-          item.product.id === product.id
+          item.product.id === product.id && item.strain.name === strain.name
             ? { ...item, quantity: item.quantity + quantity }
             : item
         );
       } else {
-        // Add new item
-        newItems = [...items, { product, quantity }];
+        // Add new item with strain
+        newItems = [...items, { product, strain, quantity }];
       }
       
       // Save to localStorage
@@ -101,19 +116,21 @@ export const useCartStore = create<CartStore>((set, get) => ({
     });
   },
   
-  // Remove an item from the cart
-  removeItem: (productId: string) => {
+  // Remove an item from the cart (strain-specific)
+  removeItem: (productId: string, strainName: string) => {
     set((state) => {
       // Ensure items is always an array
       const items = Array.isArray(state.items) ? state.items : [];
-      const newItems = items.filter(item => item.product.id !== productId);
+      const newItems = items.filter(item => 
+        !(item.product.id === productId && item.strain.name === strainName)
+      );
       saveCartToStorage(newItems);
       return { items: newItems };
     });
   },
   
-  // Update item quantity
-  updateQuantity: (productId: string, quantity: number) => {
+  // Update item quantity (strain-specific)
+  updateQuantity: (productId: string, strainName: string, quantity: number) => {
     set((state) => {
       // Ensure items is always an array
       const items = Array.isArray(state.items) ? state.items : [];
@@ -121,10 +138,12 @@ export const useCartStore = create<CartStore>((set, get) => ({
       let newItems;
       if (quantity <= 0) {
         // Remove item if quantity is 0 or less
-        newItems = items.filter(item => item.product.id !== productId);
+        newItems = items.filter(item => 
+          !(item.product.id === productId && item.strain.name === strainName)
+        );
       } else {
         newItems = items.map(item =>
-          item.product.id === productId
+          item.product.id === productId && item.strain.name === strainName
             ? { ...item, quantity }
             : item
         );

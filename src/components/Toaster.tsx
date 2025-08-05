@@ -5,7 +5,11 @@ import { Toaster as HotToaster } from 'react-hot-toast';
 export default function Toaster() {
   return (
     <HotToaster
-      position="top-right"
+      position="bottom-right"
+      containerStyle={{
+        bottom: '20px',
+        right: '20px',
+      }}
       toastOptions={{
         duration: 3000,
         style: {
@@ -14,6 +18,7 @@ export default function Toaster() {
           boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
           borderRadius: '8px',
           padding: '12px 16px',
+          maxWidth: '350px',
         },
         success: {
           style: {

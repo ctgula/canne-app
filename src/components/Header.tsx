@@ -129,14 +129,20 @@ export default function Header({ scrollToCollection }: HeaderProps) {
               </button>
               <button 
                 onClick={toggleCart} 
-                className="relative p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all duration-200"
-                title="Shopping cart"
+                className="relative p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all duration-200 group"
+                title={getItemCount() > 0 ? `Cart (${getItemCount()} items) - Subtotal: $${getTotal()}` : "Shopping cart"}
               >
                 <ShoppingBag size={18} />
                 {getItemCount() > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-gradient-to-r from-pink-500 to-purple-500 text-white text-xs font-bold rounded-full min-w-[20px] h-5 px-1 flex items-center justify-center shadow-lg animate-pulse">
-                    ${getTotal()}
+                  <span className="absolute -top-1 -right-1 bg-gradient-to-r from-pink-500 to-purple-500 text-white text-xs font-bold rounded-full min-w-[20px] h-5 px-1 flex items-center justify-center shadow-lg">
+                    {getItemCount()}
                   </span>
+                )}
+                {/* Tooltip */}
+                {getItemCount() > 0 && (
+                  <div className="absolute bottom-full right-0 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
+                    Subtotal: ${getTotal()}
+                  </div>
                 )}
               </button>
             </div>
@@ -145,14 +151,20 @@ export default function Header({ scrollToCollection }: HeaderProps) {
           <div className="lg:hidden flex items-center space-x-2">
             <button 
               onClick={toggleCart} 
-              className="relative p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all duration-200"
-              title="Shopping cart"
+              className="relative p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all duration-200 group"
+              title={getItemCount() > 0 ? `Cart (${getItemCount()} items) - Subtotal: $${getTotal()}` : "Shopping cart"}
             >
               <ShoppingBag size={20} />
               {getItemCount() > 0 && (
                 <span className="absolute -top-1 -right-1 bg-gradient-to-r from-pink-500 to-purple-500 text-white text-xs font-bold rounded-full min-w-[20px] h-5 px-1 flex items-center justify-center shadow-lg">
-                  ${getTotal()}
+                  {getItemCount()}
                 </span>
+              )}
+              {/* Mobile Tooltip */}
+              {getItemCount() > 0 && (
+                <div className="absolute bottom-full right-0 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
+                  Subtotal: ${getTotal()}
+                </div>
               )}
             </button>
             <button

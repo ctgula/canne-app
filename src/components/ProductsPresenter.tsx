@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react';
 import { Product } from '@/models/Product';
 import { ProductController } from '@/controllers/ProductController';
-import { useCartStore } from '@/services/CartService';
+import { useCartStore, StrainOption } from '@/services/CartService';
 import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
-import { Eye, Sparkles, Leaf, Brain, Focus, Smile } from 'lucide-react';
+import { Eye, Sparkles, Leaf, Brain, Focus, Smile, ChevronDown } from 'lucide-react';
 import ArtSampleModal from './ArtSampleModal';
 
 /**
@@ -19,9 +19,39 @@ export default function ProductsPresenter() {
   const [error, setError] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedTier, setSelectedTier] = useState<string>('');
+  const [selectedStrains, setSelectedStrains] = useState<Record<string, StrainOption>>({});
 
   // Access cart store functions
   const { addItem } = useCartStore();
+
+  // Available strain options for all tiers
+  const strainOptions: StrainOption[] = [
+    {
+      name: "Moroccan Peach",
+      type: "sativa",
+      thcLow: 18,
+      thcHigh: 22
+    },
+    {
+      name: "Pancake Biscotti",
+      type: "indica-hybrid",
+      thcLow: 22,
+      thcHigh: 26
+    }
+  ];
+
+  // Get selected strain for a product (default to first option)
+  const getSelectedStrain = (productId: string): StrainOption => {
+    return selectedStrains[productId] || strainOptions[0];
+  };
+
+  // Update selected strain for a product
+  const updateSelectedStrain = (productId: string, strain: StrainOption) => {
+    setSelectedStrains(prev => ({
+      ...prev,
+      [productId]: strain
+    }));
+  };
 
   // Updated tier data with new content and pricing structure
   const getTierData = (tier: string) => {
@@ -220,8 +250,35 @@ export default function ProductsPresenter() {
                   <div className="p-6 space-y-4">
                     <div>
                       <h3 className="text-xl font-bold mb-1">{product.name}</h3>
-                      <p className="text-purple-600 dark:text-purple-400 text-sm font-medium mb-2">{tierData.subtitle}</p>
-                      <p className="text-gray-600 dark:text-gray-300 text-sm">{tierData.description}</p>
+                      <p className="text-purple-600 dark:text-purple-400 text-sm font-medium mb-2">${tierData.price}</p>
+                      {/* Updated single line with strain and THC info */}
+                      <p className="text-gray-600 dark:text-gray-300 text-sm">
+                        {getSelectedStrain(product.id).name} ({getSelectedStrain(product.id).type.charAt(0).toUpperCase()}) · {getSelectedStrain(product.id).thcLow}–{getSelectedStrain(product.id).thcHigh}% THC • {tierData.subtitle}
+                      </p>
+                    </div>
+                    
+                    {/* Strain Selector */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Strain</label>
+                      <div className="relative">
+                        <select
+                          value={getSelectedStrain(product.id).name}
+                          onChange={(e) => {
+                            const selectedStrain = strainOptions.find(s => s.name === e.target.value);
+                            if (selectedStrain) {
+                              updateSelectedStrain(product.id, selectedStrain);
+                            }
+                          }}
+                          className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent appearance-none cursor-pointer"
+                        >
+                          {strainOptions.map((strain) => (
+                            <option key={strain.name} value={strain.name}>
+                              {strain.name} • {strain.type} • {strain.thcLow}–{strain.thcHigh}% THC
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                      </div>
                     </div>
                     
                     {/* Price and Gift Amount */}
@@ -253,8 +310,10 @@ export default function ProductsPresenter() {
                       {/* Add to Cart Button */}
                       <button 
                         onClick={() => {
-                          addItem(product);
-                          toast.success(`Added ${product.name} to cart! 🎨`, {
+                          const selectedStrain = getSelectedStrain(product.id);
+                          addItem(product, selectedStrain);
+                          toast.success(`Added ${product.name} (${selectedStrain.name}) to cart! 🎨`, {
+                            id: `cart-${product.id}-${selectedStrain.name}`,
                             icon: '🛍️',
                             style: {
                               background: '#8B5CF6',
