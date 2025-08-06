@@ -249,11 +249,7 @@ export async function POST(request: NextRequest) {
         product_id: productId,
         quantity: item.quantity,
         unit_price: unitPrice,
-        total_price: unitPrice * item.quantity,
-        // Include strain information (with defaults for backward compatibility)
-        strain: item.strain?.name || 'Moroccan Peach',
-        thc_low: item.strain?.thcLow || 18,
-        thc_high: item.strain?.thcHigh || 22
+        total_price: unitPrice * item.quantity
       };
     });
     
