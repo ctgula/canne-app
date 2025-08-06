@@ -11,8 +11,9 @@ import { Brush, CreditCard, Package, Sparkles, ArrowDown, Star, Shield, Zap } fr
 const ProductsPresenter = lazy(() => import('@/components/ProductsPresenter'));
 const Footer = lazy(() => import('@/components/Footer'));
 
-// Import loading components
+// Import loading and error components
 import LoadingSpinner, { ProductsGridSkeleton } from '@/components/LoadingSpinner';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 export default function Home() {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -389,17 +390,21 @@ export default function Home() {
             </motion.div>
             
             {/* Products Section using MCP - Mobile Optimized */}
-            <Suspense fallback={
-              <div className="py-8">
-                <ProductsGridSkeleton />
-              </div>
-            }>
-              <ProductsPresenter />
-            </Suspense>
+            <ErrorBoundary>
+              <Suspense fallback={<ProductsGridSkeleton />}>
+                <ProductsPresenter />
+              </Suspense>
+            </ErrorBoundary>
           </div>
         </section>
       </main>
+      
+      {/* Footer */}
+      <ErrorBoundary>
+        <Suspense fallback={<LoadingSpinner />}>
+          <Footer />
+        </Suspense>
+      </ErrorBoundary>
     </div>
   );
 }
-

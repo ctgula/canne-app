@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useCart } from '@/contexts/CartContext';
+import { useCartStore } from '@/services/CartService';
 import { processCheckout } from '@/services/checkoutService';
 
 type CheckoutFormData = {
@@ -18,7 +18,7 @@ type CheckoutFormData = {
 };
 
 export function useCheckout() {
-  const { items, getCartTotal, clearCart } = useCart();
+  const { items, clearCart, getTotal } = useCartStore();
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [orderId, setOrderId] = useState<string | null>(null);
@@ -29,7 +29,7 @@ export function useCheckout() {
     setError(null);
     
     try {
-      const cartTotal = getCartTotal();
+      const total = getTotal();
       
       // Validate cart has items
       if (items.length === 0) {
@@ -50,7 +50,7 @@ export function useCheckout() {
       }
       
       // Process the checkout
-      const result = await processCheckout(items, formData, cartTotal, userId);
+      const result = await processCheckout(items, formData, total, userId);
       
       if (!result.success || result.error) {
         // Ensure we're passing a string to the Error constructor

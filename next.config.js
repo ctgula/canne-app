@@ -21,32 +21,18 @@ const nextConfig = {
     // Scroll restoration is now default
   },
   
-  // Development-specific settings
-  ...(process.env.NODE_ENV === 'development' && {
-    // Custom webpack config for development
-    webpack: (config, { dev, isServer }) => {
-      if (dev && !isServer) {
-        // Suppress specific warnings in development
-        config.stats = {
-          ...config.stats,
-          warningsFilter: [
-            /data-windsurf-page-id/,
-            /data-windsurf-extension-id/,
-            /Extension ID not available/,
-            /BrowserPreview/,
-          ],
-        };
-      }
-      return config;
-    },
-  }),
+  // Webpack configuration for SVG handling
+  webpack: (config) => {
+    config.module.rules.push({
+      test: /\.svg$/,
+      use: ['@svgr/webpack'],
+    });
+    return config;
+  },
   
   typescript: {
-    // !! WARN !!
-    // Dangerously allow production builds to successfully complete even if
-    // your project has type errors.
-    // !! WARN !!
-    ignoreBuildErrors: true,
+    // Production-ready TypeScript configuration
+    ignoreBuildErrors: false,
   },
   eslint: {
     // Warning: This allows production builds to successfully complete even if

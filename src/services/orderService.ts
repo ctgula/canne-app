@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { Order, OrderItem } from '@/types/supabase';
-import { CartItem } from '@/contexts/CartContext';
+import type { CartItem } from '@/services/CartService';
 
 // Define a type for Supabase errors
 type SupabaseError = {
@@ -37,12 +37,12 @@ export async function addOrderItems(orderId: string, cartItems: CartItem[]): Pro
     // Convert cart items to order items format
     const orderItems = cartItems.map(item => ({
       order_id: orderId,
-      product_id: item.id,
+      product_id: item.product.id,
       quantity: item.quantity,
-      price: item.price,
-      tier: item.tier,
-      weight: item.weight,
-      color_theme: item.colorTheme
+      price: item.product.price,
+      tier: item.product.name,
+      weight: item.strain.name,
+      color_theme: 'default',
     }));
 
     const { error } = await supabase

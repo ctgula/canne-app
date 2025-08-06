@@ -200,11 +200,14 @@ export async function GET() {
             product: {
               id: product?.id || '',
               name: product?.name || '',
-              tier: product?.tier || '',
-              price: parseFloat(product?.price || '0'),
               description: product?.description || '',
-              image: product?.image_url || '',
-              features: product?.features || []
+              price: product?.price || 0,
+              artworkUrl: product?.image || '',
+              giftSize: product?.tier === 'Starter' ? '3.5g' : 
+                       product?.tier === 'Classic' ? '7g' : 
+                       product?.tier === 'Black' ? '14g' : 
+                       product?.tier === 'Ultra' ? '28g' : '3.5g',
+              hasDelivery: (product?.price || 0) >= 45,
             },
             quantity: item.quantity,
           };

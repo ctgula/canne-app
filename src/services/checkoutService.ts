@@ -1,4 +1,4 @@
-import { CartItem } from '@/contexts/CartContext';
+import type { CartItem } from '@/services/CartService';
 import { createOrder, addOrderItems } from './orderService';
 
 // Define a type for checkout errors

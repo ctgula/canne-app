@@ -57,7 +57,7 @@ export default function CartDisplay() {
               <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-2 border rounded-lg overflow-hidden">
                   <button 
-                    onClick={() => updateQuantity(item.product.id, Math.max(1, item.quantity - 1))}
+                    onClick={() => updateQuantity(item.product.id, item.strain.name, Math.max(1, item.quantity - 1))}
                     className="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-bold transition-colors"
                     aria-label="Decrease quantity"
                   >
@@ -67,7 +67,7 @@ export default function CartDisplay() {
                   <span className="w-8 text-center font-medium">{item.quantity}</span>
                   
                   <button 
-                    onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                    onClick={() => updateQuantity(item.product.id, item.strain.name, item.quantity + 1)}
                     className="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-bold transition-colors"
                     aria-label="Increase quantity"
                   >
@@ -80,7 +80,7 @@ export default function CartDisplay() {
                 </div>
                 
                 <button 
-                  onClick={() => removeItem(item.product.id)}
+                  onClick={() => removeItem(item.product.id, item.strain.name)}
                   className="text-gray-400 hover:text-red-500 transition-colors"
                   aria-label="Remove item"
                 >

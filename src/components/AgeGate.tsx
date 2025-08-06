@@ -125,7 +125,7 @@ export default function AgeGate({ onVerified }: AgeGateProps) {
                 disabled={!birthYear || isVerifying}
                 className="flex-1 px-4 py-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-lg hover:from-pink-600 hover:to-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium"
               >
-                {isVerifying ? 'Verifying...' : 'I'm 21+'}
+                {isVerifying ? 'Verifying...' : "I'm 21+"}
               </button>
             </div>
           </div>

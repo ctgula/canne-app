@@ -1,11 +1,11 @@
-// Only import the CartItem interface from CartContext
-import { CartItem } from '@/contexts/CartContext';
+// Import CartItem interface from CartService
+import type { CartItem } from '@/services/CartService';
 
 export const DELIVERY_THRESHOLD = 40;
 
 // This function is used by the CartContext's getCartTotal method
 export function calculateCartTotal(items: CartItem[]): number {
-  return items.reduce((total, item) => total + (item.price * item.quantity), 0);
+  return items.reduce((total, item) => total + (item.product.price * item.quantity), 0);
 }
 
 export function hasDeliveryEligibility(total: number): boolean {

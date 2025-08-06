@@ -166,37 +166,4 @@ export function useCart(customerId: string | null): UseCartReturn {
   };
 }
 
-// Optional: Create a context for cart state management
-import { createContext, useContext, ReactNode } from 'react';
-
-interface CartContextType extends UseCartReturn {
-  customerId: string | null;
-  setCustomerId: (id: string | null) => void;
-}
-
-const CartContext = createContext<CartContextType | undefined>(undefined);
-
-export function CartProvider({ 
-  children, 
-  initialCustomerId = null 
-}: { 
-  children: ReactNode; 
-  initialCustomerId?: string | null;
-}) {
-  const [customerId, setCustomerId] = useState<string | null>(initialCustomerId);
-  const cartHook = useCart(customerId);
-
-  return (
-    <CartContext.Provider value={{ ...cartHook, customerId, setCustomerId }}>
-      {children}
-    </CartContext.Provider>
-  );
-}
-
-export function useCartContext() {
-  const context = useContext(CartContext);
-  if (context === undefined) {
-    throw new Error('useCartContext must be used within a CartProvider');
-  }
-  return context;
-}
+// useCart hook is already exported above

@@ -67,36 +67,14 @@ export class OrderController {
   /**
    * Get an order by ID
    */
-  static async getOrderById(id: string): Promise<SupabaseMCPResponse<{ order: Order; items: OrderItem[] }>> {
-    return OrderModel.getById(id);
+  static async getOrderById(id: string): Promise<any> {
+    return await OrderModel.getById(id);
   }
 
   /**
-   * Update order status with validation
+   * Update order status
    */
-  static async updateOrderStatus(id: string, status: OrderStatus): Promise<SupabaseMCPResponse<null>> {
-    // Get the current order to validate the status change
-    const orderResult = await OrderModel.getById(id);
-    
-    if (orderResult.error || !orderResult.data) {
-      return { error: orderResult.error || 'Order not found' };
-    }
-    
-    const currentStatus = orderResult.data.order.status;
-    
-    // Validate status transitions
-    const validTransitions: Record<OrderStatus, OrderStatus[]> = {
-      'pending': ['processing', 'cancelled'],
-      'processing': ['completed', 'cancelled'],
-      'completed': [],
-      'cancelled': []
-    };
-    
-    if (!validTransitions[currentStatus].includes(status)) {
-      return { error: `Invalid status transition from ${currentStatus} to ${status}` };
-    }
-    
-    // Update the status
-    return OrderModel.updateStatus(id, status);
+  static async updateOrderStatus(id: string, status: OrderStatus): Promise<any> {
+    return await OrderModel.updateStatus(id, status);
   }
 }
