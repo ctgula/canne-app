@@ -39,10 +39,8 @@ export async function addOrderItems(orderId: string, cartItems: CartItem[]): Pro
       order_id: orderId,
       product_id: item.product.id,
       quantity: item.quantity,
-      price: item.product.price,
-      tier: item.product.name,
-      weight: item.strain.name,
-      color_theme: 'default',
+      unit_price: item.product.price,
+      total_price: item.product.price * item.quantity
     }));
 
     const { error } = await supabase
