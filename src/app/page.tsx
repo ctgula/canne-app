@@ -121,7 +121,7 @@ export default function Home() {
               
               {/* Mobile-Optimized CTA Section */}
               <motion.div 
-                className="flex flex-col sm:flex-row gap-4 w-full max-w-md sm:max-w-none mb-8"
+                className="flex flex-col sm:flex-row gap-4 w-full justify-center items-center mb-8"
                 variants={itemVariants}
               >
                 <Link href="/shop" className="flex-1 sm:flex-none">
