@@ -20,6 +20,7 @@ interface DeliveryDetails {
   ageVerification?: boolean;
   termsAccepted?: boolean;
   preferredTime?: string;
+  emailUpdates?: boolean;
 }
 
 // Order interface
@@ -76,7 +77,8 @@ export default function CheckoutPage() {
     specialInstructions: '',
     ageVerification: false,
     termsAccepted: false,
-    preferredTime: ''
+    preferredTime: '',
+    emailUpdates: false
   });
 
   // Redirect if cart is empty
@@ -646,20 +648,23 @@ export default function CheckoutPage() {
               {/* Legal Compliance - Age Verification and Terms */}
               <div className="space-y-6 mb-8">
                 {/* Age Verification */}
-                <div className="flex items-start gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    id="ageVerification"
-                    name="ageVerification"
-                    required
-                    className="h-6 w-6 text-purple-600 focus:ring-purple-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-500"
-                    onChange={handleInputChange}
-                  />
-                  <label htmlFor="ageVerification" className="text-sm text-gray-800 cursor-pointer select-none">
-                    <span className="font-medium">🔞 Age Verification Required *</span>
-                    <span className="mt-1 block">I certify that I am 21+ and in Washington, DC to order.</span>
-                    <span className="mt-1 block text-gray-500">Delivery available only to Washington, DC addresses (ZIP must start with 200).</span>
-                  </label>
+                <div className="group rounded-xl border border-gray-200 dark:border-gray-700 bg-white/70 dark:bg-gray-800/70 p-3 sm:p-4 focus-within:ring-2 focus-within:ring-purple-500 transition-all">
+                  <div className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      id="ageVerification"
+                      name="ageVerification"
+                      required
+                      checked={!!deliveryDetails.ageVerification}
+                      className="h-6 w-6 accent-purple-600 focus:ring-purple-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-500"
+                      onChange={handleInputChange}
+                    />
+                    <label htmlFor="ageVerification" className="text-sm text-gray-800 cursor-pointer select-none">
+                      <span className="font-medium">🔞 21+ Age Verification *</span>
+                      <span className="mt-1 block">I certify that I am 21+ and in Washington, DC to order.</span>
+                      <span className="mt-1 block text-gray-500">Delivery available only to Washington, DC addresses (ZIP must start with 200).</span>
+                    </label>
+                  </div>
                 </div>
               </div>
 
@@ -689,41 +694,47 @@ export default function CheckoutPage() {
               {/* Terms and Privacy */}
               <div className="space-y-4 mb-8">
                 {/* Terms and Privacy */}
-                <div className="flex items-start gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    id="termsAccepted"
-                    name="termsAccepted"
-                    required
-                    className="h-6 w-6 text-purple-600 focus:ring-purple-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-500"
-                    onChange={handleInputChange}
-                  />
-                  <label htmlFor="termsAccepted" className="text-sm text-gray-800 cursor-pointer select-none">
-                    <span className="font-medium">📋 I agree to the </span>
-                    <a href="/terms" target="_blank" className="text-purple-600 hover:text-purple-800 underline font-medium">
-                      Terms of Service
-                    </a>
-                    <span className="font-medium"> and </span>
-                    <a href="/privacy" target="_blank" className="text-purple-600 hover:text-purple-800 underline font-medium">
-                      Privacy Policy
-                    </a>
-                    <span className="font-medium"> *</span>
-                  </label>
+                <div className="group rounded-xl border border-gray-200 dark:border-gray-700 bg-white/70 dark:bg-gray-800/70 p-3 sm:p-4 focus-within:ring-2 focus-within:ring-purple-500 transition-all">
+                  <div className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      id="termsAccepted"
+                      name="termsAccepted"
+                      required
+                      checked={!!deliveryDetails.termsAccepted}
+                      className="h-6 w-6 accent-purple-600 focus:ring-purple-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-500"
+                      onChange={handleInputChange}
+                    />
+                    <label htmlFor="termsAccepted" className="text-sm text-gray-800 cursor-pointer select-none">
+                      <span className="font-medium">📋 I agree to the </span>
+                      <a href="/terms" target="_blank" className="text-purple-600 hover:text-purple-800 underline font-medium">
+                        Terms of Service
+                      </a>
+                      <span className="font-medium"> and </span>
+                      <a href="/privacy" target="_blank" className="text-purple-600 hover:text-purple-800 underline font-medium">
+                        Privacy Policy
+                      </a>
+                      <span className="font-medium"> *</span>
+                    </label>
+                  </div>
                 </div>
 
                 {/* Email Updates - Optional */}
-                <div className="flex items-start gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    id="emailUpdates"
-                    name="emailUpdates"
-                    className="h-6 w-6 text-purple-600 focus:ring-purple-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-500"
-                    onChange={handleInputChange}
-                  />
-                  <label htmlFor="emailUpdates" className="text-sm text-gray-700 cursor-pointer select-none">
-                    <span className="font-medium">📧 Email updates (optional)</span>
-                    <span className="mt-1 block text-gray-500">Send me order updates and exclusive offers via email.</span>
-                  </label>
+                <div className="group rounded-xl border border-gray-200 dark:border-gray-700 bg-white/70 dark:bg-gray-800/70 p-3 sm:p-4 focus-within:ring-2 focus-within:ring-purple-500 transition-all">
+                  <div className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      id="emailUpdates"
+                      name="emailUpdates"
+                      checked={!!deliveryDetails.emailUpdates}
+                      className="h-6 w-6 accent-purple-600 focus:ring-purple-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-500"
+                      onChange={handleInputChange}
+                    />
+                    <label htmlFor="emailUpdates" className="text-sm text-gray-700 cursor-pointer select-none">
+                      <span className="font-medium">📧 Email updates (optional)</span>
+                      <span className="mt-1 block text-gray-500">Send me order updates and exclusive offers via email.</span>
+                    </label>
+                  </div>
                 </div>
               </div>
 
