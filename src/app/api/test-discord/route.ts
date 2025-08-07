@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+// Ensure this route runs on Node.js runtime (some providers' Edge runtime can block outbound fetches)
+export const runtime = 'nodejs';
 
 export async function GET() {
   try {
@@ -10,6 +12,8 @@ export async function GET() {
       webhookLength: discordWebhook?.length || 0,
       webhookStart: discordWebhook?.substring(0, 50) || 'undefined',
       environment: process.env.NODE_ENV,
+      vercelEnv: process.env.VERCEL_ENV,
+      vercelRegion: process.env.VERCEL_REGION,
       timestamp: new Date().toISOString()
     };
     
@@ -48,16 +52,24 @@ export async function GET() {
     };
     
     console.log('📤 Sending test Discord notification...');
-    
+
+    // Add timeout and UA for robustness
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
     const discordResponse = await fetch(discordWebhook, {
       method: "POST",
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'User-Agent': 'Canne-Test-Webhook/1.0'
+      },
       body: JSON.stringify({
         username: "Cannè Test Bot",
         avatar_url: "https://raw.githubusercontent.com/twemoji/twemoji/master/assets/72x72/1f9ea.png",
         embeds: [testEmbed]
-      })
+      }),
+      signal: controller.signal
     });
+    clearTimeout(timeoutId);
     
     const responseText = await discordResponse.text();
     

@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+// Ensure Node.js runtime (Edge may restrict outbound fetch or certain APIs)
+export const runtime = 'nodejs';
 import { createClient } from '@supabase/supabase-js';
 
 // Initialize Supabase admin client with service role key for server-side operations
