@@ -296,15 +296,10 @@ export async function POST(request: NextRequest) {
             unit_price,
             total_price,
             product_id,
-            strain,
-            thc_low,
-            thc_high,
             products!inner (
               name,
               tier,
-              description,
-              gift_amount,
-              color_theme
+              description
             )
           `)
           .eq('order_id', orderRecord.id);
@@ -324,12 +319,16 @@ export async function POST(request: NextRequest) {
             'ultra': 'Ultra Premium'
           }[product?.tier] || product?.name || 'Unknown Product';
           
-          const giftAmount = product?.gift_amount || '7g';
+          const giftAmount = {
+            'starter': '3.5g',
+            'classic': '7g', 
+            'black': '14g',
+            'ultra': '28g'
+          }[product?.tier?.toLowerCase()] || '7g';
           const unitPrice = parseFloat(item.unit_price).toFixed(2);
           const totalPrice = parseFloat(item.total_price).toFixed(2);
-          const strainInfo = item.strain ? `${item.strain} (${item.thc_low}–${item.thc_high}% THC)` : 'Strain not specified';
           
-          return `• **${item.quantity}x ${tierName}** (${giftAmount} complimentary)\n   **Strain:** ${strainInfo}\n   $${unitPrice} each = $${totalPrice} total`;
+          return `• **${item.quantity}x ${tierName}** (${giftAmount} complimentary)\n   $${unitPrice} each = $${totalPrice} total`;
         }).join('\n\n') : `No items found (Error: ${orderItemsError?.message || 'Unknown error'})`;
 
         const embed = {
