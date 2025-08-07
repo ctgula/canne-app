@@ -55,6 +55,16 @@ export default function CheckoutPage() {
   const [orderId, setOrderId] = useState<string>('');
   const [phoneError, setPhoneError] = useState<string>('');
 
+  // Smooth keyboard avoidance on iOS: center focused input in viewport
+  const handleFieldFocus = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    try {
+      // Delay to let keyboard animate
+      setTimeout(() => {
+        e.target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      }, 50);
+    } catch {}
+  };
+
   const [deliveryDetails, setDeliveryDetails] = useState<DeliveryDetails>({
     name: '',
     email: '',
@@ -156,6 +166,7 @@ export default function CheckoutPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return; // prevent double submit
     
     // Comprehensive form validation
     const phoneValidationError = validatePhoneNumber(deliveryDetails.phone);
@@ -168,32 +179,38 @@ export default function CheckoutPage() {
     // Validate required fields
     if (!deliveryDetails.name.trim()) {
       alert('Please enter your full name.');
+      document.querySelector<HTMLInputElement>('input[name="name"]')?.focus();
       return;
     }
     
     if (!deliveryDetails.address.trim()) {
       alert('Please enter your delivery address.');
+      document.querySelector<HTMLInputElement>('input[name="address"]')?.focus();
       return;
     }
     
     if (!deliveryDetails.city.trim()) {
       alert('Please enter your city.');
+      document.querySelector<HTMLInputElement>('input[name="city"]')?.focus();
       return;
     }
     
     if (!deliveryDetails.zipCode.trim()) {
       alert('Please enter your ZIP code.');
+      document.querySelector<HTMLInputElement>('input[name="zipCode"]')?.focus();
       return;
     }
     
     // Validate required checkboxes
     if (!deliveryDetails.ageVerification) {
       alert('Please confirm that you are 21 years of age or older.');
+      document.getElementById('ageVerification')?.focus();
       return;
     }
     
     if (!deliveryDetails.termsAccepted) {
       alert('Please accept the Terms of Service and Privacy Policy to continue.');
+      document.getElementById('termsAccepted')?.focus();
       return;
     }
     
@@ -325,7 +342,10 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div
+      className="min-h-screen bg-gray-50 dark:bg-gray-900 overscroll-y-contain"
+      style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}
+    >
       <Header />
       
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -359,9 +379,13 @@ export default function CheckoutPage() {
                       required
                       value={deliveryDetails.name}
                       onChange={handleInputChange}
+                      onFocus={handleFieldFocus}
                       className="w-full px-3 sm:px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-base"
                       placeholder="John Doe"
                       autoComplete="name"
+                      autoCapitalize="words"
+                      autoCorrect="off"
+                      enterKeyHint="next"
                     />
                   </div>
                   
@@ -379,6 +403,11 @@ export default function CheckoutPage() {
                         className="w-full px-3 sm:px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-base"
                         placeholder="john@example.com"
                         autoComplete="email"
+                        inputMode="email"
+                        enterKeyHint="next"
+                        autoCapitalize="off"
+                        spellCheck={false}
+                        onFocus={handleFieldFocus}
                       />
                       <p className="mt-1 text-xs text-gray-500">For order confirmation and updates</p>
                     </div>
@@ -401,15 +430,20 @@ export default function CheckoutPage() {
                         placeholder="(202) 555-0123"
                         maxLength={14}
                         autoComplete="tel"
+                        inputMode="tel"
+                        enterKeyHint="next"
+                        aria-invalid={!!phoneError}
+                        aria-describedby="phone-help"
+                        onFocus={handleFieldFocus}
                       />
                       {phoneError && (
-                        <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                        <p id="phone-help" className="mt-2 text-sm text-red-600 flex items-center gap-1">
                           <span className="text-red-500">⚠️</span>
                           {phoneError}
                         </p>
                       )}
                       {deliveryDetails.phone && !phoneError && (
-                        <p className="mt-2 text-sm text-green-600 flex items-center gap-1">
+                        <p id="phone-help" className="mt-2 text-sm text-green-600 flex items-center gap-1">
                           <span className="text-green-500">✅</span>
                           Valid phone number
                         </p>
@@ -436,9 +470,13 @@ export default function CheckoutPage() {
                       required
                       value={deliveryDetails.address}
                       onChange={handleInputChange}
+                      onFocus={handleFieldFocus}
                       className="w-full px-3 sm:px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-base"
                       placeholder="Start typing your address..."
                       autoComplete="street-address"
+                      autoCapitalize="words"
+                      autoCorrect="off"
+                      enterKeyHint="next"
                     />
                     <p className="mt-1 text-xs text-gray-500">🏠 Address autofill available - start typing for suggestions</p>
                   </div>
@@ -454,9 +492,13 @@ export default function CheckoutPage() {
                         required
                         value={deliveryDetails.city}
                         onChange={handleInputChange}
+                        onFocus={handleFieldFocus}
                         className="w-full px-3 sm:px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-base"
                         placeholder="Washington"
                         autoComplete="address-level2"
+                        autoCapitalize="words"
+                        autoCorrect="off"
+                        enterKeyHint="next"
                       />
                     </div>
                     
@@ -470,10 +512,13 @@ export default function CheckoutPage() {
                         required
                         value={deliveryDetails.zipCode}
                         onChange={handleInputChange}
+                        onFocus={handleFieldFocus}
                         className="w-full px-3 sm:px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-base"
                         placeholder="20001"
                         autoComplete="postal-code"
                         maxLength={5}
+                        inputMode="numeric"
+                        enterKeyHint="done"
                       />
                       <p className="mt-1 text-xs text-gray-500">📍 DC delivery only (20000-20199)</p>
                     </div>
@@ -529,8 +574,12 @@ export default function CheckoutPage() {
                       value={deliveryDetails.specialInstructions}
                       onChange={handleInputChange}
                       rows={3}
+                      onFocus={handleFieldFocus}
                       className="w-full px-3 sm:px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all resize-none text-base"
                       placeholder="Any special delivery instructions..."
+                      autoCapitalize="sentences"
+                      autoCorrect="on"
+                      enterKeyHint="done"
                     />
                   </div>
                 </div>
@@ -597,39 +646,20 @@ export default function CheckoutPage() {
               {/* Legal Compliance - Age Verification and Terms */}
               <div className="space-y-6 mb-8">
                 {/* Age Verification */}
-                <div className="bg-amber-50 border-2 border-amber-300 rounded-xl p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="relative flex-shrink-0 mt-1">
-                      <input
-                        type="checkbox"
-                        id="ageVerification"
-                        name="ageVerification"
-                        required
-                        className="appearance-none h-6 w-6 border-2 border-amber-400 rounded-md bg-white checked:bg-purple-600 checked:border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 cursor-pointer transition-all duration-200"
-                        onChange={handleInputChange}
-                      />
-                      <svg 
-                        className="absolute top-0.5 left-0.5 h-5 w-5 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity duration-200" 
-                        fill="currentColor" 
-                        viewBox="0 0 20 20"
-                      >
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <label htmlFor="ageVerification" className="text-sm text-gray-800 cursor-pointer select-none">
-                      <span className="font-semibold text-amber-800">🔞 Age Verification Required *</span>
-                      <br />
-                      <span className="mt-1 block">Must be 21+ and in Washington, DC to order. Delivery ZIPs must start with 200.</span>
-                      <br />
-                      <span className="mt-1 block">I certify that I am 21 years of age or older and legally permitted to purchase cannabis products in Washington, DC.</span>
-                    </label>
-                  </div>
-                  {/* DC ZIP Warning */}
-                  <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-sm text-blue-800 font-medium">
-                      ⚠️ Delivery available only to verified Washington, DC addresses (ZIP must start with 200).
-                    </p>
-                  </div>
+                <div className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    id="ageVerification"
+                    name="ageVerification"
+                    required
+                    className="h-6 w-6 text-purple-600 focus:ring-purple-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-500"
+                    onChange={handleInputChange}
+                  />
+                  <label htmlFor="ageVerification" className="text-sm text-gray-800 cursor-pointer select-none">
+                    <span className="font-medium">🔞 Age Verification Required *</span>
+                    <span className="mt-1 block">I certify that I am 21+ and in Washington, DC to order.</span>
+                    <span className="mt-1 block text-gray-500">Delivery available only to Washington, DC addresses (ZIP must start with 200).</span>
+                  </label>
                 </div>
               </div>
 
@@ -657,69 +687,43 @@ export default function CheckoutPage() {
               </div>
 
               {/* Terms and Privacy */}
-              <div className="space-y-6 mb-8">
+              <div className="space-y-4 mb-8">
                 {/* Terms and Privacy */}
-                <div className="bg-purple-50 border-2 border-purple-200 rounded-xl p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="relative flex-shrink-0 mt-1">
-                      <input
-                        type="checkbox"
-                        id="termsAccepted"
-                        name="termsAccepted"
-                        required
-                        className="appearance-none h-6 w-6 border-2 border-purple-300 rounded-md bg-white checked:bg-purple-600 checked:border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 cursor-pointer transition-all duration-200"
-                        onChange={handleInputChange}
-                      />
-                      <svg 
-                        className="absolute top-0.5 left-0.5 h-5 w-5 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity duration-200" 
-                        fill="currentColor" 
-                        viewBox="0 0 20 20"
-                      >
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <label htmlFor="termsAccepted" className="text-sm text-gray-800 cursor-pointer select-none">
-                      <span className="font-semibold text-purple-800">📋 Service Agreement *</span>
-                      <br />
-                      <span className="mt-1 block">
-                        I agree to the{' '}
-                        <a href="/terms" target="_blank" className="text-purple-600 hover:text-purple-800 underline font-medium">
-                          Terms of Service
-                        </a>{' '}
-                        and{' '}
-                        <a href="/privacy" target="_blank" className="text-purple-600 hover:text-purple-800 underline font-medium">
-                          Privacy Policy
-                        </a>
-                      </span>
-                    </label>
-                  </div>
+                <div className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    id="termsAccepted"
+                    name="termsAccepted"
+                    required
+                    className="h-6 w-6 text-purple-600 focus:ring-purple-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-500"
+                    onChange={handleInputChange}
+                  />
+                  <label htmlFor="termsAccepted" className="text-sm text-gray-800 cursor-pointer select-none">
+                    <span className="font-medium">📋 I agree to the </span>
+                    <a href="/terms" target="_blank" className="text-purple-600 hover:text-purple-800 underline font-medium">
+                      Terms of Service
+                    </a>
+                    <span className="font-medium"> and </span>
+                    <a href="/privacy" target="_blank" className="text-purple-600 hover:text-purple-800 underline font-medium">
+                      Privacy Policy
+                    </a>
+                    <span className="font-medium"> *</span>
+                  </label>
                 </div>
-                
+
                 {/* Email Updates - Optional */}
-                <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
-                  <div className="flex items-start gap-4">
-                    <div className="relative flex-shrink-0 mt-1">
-                      <input
-                        type="checkbox"
-                        id="emailUpdates"
-                        name="emailUpdates"
-                        className="appearance-none h-5 w-5 border-2 border-gray-300 rounded-md bg-white checked:bg-purple-600 checked:border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 cursor-pointer transition-all duration-200"
-                        onChange={handleInputChange}
-                      />
-                      <svg 
-                        className="absolute top-0.5 left-0.5 h-4 w-4 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity duration-200" 
-                        fill="currentColor" 
-                        viewBox="0 0 20 20"
-                      >
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <label htmlFor="emailUpdates" className="text-sm text-gray-700 cursor-pointer select-none">
-                      <span className="font-medium">📧 Email Updates (Optional)</span>
-                      <br />
-                      <span className="text-gray-600">Send me order updates and exclusive offers via email</span>
-                    </label>
-                  </div>
+                <div className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    id="emailUpdates"
+                    name="emailUpdates"
+                    className="h-6 w-6 text-purple-600 focus:ring-purple-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-500"
+                    onChange={handleInputChange}
+                  />
+                  <label htmlFor="emailUpdates" className="text-sm text-gray-700 cursor-pointer select-none">
+                    <span className="font-medium">📧 Email updates (optional)</span>
+                    <span className="mt-1 block text-gray-500">Send me order updates and exclusive offers via email.</span>
+                  </label>
                 </div>
               </div>
 
@@ -741,9 +745,13 @@ export default function CheckoutPage() {
                   </div>
                 )}
               </button>
+              {/* Live region for submit status */}
+              <p className="sr-only" role="status" aria-live="polite">
+                {isSubmitting ? 'Processing order...' : 'Ready to submit order'}
+              </p>
 
               <div className="text-center mt-4 space-y-2">
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500" aria-live="polite" id="submit-hint">
                   🛡️ Your information is secure and encrypted
                 </p>
                 <p className="text-xs text-gray-500">

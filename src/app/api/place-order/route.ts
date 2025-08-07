@@ -273,13 +273,21 @@ export async function POST(request: NextRequest) {
     // Send Apple-level Discord notification with real database data
     try {
       const discordWebhook = process.env.DISCORD_WEBHOOK;
-      console.log('🔔 Discord webhook check:', {
+      console.log('🔔 Discord webhook environment check:', {
         webhookExists: !!discordWebhook,
         webhookLength: discordWebhook?.length || 0,
-        webhookStart: discordWebhook?.substring(0, 50) || 'undefined'
+        webhookStart: discordWebhook?.substring(0, 50) || 'undefined',
+        nodeEnv: process.env.NODE_ENV,
+        vercelEnv: process.env.VERCEL_ENV
       });
       
-      if (discordWebhook) {
+      if (!discordWebhook) {
+        console.error('❌ DISCORD_WEBHOOK environment variable is not set!');
+        console.error('Available env vars:', Object.keys(process.env).filter(key => key.includes('DISCORD')));
+        // Don't fail the order, just log the issue
+      } else if (!discordWebhook.startsWith('https://discord.com/api/webhooks/')) {
+        console.error('❌ DISCORD_WEBHOOK appears to be malformed:', discordWebhook.substring(0, 50));
+      } else {
         console.log('✅ Discord webhook found, proceeding with notification...');
         // Fetch complete customer information from database
         const { data: customerData } = await supabaseAdmin
@@ -376,15 +384,29 @@ export async function POST(request: NextRequest) {
         
         console.log('📤 Sending Discord notification for order:', orderRecord.order_number);
         
+        // Create AbortController for timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+        
+        const discordPayload = {
+          username: "Cannè Order System",
+          avatar_url: "https://raw.githubusercontent.com/twemoji/twemoji/master/assets/72x72/1f33f.png",
+          embeds: [embed]
+        };
+        
+        console.log('📦 Discord payload size:', JSON.stringify(discordPayload).length, 'characters');
+        
         const discordResponse = await fetch(discordWebhook, {
           method: "POST",
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            username: "Cannè Order System",
-            avatar_url: "https://raw.githubusercontent.com/twemoji/twemoji/master/assets/72x72/1f33f.png",
-            embeds: [embed] 
-          })
+          headers: { 
+            'Content-Type': 'application/json',
+            'User-Agent': 'Canne-Order-System/1.0'
+          },
+          body: JSON.stringify(discordPayload),
+          signal: controller.signal
         });
+        
+        clearTimeout(timeoutId);
         
         console.log('📬 Discord webhook response:', {
           status: discordResponse.status,
@@ -396,14 +418,50 @@ export async function POST(request: NextRequest) {
           const errorText = await discordResponse.text();
           console.error('❌ Discord webhook failed:', {
             status: discordResponse.status,
-            error: errorText
+            statusText: discordResponse.statusText,
+            error: errorText,
+            headers: Object.fromEntries(discordResponse.headers.entries())
           });
+          
+          // Log specific error types
+          if (discordResponse.status === 400) {
+            console.error('❌ Discord webhook: Bad Request - Check payload format');
+          } else if (discordResponse.status === 401) {
+            console.error('❌ Discord webhook: Unauthorized - Check webhook URL');
+          } else if (discordResponse.status === 404) {
+            console.error('❌ Discord webhook: Not Found - Webhook URL may be invalid');
+          } else if (discordResponse.status === 429) {
+            console.error('❌ Discord webhook: Rate Limited - Too many requests');
+          } else if (discordResponse.status >= 500) {
+            console.error('❌ Discord webhook: Server Error - Discord may be down');
+          }
         } else {
           console.log('✅ Discord notification sent successfully!');
         }
       }
     } catch (error) {
-      console.error('Discord notification failed:', error);
+      console.error('🚨 Discord notification failed with error:', {
+        errorType: error?.constructor?.name || typeof error,
+        errorMessage: error?.message || 'Unknown error',
+        errorCode: error?.code,
+        errorStack: error?.stack?.split('\n').slice(0, 3).join('\n') // First 3 lines of stack
+      });
+      
+      // Handle specific error types
+      if (error?.name === 'AbortError') {
+        console.error('❌ Discord webhook: Request timed out after 10 seconds');
+      } else if (error?.code === 'ENOTFOUND' || error?.code === 'ECONNREFUSED') {
+        console.error('❌ Discord webhook: Network connection failed - DNS or connectivity issue');
+      } else if (error?.code === 'ECONNRESET') {
+        console.error('❌ Discord webhook: Connection reset by Discord servers');
+      } else if (error?.message?.includes('fetch')) {
+        console.error('❌ Discord webhook: Fetch API error - Network or CORS issue');
+      } else {
+        console.error('❌ Discord webhook: Unexpected error type');
+      }
+      
+      // Don't fail the order because of Discord notification issues
+      console.log('⚠️  Order was successful despite Discord notification failure');
     }
 
     // Return success response
