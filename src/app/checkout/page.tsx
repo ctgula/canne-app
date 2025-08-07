@@ -15,7 +15,8 @@ interface DeliveryDetails {
   apartment?: string;
   city: string;
   zipCode: string;
-  timePreference: 'morning' | 'afternoon' | 'evening';
+  // Allow granular windows or labels like "ASAP" or a custom time
+  timePreference: string;
   specialInstructions: string;
   ageVerification?: boolean;
   termsAccepted?: boolean;
@@ -73,7 +74,7 @@ export default function CheckoutPage() {
     address: '',
     city: '',
     zipCode: '',
-    timePreference: 'afternoon',
+    timePreference: 'ASAP (60–90 min)',
     specialInstructions: '',
     ageVerification: false,
     termsAccepted: false,
@@ -561,10 +562,35 @@ export default function CheckoutPage() {
                       onChange={handleInputChange}
                       className="w-full px-3 sm:px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-base"
                     >
-                      <option value="morning">Morning (9 AM - 12 PM)</option>
-                      <option value="afternoon">Afternoon (12 PM - 5 PM)</option>
-                      <option value="evening">Evening (5 PM - 8 PM)</option>
+                      <option value="ASAP (60–90 min)">ASAP (60–90 min)</option>
+                      <option value="9–11 AM">9–11 AM</option>
+                      <option value="11 AM–1 PM">11 AM–1 PM</option>
+                      <option value="1–3 PM">1–3 PM</option>
+                      <option value="3–5 PM">3–5 PM</option>
+                      <option value="5–7 PM">5–7 PM</option>
+                      <option value="7–9 PM">7–9 PM</option>
+                      <option value="custom">Specific time…</option>
                     </select>
+                    {deliveryDetails.timePreference === 'custom' && (
+                      <div className="mt-3">
+                        <label htmlFor="preferredTime" className="block text-sm text-gray-700 mb-1">
+                          Choose a specific time
+                        </label>
+                        <input
+                          type="time"
+                          id="preferredTime"
+                          name="preferredTime"
+                          value={deliveryDetails.preferredTime || ''}
+                          onChange={handleInputChange}
+                          onFocus={handleFieldFocus}
+                          className="w-full px-3 sm:px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-base"
+                          aria-describedby="preferred-time-help"
+                        />
+                        <p id="preferred-time-help" className="mt-1 text-xs text-gray-500">
+                          We’ll do our best to arrive at this time.
+                        </p>
+                      </div>
+                    )}
                   </div>
                   
                   <div>

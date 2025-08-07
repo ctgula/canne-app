@@ -25,7 +25,8 @@ export interface DeliveryDetails {
   address: string;
   city: string;
   zipCode: string;
-  timePreference: 'morning' | 'afternoon' | 'evening';
+  // Flexible to support granular slots like "9:00–10:00 AM", "ASAP", etc.
+  timePreference: string;
   specialInstructions?: string;
 }
 
