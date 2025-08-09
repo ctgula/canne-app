@@ -686,7 +686,7 @@ export default function CheckoutPage() {
               {/* Legal Compliance - Age Verification and Terms */}
               <div className="space-y-6 mb-8">
                 {/* Age Verification */}
-                <div className="group rounded-xl border border-gray-200 dark:border-gray-700 bg-white/70 dark:bg-gray-800/70 p-3 sm:p-4 focus-within:ring-2 focus-within:ring-purple-500 transition-all">
+                <div className="group rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-gray-50/90 dark:bg-gray-800/80 p-4 sm:p-5 focus-within:ring-2 focus-within:ring-purple-500 transition-all">
                   <div className="flex items-start gap-3 cursor-pointer">
                     <input
                       type="checkbox"
@@ -694,13 +694,13 @@ export default function CheckoutPage() {
                       name="ageVerification"
                       required
                       checked={!!deliveryDetails.ageVerification}
-                      className="h-6 w-6 accent-purple-600 focus:ring-purple-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-500"
+                      className="h-6 w-6 shrink-0 rounded-md border-2 border-purple-600 text-purple-600 accent-purple-600 hover:scale-105 focus:scale-105 transition-transform focus:ring-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
                       onChange={handleInputChange}
                     />
-                    <label htmlFor="ageVerification" className="text-sm text-gray-800 cursor-pointer select-none">
-                      <span className="font-medium">🔞 21+ Age Verification *</span>
-                      <span className="mt-1 block">I certify that I am 21+ and in Washington, DC to order.</span>
-                      <span className="mt-1 block text-gray-500">Delivery available only to Washington, DC addresses (ZIP must start with 200).</span>
+                    <label htmlFor="ageVerification" className="text-sm text-[#333] dark:text-gray-100 cursor-pointer select-none">
+                      <span className="font-semibold text-[#333] dark:text-gray-100">🔞 21+ Age Verification *</span>
+                      <span className="mt-1 block text-[#333] dark:text-gray-200">I certify that I am 21+ and in Washington, DC to order.</span>
+                      <span className="mt-1 block text-gray-600 dark:text-gray-400">Delivery available only to Washington, DC addresses (ZIP must start with 200).</span>
                     </label>
                   </div>
                 </div>
@@ -732,7 +732,7 @@ export default function CheckoutPage() {
               {/* Terms and Privacy */}
               <div className="space-y-4 mb-8">
                 {/* Terms and Privacy */}
-                <div className="group rounded-xl border border-gray-200 dark:border-gray-700 bg-white/70 dark:bg-gray-800/70 p-3 sm:p-4 focus-within:ring-2 focus-within:ring-purple-500 transition-all">
+                <div className="group rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-gray-50/90 dark:bg-gray-800/80 p-4 sm:p-5 focus-within:ring-2 focus-within:ring-purple-500 transition-all">
                   <div className="flex items-start gap-3 cursor-pointer">
                     <input
                       type="checkbox"
@@ -740,37 +740,37 @@ export default function CheckoutPage() {
                       name="termsAccepted"
                       required
                       checked={!!deliveryDetails.termsAccepted}
-                      className="h-6 w-6 accent-purple-600 focus:ring-purple-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-500"
+                      className="h-6 w-6 shrink-0 rounded-md border-2 border-purple-600 text-purple-600 accent-purple-600 hover:scale-105 focus:scale-105 transition-transform focus:ring-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
                       onChange={handleInputChange}
                     />
-                    <label htmlFor="termsAccepted" className="text-sm text-gray-800 cursor-pointer select-none">
-                      <span className="font-medium">📋 I agree to the </span>
-                      <a href="/terms" target="_blank" className="text-purple-600 hover:text-purple-800 underline font-medium">
+                    <label htmlFor="termsAccepted" className="text-sm text-[#333] dark:text-gray-100 cursor-pointer select-none">
+                      <span className="font-semibold text-[#333] dark:text-gray-100">📋 I agree to the </span>
+                      <a href="/terms" target="_blank" className="text-purple-700 hover:text-purple-800 underline font-semibold">
                         Terms of Service
                       </a>
-                      <span className="font-medium"> and </span>
-                      <a href="/privacy" target="_blank" className="text-purple-600 hover:text-purple-800 underline font-medium">
+                      <span className="font-semibold text-[#333] dark:text-gray-100"> and </span>
+                      <a href="/privacy" target="_blank" className="text-purple-700 hover:text-purple-800 underline font-semibold">
                         Privacy Policy
                       </a>
-                      <span className="font-medium"> *</span>
+                      <span className="font-semibold text-[#333] dark:text-gray-100"> *</span>
                     </label>
                   </div>
                 </div>
 
                 {/* Email Updates - Optional */}
-                <div className="group rounded-xl border border-gray-200 dark:border-gray-700 bg-white/70 dark:bg-gray-800/70 p-3 sm:p-4 focus-within:ring-2 focus-within:ring-purple-500 transition-all">
+                <div className="group rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-gray-50/90 dark:bg-gray-800/80 p-4 sm:p-5 focus-within:ring-2 focus-within:ring-purple-500 transition-all">
                   <div className="flex items-start gap-3 cursor-pointer">
                     <input
                       type="checkbox"
                       id="emailUpdates"
                       name="emailUpdates"
                       checked={!!deliveryDetails.emailUpdates}
-                      className="h-6 w-6 accent-purple-600 focus:ring-purple-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-500"
+                      className="h-6 w-6 shrink-0 rounded-md border-2 border-purple-600 text-purple-600 accent-purple-600 hover:scale-105 focus:scale-105 transition-transform focus:ring-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
                       onChange={handleInputChange}
                     />
-                    <label htmlFor="emailUpdates" className="text-sm text-gray-700 cursor-pointer select-none">
-                      <span className="font-medium">📧 Email updates (optional)</span>
-                      <span className="mt-1 block text-gray-500">Send me order updates and exclusive offers via email.</span>
+                    <label htmlFor="emailUpdates" className="text-sm text-[#333] dark:text-gray-100 cursor-pointer select-none">
+                      <span className="font-semibold text-[#333] dark:text-gray-100">📧 Email updates (optional)</span>
+                      <span className="mt-1 block text-gray-600 dark:text-gray-400">Send me order updates and exclusive offers via email.</span>
                     </label>
                   </div>
                 </div>
