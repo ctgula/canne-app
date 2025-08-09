@@ -48,6 +48,12 @@ interface OrderCartItem {
     hasDelivery: boolean;
   };
   quantity: number;
+  strain: {
+    name: string;
+    type: string;
+    thcLow: number;
+    thcHigh: number;
+  };
 }
 
 export default function CheckoutPage() {
@@ -236,7 +242,13 @@ export default function CheckoutPage() {
           giftSize: item.product.weight || `${item.product.tier} tier`,
           hasDelivery: hasDelivery
         },
-        quantity: item.quantity
+        quantity: item.quantity,
+        strain: {
+          name: item.strain.name,
+          type: item.strain.type,
+          thcLow: item.strain.thcLow,
+          thcHigh: item.strain.thcHigh
+        }
       }));
       
       const order: Omit<Order, 'id' | 'createdAt' | 'updatedAt'> = {
