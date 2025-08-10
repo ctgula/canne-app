@@ -72,7 +72,7 @@ export default function CheckoutPage() {
   const schema = z.object({
     ageVerified: z.literal(true, { message: 'You must confirm you are 21+ and in DC to order.' }),
     acceptTerms: z.literal(true, { message: 'You must accept the Terms & Privacy Policy.' }),
-    emailOptIn: z.boolean().optional().default(false),
+    emailOptIn: z.boolean().default(false),
   });
 
   type CheckboxForm = z.infer<typeof schema>;
