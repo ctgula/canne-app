@@ -394,7 +394,7 @@ export default function CheckoutPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="space-y-6">
-            <form onSubmit={onSubmit} className="space-y-6">
+            <form onSubmit={onSubmit} noValidate className="space-y-6">
               <div className="card">
                 <div className="flex items-center gap-2 mb-4">
                   <CreditCard className="h-5 w-5 text-purple-600" />
@@ -715,11 +715,14 @@ export default function CheckoutPage() {
                       render={({ field }) => (
                         <Checkbox
                           id="ageVerified"
+                          name={field.name}
                           checked={!!field.value}
                           onCheckedChange={(v) => {
                             field.onChange(v);
                             setDeliveryDetails((prev) => ({ ...prev, ageVerification: !!v }));
                           }}
+                          onBlur={field.onBlur}
+                          ref={field.ref}
                           className="w-5 h-5 rounded-md border-2 border-gray-400 dark:border-gray-500 bg-white dark:bg-zinc-900 checked:bg-violet-600 checked:dark:bg-violet-500 checked:border-violet-600 focus-visible:ring-2 focus-visible:ring-violet-400"
                         />
                       )}
@@ -772,11 +775,14 @@ export default function CheckoutPage() {
                       render={({ field }) => (
                         <Checkbox
                           id="acceptTerms"
+                          name={field.name}
                           checked={!!field.value}
                           onCheckedChange={(v) => {
                             field.onChange(v);
                             setDeliveryDetails((prev) => ({ ...prev, termsAccepted: !!v }));
                           }}
+                          onBlur={field.onBlur}
+                          ref={field.ref}
                           className="w-5 h-5 rounded-md border-2 border-gray-400 dark:border-gray-500 bg-white dark:bg-zinc-900 checked:bg-violet-600 checked:dark:bg-violet-500 checked:border-violet-600 focus-visible:ring-2 focus-visible:ring-violet-400"
                         />
                       )}
@@ -802,11 +808,14 @@ export default function CheckoutPage() {
                       render={({ field }) => (
                         <Checkbox
                           id="emailOptIn"
+                          name={field.name}
                           checked={!!field.value}
                           onCheckedChange={(v) => {
                             field.onChange(v);
                             setDeliveryDetails((prev) => ({ ...prev, emailUpdates: !!v }));
                           }}
+                          onBlur={field.onBlur}
+                          ref={field.ref}
                           className="w-5 h-5 rounded-md border-2 border-gray-400 dark:border-gray-500 bg-white dark:bg-zinc-900 checked:bg-violet-600 checked:dark:bg-violet-500 checked:border-violet-600 focus-visible:ring-2 focus-visible:ring-violet-400"
                         />
                       )}
