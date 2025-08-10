@@ -1,6 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import type React from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Checkbox } from '@/components/ui/checkbox';
 import Header from '@/components/Header';
 import { useCartStore } from '@/services/CartService';
 import { Truck, MapPin, Clock, CreditCard, ArrowLeft, CheckCircle } from 'lucide-react';
@@ -62,6 +67,21 @@ export default function CheckoutPage() {
   const [isOrderComplete, setIsOrderComplete] = useState(false);
   const [orderId, setOrderId] = useState<string>('');
   const [phoneError, setPhoneError] = useState<string>('');
+
+  // zod schema for required checkboxes
+  const schema = z.object({
+    ageVerified: z.literal(true, { message: 'You must confirm you are 21+ and in DC to order.' }),
+    acceptTerms: z.literal(true, { message: 'You must accept the Terms & Privacy Policy.' }),
+    emailOptIn: z.boolean().optional().default(false),
+  });
+
+  type CheckboxForm = z.infer<typeof schema>;
+
+  const form = useForm<CheckboxForm>({
+    resolver: zodResolver(schema),
+    mode: 'onChange',
+    defaultValues: { ageVerified: false, acceptTerms: false, emailOptIn: false },
+  });
 
   // Smooth keyboard avoidance on iOS: center focused input in viewport
   const handleFieldFocus = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -173,9 +193,8 @@ export default function CheckoutPage() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (isSubmitting) return; // prevent double submit
+  const submitHandler = async (data: CheckboxForm) => {
+    if (isSubmitting) return;
     
     // Comprehensive form validation
     const phoneValidationError = validatePhoneNumber(deliveryDetails.phone);
@@ -211,17 +230,7 @@ export default function CheckoutPage() {
     }
     
     // Validate required checkboxes
-    if (!deliveryDetails.ageVerification) {
-      alert('Please confirm that you are 21 years of age or older.');
-      document.getElementById('ageVerification')?.focus();
-      return;
-    }
-    
-    if (!deliveryDetails.termsAccepted) {
-      alert('Please accept the Terms of Service and Privacy Policy to continue.');
-      document.getElementById('termsAccepted')?.focus();
-      return;
-    }
+    // RHF+zod already validates age/terms; we rely on formState.isValid from gating and here
     
     if (items.length === 0) {
       alert('Your cart is empty. Please add items before checking out.');
@@ -255,7 +264,10 @@ export default function CheckoutPage() {
         items: orderItems,
         deliveryDetails: {
           ...deliveryDetails,
-          phone: deliveryDetails.phone.replace(/\D/g, ''), // Clean phone number
+          ageVerification: data.ageVerified,
+          termsAccepted: data.acceptTerms,
+          emailUpdates: !!data.emailOptIn,
+          phone: deliveryDetails.phone.replace(/\D/g, ''),
         },
         total: finalTotal,
         hasDelivery: hasDelivery,
@@ -295,6 +307,8 @@ export default function CheckoutPage() {
       setIsSubmitting(false);
     }
   };
+
+  const onSubmit = form.handleSubmit(submitHandler);
 
   // Order confirmation screen
   if (isOrderComplete) {
@@ -376,7 +390,7 @@ export default function CheckoutPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="space-y-6">
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={onSubmit} className="space-y-6">
               <div className="card">
                 <div className="flex items-center gap-2 mb-4">
                   <CreditCard className="h-5 w-5 text-purple-600" />
@@ -686,24 +700,36 @@ export default function CheckoutPage() {
               {/* Legal Compliance - Age Verification and Terms */}
               <div className="space-y-6 mb-8">
                 {/* Age Verification */}
-                <div className="group rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-gray-50/90 dark:bg-gray-800/80 p-4 sm:p-5 focus-within:ring-2 focus-within:ring-purple-500 transition-all">
-                  <div className="flex items-start gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      id="ageVerification"
-                      name="ageVerification"
-                      required
-                      checked={!!deliveryDetails.ageVerification}
-                      className="h-6 w-6 shrink-0 rounded-md border-2 border-purple-600 text-purple-600 accent-purple-600 hover:scale-105 focus:scale-105 transition-transform focus:ring-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
-                      onChange={handleInputChange}
+                <label htmlFor="ageVerified" className="block">
+                  <div
+                    className="flex items-start gap-3 p-4 rounded-xl border bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-700"
+                    data-invalid={!!form.formState.errors.ageVerified}
+                  >
+                    <Controller
+                      control={form.control}
+                      name="ageVerified"
+                      render={({ field }) => (
+                        <Checkbox
+                          id="ageVerified"
+                          checked={!!field.value}
+                          onCheckedChange={(v) => {
+                            field.onChange(v);
+                            setDeliveryDetails((prev) => ({ ...prev, ageVerification: !!v }));
+                          }}
+                          className="w-5 h-5 rounded-md border-2 border-gray-400 dark:border-gray-500 bg-white dark:bg-zinc-900 checked:bg-violet-600 checked:dark:bg-violet-500 checked:border-violet-600 focus-visible:ring-2 focus-visible:ring-violet-400"
+                        />
+                      )}
                     />
-                    <label htmlFor="ageVerification" className="text-sm text-[#333] dark:text-gray-100 cursor-pointer select-none">
-                      <span className="font-semibold text-[#333] dark:text-gray-100">🔞 21+ Age Verification *</span>
-                      <span className="mt-1 block text-[#333] dark:text-gray-200">I certify that I am 21+ and in Washington, DC to order.</span>
-                      <span className="mt-1 block text-gray-600 dark:text-gray-400">Delivery available only to Washington, DC addresses (ZIP must start with 200).</span>
-                    </label>
+                    <div className="text-sm text-[#333] dark:text-gray-100">
+                      <span className="font-medium">🔞 21+ Age Verification *</span>
+                      <br />
+                      <span>I certify that I am 21+ and in Washington, DC to order.</span>
+                    </div>
                   </div>
-                </div>
+                </label>
+                {form.formState.errors.ageVerified && (
+                  <p className="mt-1 text-sm text-red-600">{form.formState.errors.ageVerified.message as string}</p>
+                )}
               </div>
 
               {/* Payment Method */}
@@ -729,57 +755,70 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              {/* Terms and Privacy */}
+              {/* Terms and Privacy + Email Opt-in */}
               <div className="space-y-4 mb-8">
-                {/* Terms and Privacy */}
-                <div className="group rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-gray-50/90 dark:bg-gray-800/80 p-4 sm:p-5 focus-within:ring-2 focus-within:ring-purple-500 transition-all">
-                  <div className="flex items-start gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      id="termsAccepted"
-                      name="termsAccepted"
-                      required
-                      checked={!!deliveryDetails.termsAccepted}
-                      className="h-6 w-6 shrink-0 rounded-md border-2 border-purple-600 text-purple-600 accent-purple-600 hover:scale-105 focus:scale-105 transition-transform focus:ring-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
-                      onChange={handleInputChange}
+                <label htmlFor="acceptTerms" className="block">
+                  <div
+                    className="flex items-start gap-3 p-4 rounded-xl border bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-700"
+                    data-invalid={!!form.formState.errors.acceptTerms}
+                  >
+                    <Controller
+                      control={form.control}
+                      name="acceptTerms"
+                      render={({ field }) => (
+                        <Checkbox
+                          id="acceptTerms"
+                          checked={!!field.value}
+                          onCheckedChange={(v) => {
+                            field.onChange(v);
+                            setDeliveryDetails((prev) => ({ ...prev, termsAccepted: !!v }));
+                          }}
+                          className="w-5 h-5 rounded-md border-2 border-gray-400 dark:border-gray-500 bg-white dark:bg-zinc-900 checked:bg-violet-600 checked:dark:bg-violet-500 checked:border-violet-600 focus-visible:ring-2 focus-visible:ring-violet-400"
+                        />
+                      )}
                     />
-                    <label htmlFor="termsAccepted" className="text-sm text-[#333] dark:text-gray-100 cursor-pointer select-none">
-                      <span className="font-semibold text-[#333] dark:text-gray-100">📋 I agree to the </span>
-                      <a href="/terms" target="_blank" className="text-purple-700 hover:text-purple-800 underline font-semibold">
-                        Terms of Service
-                      </a>
-                      <span className="font-semibold text-[#333] dark:text-gray-100"> and </span>
-                      <a href="/privacy" target="_blank" className="text-purple-700 hover:text-purple-800 underline font-semibold">
-                        Privacy Policy
-                      </a>
-                      <span className="font-semibold text-[#333] dark:text-gray-100"> *</span>
-                    </label>
+                    <div className="text-sm text-[#333] dark:text-gray-100">
+                      I agree to the{' '}
+                      <a href="/terms" className="underline text-purple-700 hover:text-purple-800" target="_blank" rel="noreferrer">Terms of Service</a>{' '}
+                      and{' '}
+                      <a href="/privacy" className="underline text-purple-700 hover:text-purple-800" target="_blank" rel="noreferrer">Privacy Policy</a>{' '}
+                      <span className="font-medium">*</span>
+                    </div>
                   </div>
-                </div>
+                </label>
+                {form.formState.errors.acceptTerms && (
+                  <p className="mt-1 text-sm text-red-600">{form.formState.errors.acceptTerms.message as string}</p>
+                )}
 
-                {/* Email Updates - Optional */}
-                <div className="group rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-gray-50/90 dark:bg-gray-800/80 p-4 sm:p-5 focus-within:ring-2 focus-within:ring-purple-500 transition-all">
-                  <div className="flex items-start gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      id="emailUpdates"
-                      name="emailUpdates"
-                      checked={!!deliveryDetails.emailUpdates}
-                      className="h-6 w-6 shrink-0 rounded-md border-2 border-purple-600 text-purple-600 accent-purple-600 hover:scale-105 focus:scale-105 transition-transform focus:ring-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
-                      onChange={handleInputChange}
+                <label htmlFor="emailOptIn" className="block">
+                  <div className="flex items-start gap-3 p-4 rounded-xl border bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-700">
+                    <Controller
+                      control={form.control}
+                      name="emailOptIn"
+                      render={({ field }) => (
+                        <Checkbox
+                          id="emailOptIn"
+                          checked={!!field.value}
+                          onCheckedChange={(v) => {
+                            field.onChange(v);
+                            setDeliveryDetails((prev) => ({ ...prev, emailUpdates: !!v }));
+                          }}
+                          className="w-5 h-5 rounded-md border-2 border-gray-400 dark:border-gray-500 bg-white dark:bg-zinc-900 checked:bg-violet-600 checked:dark:bg-violet-500 checked:border-violet-600 focus-visible:ring-2 focus-visible:ring-violet-400"
+                        />
+                      )}
                     />
-                    <label htmlFor="emailUpdates" className="text-sm text-[#333] dark:text-gray-100 cursor-pointer select-none">
-                      <span className="font-semibold text-[#333] dark:text-gray-100">📧 Email updates (optional)</span>
+                    <div className="text-sm text-[#333] dark:text-gray-100">
+                      <span className="font-medium">📧 Email updates (optional)</span>
                       <span className="mt-1 block text-gray-600 dark:text-gray-400">Send me order updates and exclusive offers via email.</span>
-                    </label>
+                    </div>
                   </div>
-                </div>
+                </label>
               </div>
 
               <button
                 type="submit"
-                onClick={handleSubmit}
-                disabled={isSubmitting}
+                aria-disabled={!form.formState.isValid || isSubmitting}
+                disabled={!form.formState.isValid || isSubmitting}
                 className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed text-lg py-4"
               >
                 {isSubmitting ? (
