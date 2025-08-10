@@ -8,8 +8,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Checkbox } from '@/components/ui/checkbox';
 import Header from '@/components/Header';
 import { useCartStore } from '@/services/CartService';
-import { Truck, MapPin, Clock, CreditCard, ArrowLeft, CheckCircle } from 'lucide-react';
+import { Truck, MapPin, Clock, CreditCard, ArrowLeft, CheckCircle, Shield, Lock } from 'lucide-react';
 import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Types for checkout
 interface DeliveryDetails {
@@ -362,7 +363,7 @@ export default function CheckoutPage() {
                     <p className="text-sm text-gray-600">Your order will be delivered during your preferred {deliveryDetails.timePreference} time slot</p>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </div>
 
             <Link href="/" className="btn-primary">
@@ -375,8 +376,11 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div
-      className="min-h-screen bg-gray-50 dark:bg-gray-900 overscroll-y-contain"
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+      className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-purple-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-purple-900/10 overscroll-y-contain"
       style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       <Header />
@@ -390,15 +394,35 @@ export default function CheckoutPage() {
           Back to Cart
         </Link>
 
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Checkout</h1>
+        <div className="flex items-center gap-3 mb-8">
+          <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg">
+            <Lock className="h-6 w-6 text-white" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Secure Checkout</h1>
+            <p className="text-gray-600 dark:text-gray-400">Your information is protected with 256-bit SSL encryption</p>
+          </div>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="space-y-6">
+          <motion.div
+            initial={{ x: -30, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            className="space-y-6"
+          >
             <form onSubmit={onSubmit} noValidate className="space-y-6">
-              <div className="card">
-                <div className="flex items-center gap-2 mb-4">
-                  <CreditCard className="h-5 w-5 text-purple-600" />
-                  <h2 className="text-xl font-semibold text-gray-900">Contact Information</h2>
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.3, duration: 0.4 }}
+                className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300"
+              >
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center">
+                    <CreditCard className="h-5 w-5 text-white" />
+                  </div>
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Contact Information</h2>
                 </div>
                 
                 <div className="space-y-4">
@@ -413,7 +437,7 @@ export default function CheckoutPage() {
                       value={deliveryDetails.name}
                       onChange={handleInputChange}
                       onFocus={handleFieldFocus}
-                      className="w-full px-3 sm:px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-base"
+                      className="w-full px-4 py-4 border border-gray-200 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-base bg-gray-50 dark:bg-gray-700 dark:text-white hover:bg-white dark:hover:bg-gray-600 focus:bg-white dark:focus:bg-gray-600 shadow-sm focus:shadow-md"
                       placeholder="John Doe"
                       autoComplete="name"
                       autoCapitalize="words"
@@ -484,12 +508,19 @@ export default function CheckoutPage() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
 
-              <div className="card">
-                <div className="flex items-center gap-2 mb-4">
-                  <MapPin className="h-5 w-5 text-purple-600" />
-                  <h2 className="text-xl font-semibold text-gray-900">Delivery Address</h2>
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.4, duration: 0.4 }}
+                className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300"
+              >
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-teal-500 rounded-xl flex items-center justify-center">
+                    <MapPin className="h-5 w-5 text-white" />
+                  </div>
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Delivery Address</h2>
                 </div>
                 
                 <div className="space-y-4">
@@ -573,12 +604,19 @@ export default function CheckoutPage() {
                     />
                   </div>
                 </div>
-              </div>
+              </motion.div>
 
-              <div className="card">
-                <div className="flex items-center gap-2 mb-4">
-                  <Clock className="h-5 w-5 text-purple-600" />
-                  <h2 className="text-xl font-semibold text-gray-900">Delivery Preferences</h2>
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.5, duration: 0.4 }}
+                className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300"
+              >
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center">
+                    <Clock className="h-5 w-5 text-white" />
+                  </div>
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Delivery Preferences</h2>
                 </div>
                 
                 <div className="space-y-4">
@@ -641,9 +679,9 @@ export default function CheckoutPage() {
                     />
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </form>
-          </div>
+          </motion.div>
 
           <div className="lg:sticky lg:top-8 h-fit">
             <div className="card">
@@ -688,7 +726,7 @@ export default function CheckoutPage() {
                   <span>Total</span>
                   <span>${finalTotal}</span>
                 </div>
-              </div>
+              </motion.div>
 
               {hasDelivery && (
                 <div className="bg-green-50 border border-green-200 p-4 rounded-xl mb-6">
@@ -760,7 +798,7 @@ export default function CheckoutPage() {
                   </label>
                   <span className="text-2xl">💵</span>
                 </div>
-              </div>
+              </motion.div>
 
               {/* Terms and Privacy + Email Opt-in */}
               <div className="space-y-4 mb-8">
@@ -828,24 +866,26 @@ export default function CheckoutPage() {
                 </label>
               </div>
 
-              <button
+              <motion.button
                 type="submit"
                 aria-disabled={!form.formState.isValid || isSubmitting}
                 disabled={!form.formState.isValid || isSubmitting}
-                className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed text-lg py-4"
+                whileHover={{ scale: form.formState.isValid && !isSubmitting ? 1.02 : 1 }}
+                whileTap={{ scale: form.formState.isValid && !isSubmitting ? 0.98 : 1 }}
+                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold py-5 px-8 rounded-2xl shadow-lg hover:shadow-xl disabled:shadow-none transition-all duration-300 disabled:cursor-not-allowed text-lg flex items-center justify-center gap-3"
               >
                 {isSubmitting ? (
-                  <div className="flex items-center justify-center gap-2">
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                    Processing Order...
-                  </div>
+                  <>
+                    <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent"></div>
+                    <span>Processing Order...</span>
+                  </>
                 ) : (
-                  <div className="flex items-center justify-center gap-2">
-                    <span>🔒</span>
-                    Complete Secure Order - ${finalTotal}
-                  </div>
+                  <>
+                    <Lock className="h-5 w-5" />
+                    <span>Complete Secure Order - ${finalTotal}</span>
+                  </>
                 )}
-              </button>
+              </motion.button>
               {/* Live region for submit status */}
               <p className="sr-only" role="status" aria-live="polite">
                 {isSubmitting ? 'Processing order...' : 'Ready to submit order'}
@@ -866,6 +906,6 @@ export default function CheckoutPage() {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 } 
