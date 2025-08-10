@@ -76,7 +76,7 @@ export default function CheckoutPage() {
     acceptTerms: z.boolean().refine((v) => v === true, {
       message: 'You must accept the Terms & Privacy Policy.',
     }),
-    emailOptIn: z.boolean().default(false),
+    emailOptIn: z.boolean(),
   });
 
   type CheckboxForm = z.infer<typeof schema>;
