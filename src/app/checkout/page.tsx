@@ -70,8 +70,12 @@ export default function CheckoutPage() {
 
   // zod schema for required checkboxes
   const schema = z.object({
-    ageVerified: z.literal(true, { message: 'You must confirm you are 21+ and in DC to order.' }),
-    acceptTerms: z.literal(true, { message: 'You must accept the Terms & Privacy Policy.' }),
+    ageVerified: z.boolean().refine((v) => v === true, {
+      message: 'You must confirm you are 21+ and in DC to order.',
+    }),
+    acceptTerms: z.boolean().refine((v) => v === true, {
+      message: 'You must accept the Terms & Privacy Policy.',
+    }),
     emailOptIn: z.boolean().default(false),
   });
 
