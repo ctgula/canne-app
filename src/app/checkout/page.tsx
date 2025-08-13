@@ -286,7 +286,17 @@ export default function CheckoutPage() {
     } catch (error) {
       console.error('Error submitting order:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      alert(`Order submission failed: ${errorMessage}. Please try again or contact support.`);
+      
+      // Better error handling with specific messages
+      if (errorMessage.includes('Price calculation mismatch')) {
+        alert(`⚠️ Pricing Error\n\n${errorMessage}\n\nThis usually happens when prices have been updated. Please refresh the page and try again.`);
+      } else if (errorMessage.includes('Out-of-zone address')) {
+        alert(`📍 Delivery Area Error\n\nWe currently only deliver to Washington DC (ZIP codes 20000-20199). Please check your ZIP code and try again.`);
+      } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
+        alert(`🌐 Connection Error\n\nPlease check your internet connection and try again. If the problem persists, contact support at support@canne.art`);
+      } else {
+        alert(`❌ Order Submission Failed\n\n${errorMessage}\n\nPlease try again or contact support at support@canne.art if the issue continues.`);
+      }
     } finally {
       setIsSubmitting(false);
     }

@@ -123,8 +123,9 @@ export async function POST(request: NextRequest) {
 
     // Calculate totals with proper error handling and logging
     console.log('Order data items:', JSON.stringify(orderData.items, null, 2));
+    console.log('Frontend submitted total:', orderData.total);
     
-    const subtotal = orderData.items.reduce((sum, item) => {
+    const calculatedSubtotal = orderData.items.reduce((sum, item) => {
       // Handle both flat item structure and nested product structure
       const itemPrice = item.product ? 
         (typeof item.product.price === 'number' ? item.product.price : parseFloat(item.product.price) || 0) :
@@ -138,10 +139,28 @@ export async function POST(request: NextRequest) {
       return sum + itemTotal;
     }, 0);
     
-    const deliveryFee = orderData.hasDelivery ? 0 : 10;
-    const total = subtotal + deliveryFee;
+    const calculatedDeliveryFee = orderData.hasDelivery ? 0 : 10;
+    const calculatedTotal = calculatedSubtotal + calculatedDeliveryFee;
     
-    console.log(`Calculated totals - Subtotal: ${subtotal}, Delivery Fee: ${deliveryFee}, Total: ${total}`);
+    console.log(`Backend calculated - Subtotal: ${calculatedSubtotal}, Delivery Fee: ${calculatedDeliveryFee}, Total: ${calculatedTotal}`);
+    console.log(`Frontend submitted - Total: ${orderData.total}, HasDelivery: ${orderData.hasDelivery}`);
+    
+    // Use frontend total but validate it matches our calculation (with small tolerance for floating point)
+    const totalDifference = Math.abs(calculatedTotal - orderData.total);
+    if (totalDifference > 0.01) {
+      console.error(`❌ Price mismatch! Backend calculated: ${calculatedTotal}, Frontend sent: ${orderData.total}, Difference: ${totalDifference}`);
+      return NextResponse.json(
+        { success: false, error: `Price calculation mismatch. Please refresh the page and try again. (Backend: $${calculatedTotal}, Frontend: $${orderData.total})` },
+        { status: 400 }
+      );
+    }
+    
+    // Use frontend values to ensure consistency
+    const subtotal = calculatedSubtotal;
+    const deliveryFee = calculatedDeliveryFee;
+    const total = orderData.total; // Use frontend total to ensure consistency
+    
+    console.log(`✅ Using consistent totals - Subtotal: ${subtotal}, Delivery Fee: ${deliveryFee}, Total: ${total}`);
     
     // Validate calculated totals
     if (isNaN(subtotal) || subtotal <= 0) {
