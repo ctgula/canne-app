@@ -40,12 +40,13 @@ export class ProductController {
       };
     }
     
-    // Group products by tier
+    // Group products by normalized display tier when available
     const groupedProducts = result.data.reduce((acc, product) => {
-      if (!acc[product.tier]) {
-        acc[product.tier] = [];
+      const key = ((product as any).display_tier || product.tier) as string;
+      if (!acc[key]) {
+        acc[key] = [];
       }
-      acc[product.tier].push(product);
+      acc[key].push(product);
       return acc;
     }, {} as Record<string, Product[]>);
     

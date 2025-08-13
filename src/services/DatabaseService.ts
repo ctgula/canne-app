@@ -19,6 +19,8 @@ export interface DatabaseProduct extends Product {
   features?: string[];
   // Metadata fields
   metadata?: Record<string, any>;
+  // Normalized, title-cased tier for UI (e.g. "Starter")
+  display_tier?: string;
 }
 
 export interface DatabaseResponse<T = any> {
@@ -33,6 +35,35 @@ export interface DatabaseResponse<T = any> {
  * Handles all database operations with proper error handling and type safety
  */
 export class DatabaseService {
+  /** Normalize DB tier to title case and provide helpers */
+  private static normalizeTier(tier: string | null | undefined) {
+    const lc = (tier || '').toString().trim().toLowerCase();
+    const titleMap: Record<string, string> = {
+      starter: 'Starter',
+      classic: 'Classic',
+      black: 'Black',
+      ultra: 'Ultra',
+    };
+    const title = titleMap[lc] || (tier || '');
+    return { lc, title };
+  }
+
+  /** Feature map that accepts lower-case tiers */
+  private static featureMapLC: Record<string, string[]> = {
+    starter: ['Digital Art Print', 'Complimentary Gift', '3.5g Flower'],
+    classic: ['Double Art Series', 'Signature Collection', 'Two Curated Gifts', '7g Flower'],
+    black: ['Limited Collection', 'Premium Prints', 'Four Premium Gifts', '14g Premium Flower'],
+    ultra: ['Exclusive Gallery Pieces', 'Eight Premium Selections', '28g Premium Collection', 'VIP Experience'],
+  };
+
+  /** Strain map that accepts lower-case tiers */
+  private static strainMapLC: Record<string, string> = {
+    starter: 'House Blend',
+    classic: 'Signature Strain',
+    black: 'Premium Selection',
+    ultra: 'Exclusive Reserve',
+  };
+
   /**
    * Get all active products with MCP alignment
    */
@@ -53,20 +84,25 @@ export class DatabaseService {
       }
 
       // Transform database data to match frontend expectations
-      const transformedProducts: DatabaseProduct[] = (data || []).map(product => ({
-        ...product,
-        // Ensure all required fields are present
-        image_url: product.image_url || '/placeholder-product.jpg',
-        weight: product.gift_amount || product.weight || '0g', // Use gift_amount from database
-        gift_amount: product.gift_amount || product.weight || '0g', // Ensure gift_amount is available
-        color_theme: product.color_theme || '#8B5CF6',
-        // Parse metadata if it exists
-        ...(product.metadata && typeof product.metadata === 'object' ? product.metadata : {}),
-        // Add computed fields
-        features: product.features || this.getDefaultFeatures(product.tier),
-        type: product.type || 'art',
-        strain: product.strain || this.getDefaultStrain(product.tier)
-      }));
+      const transformedProducts: DatabaseProduct[] = (data || []).map(product => {
+        const { lc, title } = this.normalizeTier(product.tier);
+        return {
+          ...product,
+          // Ensure all required fields are present
+          image_url: product.image_url || '/placeholder-product.jpg',
+          weight: (product as any).gift_amount || (product as any).weight || '0g',
+          gift_amount: (product as any).gift_amount || (product as any).weight || '0g',
+          color_theme: (product as any).color_theme || '#8B5CF6',
+          // Normalized tier for UI
+          display_tier: title,
+          // Parse metadata if it exists
+          ...((product as any).metadata && typeof (product as any).metadata === 'object' ? (product as any).metadata : {}),
+          // Add computed fields using normalized tier
+          features: (product as any).features || this.featureMapLC[lc] || ['Premium Art Experience'],
+          type: (product as any).type || 'art',
+          strain: (product as any).strain || this.strainMapLC[lc] || 'Curated Selection',
+        } as DatabaseProduct;
+      });
 
       return {
         data: transformedProducts,
@@ -110,15 +146,17 @@ export class DatabaseService {
       }
 
       // Transform single product
+      const { lc, title } = this.normalizeTier((data as any).tier);
       const transformedProduct: DatabaseProduct = {
-        ...data,
-        image_url: data.image_url || '/placeholder-product.jpg',
-        weight: data.weight || '0g',
-        color_theme: data.color_theme || '#8B5CF6',
-        ...(data.metadata && typeof data.metadata === 'object' ? data.metadata : {}),
-        features: data.features || this.getDefaultFeatures(data.tier),
-        type: data.type || 'art',
-        strain: data.strain || this.getDefaultStrain(data.tier)
+        ...(data as any),
+        image_url: (data as any).image_url || '/placeholder-product.jpg',
+        weight: (data as any).weight || (data as any).gift_amount || '0g',
+        color_theme: (data as any).color_theme || '#8B5CF6',
+        display_tier: title,
+        ...((data as any).metadata && typeof (data as any).metadata === 'object' ? (data as any).metadata : {}),
+        features: (data as any).features || this.featureMapLC[lc] || ['Premium Art Experience'],
+        type: (data as any).type || 'art',
+        strain: (data as any).strain || this.strainMapLC[lc] || 'Curated Selection',
       };
 
       return {
@@ -142,7 +180,8 @@ export class DatabaseService {
       const { data, error, count } = await supabase
         .from('products')
         .select('*', { count: 'exact' })
-        .eq('tier', tier)
+        // Match DB lower-case convention regardless of input casing
+        .eq('tier', tier.toLowerCase())
         .eq('is_active', true)
         .order('price', { ascending: true });
 
@@ -154,16 +193,20 @@ export class DatabaseService {
         };
       }
 
-      const transformedProducts: DatabaseProduct[] = (data || []).map(product => ({
-        ...product,
-        image_url: product.image_url || '/placeholder-product.jpg',
-        weight: product.weight || '0g',
-        color_theme: product.color_theme || '#8B5CF6',
-        ...(product.metadata && typeof product.metadata === 'object' ? product.metadata : {}),
-        features: product.features || this.getDefaultFeatures(product.tier),
-        type: product.type || 'art',
-        strain: product.strain || this.getDefaultStrain(product.tier)
-      }));
+      const transformedProducts: DatabaseProduct[] = (data || []).map(product => {
+        const { lc, title } = this.normalizeTier(product.tier);
+        return {
+          ...product,
+          image_url: product.image_url || '/placeholder-product.jpg',
+          weight: (product as any).weight || (product as any).gift_amount || '0g',
+          color_theme: (product as any).color_theme || '#8B5CF6',
+          display_tier: title,
+          ...((product as any).metadata && typeof (product as any).metadata === 'object' ? (product as any).metadata : {}),
+          features: (product as any).features || this.featureMapLC[lc] || ['Premium Art Experience'],
+          type: (product as any).type || 'art',
+          strain: (product as any).strain || this.strainMapLC[lc] || 'Curated Selection',
+        } as DatabaseProduct;
+      });
 
       return {
         data: transformedProducts,
@@ -258,26 +301,16 @@ export class DatabaseService {
    * Get default features based on tier
    */
   private static getDefaultFeatures(tier: string): string[] {
-    const featureMap: Record<string, string[]> = {
-      'Starter': ['Digital Art Print', 'Complimentary Gift', '3.5g Flower'],
-      'Classic': ['Double Art Series', 'Signature Collection', 'Two Curated Gifts', '7g Flower'],
-      'Black': ['Limited Collection', 'Premium Prints', 'Four Premium Gifts', '14g Premium Flower'],
-      'Ultra': ['Exclusive Gallery Pieces', 'Eight Premium Selections', '28g Premium Collection', 'VIP Experience']
-    };
-    return featureMap[tier] || ['Premium Art Experience'];
+    const { lc } = this.normalizeTier(tier);
+    return this.featureMapLC[lc] || ['Premium Art Experience'];
   }
 
   /**
    * Get default strain based on tier
    */
   private static getDefaultStrain(tier: string): string {
-    const strainMap: Record<string, string> = {
-      'Starter': 'House Blend',
-      'Classic': 'Signature Strain',
-      'Black': 'Premium Selection',
-      'Ultra': 'Exclusive Reserve'
-    };
-    return strainMap[tier] || 'Curated Selection';
+    const { lc } = this.normalizeTier(tier);
+    return this.strainMapLC[lc] || 'Curated Selection';
   }
 }
 

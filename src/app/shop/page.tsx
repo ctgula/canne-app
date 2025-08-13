@@ -1,6 +1,7 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import { getTierInfo } from '@/lib/gifting';
 import { motion } from 'framer-motion';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -70,20 +71,26 @@ export default function ShopPage() {
   const filteredProducts = useMemo(() => {
     let filtered = products;
     
-    // Apply tier filter
+    // Apply tier filter (use display_tier when available)
     if (selectedTier) {
-      filtered = filtered.filter(product => product.tier === selectedTier);
+      filtered = filtered.filter(product => {
+        const displayTier = ((product as any).display_tier || product.tier) as string;
+        return displayTier === selectedTier;
+      });
     }
     
     // Apply search filter
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase();
-      filtered = filtered.filter(product => 
-        product.name.toLowerCase().includes(searchLower) ||
-        product.description.toLowerCase().includes(searchLower) ||
-        product.tier.toLowerCase().includes(searchLower) ||
-        product.features?.some(feature => feature.toLowerCase().includes(searchLower))
-      );
+      filtered = filtered.filter(product => {
+        const displayTier = ((product as any).display_tier || product.tier || '').toString();
+        return (
+          product.name.toLowerCase().includes(searchLower) ||
+          (product.description || '').toLowerCase().includes(searchLower) ||
+          displayTier.toLowerCase().includes(searchLower) ||
+          product.features?.some(feature => feature.toLowerCase().includes(searchLower))
+        );
+      });
     }
     
     // Apply sorting
@@ -98,8 +105,10 @@ export default function ShopPage() {
           comparison = a.name.localeCompare(b.name);
           break;
         case 'tier':
-          const tierOrder = { 'Starter': 1, 'Classic': 2, 'Black': 3, 'Ultra': 4 };
-          comparison = tierOrder[a.tier] - tierOrder[b.tier];
+          const tierOrder = { 'Starter': 1, 'Classic': 2, 'Black': 3, 'Ultra': 4 } as const;
+          const aTier = ((a as any).display_tier || a.tier) as keyof typeof tierOrder;
+          const bTier = ((b as any).display_tier || b.tier) as keyof typeof tierOrder;
+          comparison = (tierOrder[aTier] || 0) - (tierOrder[bTier] || 0);
           break;
       }
       
@@ -297,7 +306,7 @@ export default function ShopPage() {
             </div>
           ) : (
             filteredProducts.map((product) => {
-              const badge = getTierBadge(product.tier);
+              const badge = getTierBadge(((product as any).display_tier || product.tier) as string);
               const currentQuantity = quantities[product.id] || 1;
               const itemTotal = product.price * currentQuantity;
               
@@ -310,16 +319,16 @@ export default function ShopPage() {
                   {/* Tier badge */}
                   <div className={`absolute top-3 right-3 px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${badge.bg}`}>
                     {badge.icon}
-                    {product.tier}
+                    {((product as any).display_tier || product.tier)}
                   </div>
                   
                   {/* Product Image */}
                   <div className="w-24 sm:w-32 h-24 sm:h-32 rounded-lg mb-3 sm:mb-4 overflow-hidden shadow-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
                     <img 
                       src={product.image_url || `/images/placeholder-${
-                        product.tier === 'Starter' ? 'pink' :
-                        product.tier === 'Classic' ? 'violet' :
-                        product.tier === 'Black' ? 'black' :
+                        (((product as any).display_tier || product.tier) === 'Starter') ? 'pink' :
+                        (((product as any).display_tier || product.tier) === 'Classic') ? 'violet' :
+                        (((product as any).display_tier || product.tier) === 'Black') ? 'black' :
                         'indigo'
                       }.svg`}
                       alt={product.name}
@@ -354,6 +363,15 @@ export default function ShopPage() {
                   {/* Dynamic description with strain info */}
                   <div className="mt-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400 px-2">
                     {getSelectedStrain(product.id).name} ({getSelectedStrain(product.id).type.charAt(0).toUpperCase() + getSelectedStrain(product.id).type.slice(1)}) · {getSelectedStrain(product.id).thcLow}–{getSelectedStrain(product.id).thcHigh}% THC
+                  </div>
+
+                  {/* What's included (one-liner) */}
+                  <div className="mt-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300 px-2">
+                    {(() => {
+                      const tierLabel = ((product as any).display_tier || product.tier) as string;
+                      const info = getTierInfo(tierLabel);
+                      return info ? info.oneLiner : null;
+                    })()}
                   </div>
                   
                   {/* Strain Selector */}

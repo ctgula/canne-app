@@ -224,10 +224,10 @@ export default function CheckoutPage() {
         product: {
           id: item.product.id,
           name: item.product.name,
-          description: item.product.tier || item.product.description || '',
+          description: (((item.product as any).display_tier) || item.product.tier || item.product.description || ''),
           price: item.product.price,
           artworkUrl: item.product.image_url || '',
-          giftSize: item.product.weight || `${item.product.tier} tier`,
+          giftSize: item.product.weight || `${((item.product as any).display_tier || item.product.tier)} tier`,
           hasDelivery: hasDelivery
         },
         quantity: item.quantity,

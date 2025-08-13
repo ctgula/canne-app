@@ -202,7 +202,7 @@ export default function ProductsPresenter() {
                   <div className="relative overflow-hidden">
                     {/* Tier Badge */}
                     <div className={`absolute top-4 right-4 ${getTierColorClass(product.tier)} text-white px-3 py-1.5 text-sm font-semibold rounded-full shadow-lg z-10`}>
-                      {product.tier.toUpperCase()}
+                      {((product as any).display_tier || product.tier)}
                     </div>
                     
                     {/* Gift Tier Tags */}

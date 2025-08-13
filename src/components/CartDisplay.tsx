@@ -50,7 +50,7 @@ export default function CartDisplay() {
                 ></div>
                 <div>
                   <h4 className="font-medium">{item.product.name}</h4>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{item.product.tier} • {item.product.weight}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{((item.product as any).display_tier || item.product.tier)} • {item.product.weight}</p>
                 </div>
               </div>
               

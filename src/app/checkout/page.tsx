@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { getTierInfo } from '@/lib/gifting';
 import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -224,10 +225,10 @@ export default function CheckoutPage() {
         product: {
           id: item.product.id,
           name: item.product.name,
-          description: item.product.tier || item.product.description || '',
+          description: (((item.product as any).display_tier) || item.product.tier || item.product.description || ''),
           price: item.product.price,
           artworkUrl: item.product.image_url || '',
-          giftSize: item.product.weight || `${item.product.tier} tier`,
+          giftSize: item.product.weight || `${((item.product as any).display_tier || item.product.tier)} tier`,
           hasDelivery: hasDelivery
         },
         quantity: item.quantity,
@@ -561,6 +562,28 @@ export default function CheckoutPage() {
                         {item.strain.name} • {item.strain.type} • {item.strain.thcLow}–{item.strain.thcHigh}% THC
                       </p>
                       <p className="text-sm text-gray-500 dark:text-gray-500">Qty: {item.quantity}</p>
+                      {/* What's included (collapsible) */}
+                      {(() => {
+                        const tierLabel = (((item.product as any).display_tier) || item.product.description || '').toString();
+                        const info = getTierInfo(tierLabel);
+                        if (!info) return null;
+                        return (
+                          <details className="mt-1 group">
+                            <summary className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer list-none select-none flex items-center">
+                              <span className="underline decoration-dotted underline-offset-2">What's included</span>
+                              <span className="ml-1 text-gray-400 group-open:rotate-180 transition-transform">▾</span>
+                            </summary>
+                            <div className="mt-1 text-sm text-gray-700 dark:text-gray-300">
+                              <div className="mb-1">{info.oneLiner}</div>
+                              <ul className="list-disc pl-5 space-y-0.5">
+                                {info.items.map((x) => (
+                                  <li key={x}>{x}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          </details>
+                        );
+                      })()}
                     </div>
                     <span className="font-medium text-gray-900 dark:text-white">
                       ${(item.product.price * item.quantity).toFixed(2)}

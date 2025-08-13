@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { getTierInfo } from '@/lib/gifting';
 import Link from 'next/link';
 import Header from '@/components/Header';
 import { useCartStore } from '@/services/CartService';
@@ -76,7 +77,7 @@ export default function CartPage() {
                           {item.product.name}
                         </h3>
                         <p className="text-sm text-gray-600 mb-2">
-                          {item.product.tier} tier art with complimentary gift
+                          {((item.product as any).display_tier || item.product.tier)} tier art with complimentary gift
                         </p>
                         <div className="flex items-center gap-2">
                           <span className="gift-badge">{item.product.weight || "Standard"} gift</span>
@@ -87,6 +88,29 @@ export default function CartPage() {
                             </span>
                           )}
                         </div>
+
+                        {/* What's included (collapsible on mobile) */}
+                        {(() => {
+                          const tierLabel = ((item.product as any).display_tier || item.product.tier) as string;
+                          const info = getTierInfo(tierLabel);
+                          if (!info) return null;
+                          return (
+                            <details className="mt-2 group">
+                              <summary className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer list-none select-none flex items-center">
+                                <span className="underline decoration-dotted underline-offset-2">What's included</span>
+                                <span className="ml-1 text-gray-400 group-open:rotate-180 transition-transform">▾</span>
+                              </summary>
+                              <div className="mt-2 text-sm text-gray-700 dark:text-gray-300">
+                                <div className="mb-1">{info.oneLiner}</div>
+                                <ul className="list-disc pl-5 space-y-0.5">
+                                  {info.items.map((x) => (
+                                    <li key={x}>{x}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            </details>
+                          );
+                        })()}
                       </div>
 
                       {/* Price and Controls */}

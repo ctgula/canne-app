@@ -184,18 +184,25 @@ export function useProducts(options: UseProductsOptions = {}): UseProductsReturn
 
     // Filter by tier if specified
     if (tier) {
-      filtered = filtered.filter(product => product.tier === tier);
+      const normalizedInput = tier.toString().trim().toLowerCase();
+      filtered = filtered.filter(product => {
+        const displayTier = (product as any).display_tier || product.tier;
+        return displayTier?.toString().trim().toLowerCase() === normalizedInput;
+      });
     }
 
     // Filter by search term
     if (searchTerm) {
       const query = searchTerm.toLowerCase();
-      filtered = filtered.filter(product =>
-        product.name.toLowerCase().includes(query) ||
-        product.description.toLowerCase().includes(query) ||
-        product.tier.toLowerCase().includes(query) ||
-        (product.strain && product.strain.toLowerCase().includes(query))
-      );
+      filtered = filtered.filter(product => {
+        const displayTier = ((product as any).display_tier || product.tier || '').toString();
+        return (
+          product.name.toLowerCase().includes(query) ||
+          (product.description || '').toLowerCase().includes(query) ||
+          displayTier.toLowerCase().includes(query) ||
+          ((product as any).strain && ((product as any).strain as string).toLowerCase().includes(query))
+        );
+      });
     }
 
     return filtered;
@@ -218,9 +225,11 @@ export function useProducts(options: UseProductsOptions = {}): UseProductsReturn
           bValue = b.name.toLowerCase();
           break;
         case 'tier':
-          const tierOrder = { 'Starter': 1, 'Classic': 2, 'Black': 3, 'Ultra': 4 };
-          aValue = tierOrder[a.tier as keyof typeof tierOrder] || 0;
-          bValue = tierOrder[b.tier as keyof typeof tierOrder] || 0;
+          const tierOrder = { 'Starter': 1, 'Classic': 2, 'Black': 3, 'Ultra': 4 } as const;
+          const aTier = ((a as any).display_tier || a.tier) as keyof typeof tierOrder;
+          const bTier = ((b as any).display_tier || b.tier) as keyof typeof tierOrder;
+          aValue = tierOrder[aTier] || 0;
+          bValue = tierOrder[bTier] || 0;
           break;
         default:
           return 0;
@@ -238,10 +247,11 @@ export function useProducts(options: UseProductsOptions = {}): UseProductsReturn
     const grouped: Record<string, DatabaseProduct[]> = {};
     
     products.forEach(product => {
-      if (!grouped[product.tier]) {
-        grouped[product.tier] = [];
+      const key = ((product as any).display_tier || product.tier) as string;
+      if (!grouped[key]) {
+        grouped[key] = [];
       }
-      grouped[product.tier].push(product);
+      grouped[key].push(product);
     });
 
     // Sort each tier's products by price
