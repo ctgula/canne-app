@@ -274,7 +274,7 @@ export async function POST(request: NextRequest) {
 
     // Send Apple-level Discord notification with real database data
     try {
-      const discordWebhook = process.env.DISCORD_WEBHOOK;
+      const discordWebhook = process.env.DISCORD_WEBHOOK_URL;
       console.log('🔔 Discord webhook environment check:', {
         webhookExists: !!discordWebhook,
         webhookLength: discordWebhook?.length || 0,
