@@ -129,6 +129,15 @@ export default function CheckoutPage() {
   const cartTotal = getTotal();
   const hasDelivery = cartTotal >= 35;
   const finalTotal = hasDelivery ? cartTotal : cartTotal + 10;
+  
+  // Debug pricing calculations
+  console.log('💰 Checkout Pricing Debug:', {
+    cartTotal: cartTotal,
+    hasDelivery: hasDelivery,
+    deliveryFee: hasDelivery ? 0 : 10,
+    finalTotal: finalTotal,
+    confirmedOrder: confirmedOrder
+  });
 
   // Phone validation functions
   const formatPhoneNumber = (value: string) => {
@@ -403,7 +412,10 @@ export default function CheckoutPage() {
                 <div className="flex justify-between text-sm">
                   <span>Delivery</span>
                   <span className="text-right">
-                    {confirmedOrder?.delivery_fee === 0 || (confirmedOrder === null && hasDelivery) ? 'FREE' : `$${(confirmedOrder?.delivery_fee || 10).toFixed(2)}`}
+                    {confirmedOrder ? 
+                      (confirmedOrder.delivery_fee === 0 ? 'FREE' : `$${confirmedOrder.delivery_fee.toFixed(2)}`) :
+                      (hasDelivery ? 'FREE' : '$10.00')
+                    }
                   </span>
                 </div>
                 <div className="flex justify-between text-lg font-semibold text-gray-900 dark:text-white border-t border-gray-200 dark:border-gray-600 pt-2">
@@ -966,15 +978,15 @@ export default function CheckoutPage() {
               <div className="border-t border-gray-200 dark:border-gray-600 mt-6 pt-6 space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Subtotal</span>
-                  <span>${cartTotal.toFixed(2)}</span>
+                  <span className="text-right">${cartTotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Delivery</span>
-                  <span>{hasDelivery ? 'FREE' : '$10.00'}</span>
+                  <span className="text-right">{hasDelivery ? 'FREE' : '$10.00'}</span>
                 </div>
                 <div className="flex justify-between text-lg font-semibold text-gray-900 dark:text-white border-t border-gray-200 dark:border-gray-600 pt-2">
                   <span>Total</span>
-                  <span>${finalTotal}</span>
+                  <span className="text-right">${finalTotal.toFixed(2)}</span>
                 </div>
               </div>
             </div>
