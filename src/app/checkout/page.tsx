@@ -415,6 +415,121 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
+              {/* Delivery Address */}
+              <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-teal-500 rounded-xl flex items-center justify-center">
+                    <MapPin className="h-5 w-5 text-white" />
+                  </div>
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Delivery Address</h2>
+                </div>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Street Address *
+                    </label>
+                    <input
+                      type="text"
+                      name="address"
+                      required
+                      value={deliveryDetails.address}
+                      onChange={handleInputChange}
+                      onFocus={handleFieldFocus}
+                      className="w-full px-4 py-4 border border-gray-200 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-base bg-gray-50 dark:bg-gray-700 dark:text-white hover:bg-white dark:hover:bg-gray-600 focus:bg-white dark:focus:bg-gray-600 shadow-sm focus:shadow-md"
+                      placeholder="123 Main Street"
+                      autoComplete="street-address"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Apartment, Suite, etc. (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      name="apartment"
+                      value={deliveryDetails.apartment || ''}
+                      onChange={handleInputChange}
+                      onFocus={handleFieldFocus}
+                      className="w-full px-4 py-4 border border-gray-200 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-base bg-gray-50 dark:bg-gray-700 dark:text-white hover:bg-white dark:hover:bg-gray-600 focus:bg-white dark:focus:bg-gray-600 shadow-sm focus:shadow-md"
+                      placeholder="Apt 4B, Suite 200, etc."
+                      autoComplete="address-line2"
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        City *
+                      </label>
+                      <input
+                        type="text"
+                        name="city"
+                        required
+                        value={deliveryDetails.city}
+                        onChange={handleInputChange}
+                        onFocus={handleFieldFocus}
+                        className="w-full px-4 py-4 border border-gray-200 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-base bg-gray-50 dark:bg-gray-700 dark:text-white hover:bg-white dark:hover:bg-gray-600 focus:bg-white dark:focus:bg-gray-600 shadow-sm focus:shadow-md"
+                        placeholder="Washington"
+                        autoComplete="address-level2"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        ZIP Code *
+                      </label>
+                      <input
+                        type="text"
+                        name="zipCode"
+                        required
+                        value={deliveryDetails.zipCode}
+                        onChange={handleInputChange}
+                        onFocus={handleFieldFocus}
+                        className="w-full px-4 py-4 border border-gray-200 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-base bg-gray-50 dark:bg-gray-700 dark:text-white hover:bg-white dark:hover:bg-gray-600 focus:bg-white dark:focus:bg-gray-600 shadow-sm focus:shadow-md"
+                        placeholder="20001"
+                        autoComplete="postal-code"
+                        maxLength={5}
+                        pattern="[0-9]{5}"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Delivery Time Preference
+                    </label>
+                    <select
+                      name="timePreference"
+                      value={deliveryDetails.timePreference}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-4 border border-gray-200 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-base bg-gray-50 dark:bg-gray-700 dark:text-white hover:bg-white dark:hover:bg-gray-600 focus:bg-white dark:focus:bg-gray-600 shadow-sm focus:shadow-md"
+                    >
+                      <option value="ASAP (60–90 min)">ASAP (60–90 min)</option>
+                      <option value="Morning (9 AM - 12 PM)">Morning (9 AM - 12 PM)</option>
+                      <option value="Afternoon (12 PM - 5 PM)">Afternoon (12 PM - 5 PM)</option>
+                      <option value="Evening (5 PM - 8 PM)">Evening (5 PM - 8 PM)</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Special Instructions (Optional)
+                    </label>
+                    <textarea
+                      name="specialInstructions"
+                      value={deliveryDetails.specialInstructions}
+                      onChange={handleInputChange}
+                      onFocus={handleFieldFocus}
+                      rows={3}
+                      className="w-full px-4 py-4 border border-gray-200 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-base bg-gray-50 dark:bg-gray-700 dark:text-white hover:bg-white dark:hover:bg-gray-600 focus:bg-white dark:focus:bg-gray-600 shadow-sm focus:shadow-md resize-none"
+                      placeholder="Buzzer code, gate instructions, etc."
+                    />
+                  </div>
+                </div>
+              </div>
+
               {/* Age Verification */}
               <div className="space-y-3">
                 <label htmlFor="ageVerified" className="block cursor-pointer">
