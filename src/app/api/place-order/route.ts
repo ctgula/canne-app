@@ -160,6 +160,17 @@ export async function POST(request: NextRequest) {
     const deliveryFee = calculatedDeliveryFee;
     const total = orderData.total; // Use frontend total to ensure consistency
     
+    // Backend guard: ensure total = subtotal + delivery_fee before insert
+    const expectedTotal = subtotal + deliveryFee;
+    const totalMismatch = Math.abs(total - expectedTotal);
+    if (totalMismatch > 0.01) {
+      console.error(`❌ Total calculation mismatch! Expected: ${expectedTotal}, Got: ${total}, Difference: ${totalMismatch}`);
+      return NextResponse.json(
+        { success: false, error: `Invalid total calculation. Expected $${expectedTotal.toFixed(2)}, got $${total.toFixed(2)}. Please refresh and try again.` },
+        { status: 400 }
+      );
+    }
+    
     console.log(`✅ Using consistent totals - Subtotal: ${subtotal}, Delivery Fee: ${deliveryFee}, Total: ${total}`);
     
     // Validate calculated totals

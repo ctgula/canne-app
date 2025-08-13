@@ -63,7 +63,13 @@ export default function CheckoutPage() {
   const { items, clearCart, getTotal } = useCartStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOrderComplete, setIsOrderComplete] = useState(false);
-  const [orderId, setOrderId] = useState<string>('');
+  const [orderId, setOrderId] = useState<string | null>(null);
+  const [confirmedOrder, setConfirmedOrder] = useState<{
+    subtotal: number;
+    delivery_fee: number;
+    total: number;
+    order_number: string;
+  } | null>(null);
   const [phoneError, setPhoneError] = useState<string>('');
 
   // zod schema for required checkboxes
