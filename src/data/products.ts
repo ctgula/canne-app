@@ -17,7 +17,7 @@ export const products: Product[] = [
     price: 40,
     artworkUrl: '/api/placeholder/400/400',
     giftSize: '7g',
-    hasDelivery: true, // Free delivery starts at $40
+    hasDelivery: true, // Free delivery starts at $35
   },
   {
     id: '3',

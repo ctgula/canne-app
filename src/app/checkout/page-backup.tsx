@@ -120,7 +120,7 @@ export default function CheckoutPage() {
   }
 
   const cartTotal = getTotal();
-  const hasDelivery = cartTotal >= 40;
+  const hasDelivery = cartTotal >= 35;
   const finalTotal = hasDelivery ? cartTotal : cartTotal + 10;
 
   // Phone validation functions

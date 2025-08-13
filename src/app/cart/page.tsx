@@ -8,7 +8,7 @@ import { useCartStore } from '@/services/CartService';
 import { Minus, Plus, Trash2, ArrowRight, Truck, ShoppingBag } from 'lucide-react';
 
 // Define the delivery threshold here since we don't have cart-utils
-const DELIVERY_THRESHOLD = 75; // $75 for free delivery
+const DELIVERY_THRESHOLD = 35; // $35 for free delivery
 
 export default function CartPage() {
   const { items, updateQuantity, removeItem, getTotal, hydrateCart } = useCartStore();

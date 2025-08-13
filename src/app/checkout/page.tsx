@@ -121,7 +121,7 @@ export default function CheckoutPage() {
   }
 
   const cartTotal = getTotal();
-  const hasDelivery = cartTotal >= 40;
+  const hasDelivery = cartTotal >= 35;
   const finalTotal = hasDelivery ? cartTotal : cartTotal + 10;
 
   // Phone validation functions
@@ -298,12 +298,24 @@ export default function CheckoutPage() {
             <p className="text-xl text-gray-600 dark:text-gray-300 mb-2">
               Thank you for your purchase, {deliveryDetails.name}!
             </p>
-            <p className="text-lg text-gray-600 dark:text-gray-400 mb-2">
-              Order #{orderId}
-            </p>
-            <p className="text-sm text-gray-500 dark:text-gray-500">
-              Confirmation sent to {deliveryDetails.email}
-            </p>
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 inline-block mb-4">
+              <p className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+                Order #{orderId}
+              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-500">
+                Placed on {new Date().toLocaleDateString('en-US', { 
+                  weekday: 'long', 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric',
+                  hour: 'numeric',
+                  minute: '2-digit'
+                })}
+              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-500">
+                Confirmation sent to {deliveryDetails.email}
+              </p>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
@@ -390,38 +402,95 @@ export default function CheckoutPage() {
             </div>
           </div>
 
-          {/* Next Steps */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700 mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-              <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-              </div>
-              What Happens Next?
-            </h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-              <div className="text-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
-                <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <span className="text-purple-600 dark:text-purple-400 font-bold">1</span>
+          {/* Order Status & Timeline */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            {/* Order Status */}
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                  <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                 </div>
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Order Processing</h3>
-                <p className="text-gray-600 dark:text-gray-400">We're preparing your art collection and complimentary gifts</p>
-              </div>
+                Order Status & Timeline
+              </h2>
               
-              <div className="text-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
-                <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <span className="text-green-600 dark:text-green-400 font-bold">2</span>
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                    <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900 dark:text-white">Order Confirmed</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-500">Just now</p>
+                  </div>
                 </div>
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Out for Delivery</h3>
-                <p className="text-gray-600 dark:text-gray-400">Your driver will contact you when they're on the way</p>
+                
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center">
+                    <Clock className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900 dark:text-white">Preparing Order</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-500">15-30 minutes</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                    <Truck className="h-4 w-4 text-gray-400" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-500 dark:text-gray-400">Out for Delivery</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-500">
+                      {deliveryDetails.timePreference === 'ASAP (60–90 min)' 
+                        ? '60-90 minutes' 
+                        : deliveryDetails.timePreference}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                    <CheckCircle className="h-4 w-4 text-gray-400" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-500 dark:text-gray-400">Delivered</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-500">You'll receive a confirmation</p>
+                  </div>
+                </div>
               </div>
-              
-              <div className="text-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
-                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <span className="text-blue-600 dark:text-blue-400 font-bold">3</span>
+            </div>
+
+            {/* Important Information */}
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                <div className="w-8 h-8 bg-amber-100 dark:bg-amber-900/30 rounded-lg flex items-center justify-center">
+                  <span className="text-amber-600 dark:text-amber-400 text-sm font-bold">!</span>
                 </div>
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Enjoy Your Art</h3>
-                <p className="text-gray-600 dark:text-gray-400">Unbox your curated collection and complimentary gifts</p>
+                Important Information
+              </h2>
+              
+              <div className="space-y-4 text-sm">
+                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <p className="font-medium text-blue-900 dark:text-blue-100 mb-1">ID Required</p>
+                  <p className="text-blue-700 dark:text-blue-300">Please have a valid government-issued ID ready. You must be 21+ to receive this order.</p>
+                </div>
+                
+                <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                  <p className="font-medium text-green-900 dark:text-green-100 mb-1">I-71 Compliant</p>
+                  <p className="text-green-700 dark:text-green-300">This purchase is compliant with Washington DC Initiative 71 regulations.</p>
+                </div>
+                
+                <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                  <p className="font-medium text-purple-900 dark:text-purple-100 mb-1">Driver Contact</p>
+                  <p className="text-purple-700 dark:text-purple-300">Your delivery driver will call {deliveryDetails.phone} when they arrive.</p>
+                </div>
+                
+                {deliveryDetails.specialInstructions && (
+                  <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
+                    <p className="font-medium text-gray-900 dark:text-white mb-1">Special Instructions</p>
+                    <p className="text-gray-700 dark:text-gray-300">{deliveryDetails.specialInstructions}</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
