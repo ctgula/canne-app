@@ -463,13 +463,13 @@ export default function CheckoutPage() {
           Back to Cart
         </Link>
 
-        <div className="flex items-center gap-3 mb-8">
-          <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-8">
+          <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0">
             <Lock className="h-6 w-6 text-white" />
           </div>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Secure Checkout</h1>
-            <p className="text-gray-600 dark:text-gray-400">Your information is protected with 256-bit SSL encryption</p>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white leading-tight">Secure Checkout</h1>
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">Your information is protected with 256-bit SSL encryption</p>
           </div>
         </div>
 
