@@ -186,35 +186,45 @@ export default function CheckoutPage() {
   const submitHandler = async (data: CheckboxForm) => {
     if (isSubmitting) return;
     
-    const phoneValidationError = validatePhoneNumber(deliveryDetails.phone);
-    if (phoneValidationError) {
-      setPhoneError(phoneValidationError);
-      alert('Please provide a valid phone number before submitting your order.');
-      return;
-    }
+    // Comprehensive form validation with better UX
+    const validationErrors = [];
     
     if (!deliveryDetails.name.trim()) {
-      alert('Please enter your full name.');
-      return;
+      validationErrors.push('Full name is required');
+    }
+    
+    if (!deliveryDetails.email?.trim()) {
+      validationErrors.push('Email address is required');
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(deliveryDetails.email)) {
+      validationErrors.push('Please enter a valid email address');
+    }
+    
+    const phoneValidationError = validatePhoneNumber(deliveryDetails.phone);
+    if (phoneValidationError) {
+      validationErrors.push(phoneValidationError);
+      setPhoneError(phoneValidationError);
     }
     
     if (!deliveryDetails.address.trim()) {
-      alert('Please enter your delivery address.');
-      return;
+      validationErrors.push('Street address is required');
     }
     
     if (!deliveryDetails.city.trim()) {
-      alert('Please enter your city.');
-      return;
+      validationErrors.push('City is required');
     }
     
     if (!deliveryDetails.zipCode.trim()) {
-      alert('Please enter your ZIP code.');
-      return;
+      validationErrors.push('ZIP code is required');
+    } else if (!/^20[0-1]\d{2}$/.test(deliveryDetails.zipCode)) {
+      validationErrors.push('Please enter a valid DC ZIP code (20000-20199)');
     }
     
     if (items.length === 0) {
-      alert('Your cart is empty. Please add items before checking out.');
+      validationErrors.push('Your cart is empty. Please add items before checking out.');
+    }
+    
+    if (validationErrors.length > 0) {
+      alert(`Please fix the following issues:\n\n• ${validationErrors.join('\n• ')}`);
       return;
     }
     

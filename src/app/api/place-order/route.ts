@@ -47,7 +47,7 @@ interface DeliveryDetails {
   apartment?: string;
   city: string;
   zipCode: string;
-  preferredTime: string;
+  timePreference: string;
   specialInstructions?: string;
   ageVerification?: boolean;
   termsAccepted?: boolean;
@@ -251,7 +251,10 @@ export async function POST(request: NextRequest) {
         product_id: productId,
         quantity: item.quantity,
         unit_price: unitPrice,
-        total_price: unitPrice * item.quantity
+        total_price: unitPrice * item.quantity,
+        strain: item.strain?.name || 'Moroccan Peach',
+        thc_low: item.strain?.thcLow || 18,
+        thc_high: item.strain?.thcHigh || 22
       };
     });
     
@@ -319,26 +322,57 @@ export async function POST(request: NextRequest) {
         const customerName = `${customerData?.first_name || ''} ${customerData?.last_name || ''}`.trim();
         const customerPhone = customerData?.phone || 'Not provided';
         
+        // Import gifting map for consistent messaging
+        const getTierInfo = (tier: string) => {
+          const tierMap = {
+            starter: {
+              displayName: 'Starter',
+              oneLiner: 'Single digital print + complimentary top-shelf gift',
+              includedItems: ['Digital art print', '3.5g complimentary flower', 'Curated packaging']
+            },
+            classic: {
+              displayName: 'Classic',
+              oneLiner: 'Double art series with signature + two curated gifts',
+              includedItems: ['Double art series', '7g complimentary flower', 'Signature packaging', 'Two curated gifts']
+            },
+            black: {
+              displayName: 'Black',
+              oneLiner: 'Limited collection prints + four premium gifts',
+              includedItems: ['Limited collection prints', '14g premium flower', 'Four premium gifts', 'Exclusive packaging']
+            },
+            ultra: {
+              displayName: 'Ultra',
+              oneLiner: 'Exclusive gallery pieces + eight premium selections',
+              includedItems: ['Exclusive gallery pieces', '28g premium flower collection', 'Eight premium selections', 'Gallery-grade packaging']
+            }
+          };
+          return tierMap[tier.toLowerCase()] || tierMap.classic;
+        };
+
         // Create detailed order items description with strain information
         const orderDetailsText = orderItemsData?.length > 0 ? orderItemsData.map(item => {
           const product = item.products;
-          const tierName = {
-            'starter': 'Starter Collection',
-            'classic': 'Classic Series', 
-            'black': 'Black Edition',
-            'ultra': 'Ultra Premium'
-          }[product?.tier] || product?.name || 'Unknown Product';
+          const tierInfo = getTierInfo(product?.tier || 'classic');
+          const tierName = `${tierInfo.displayName} Collection`;
           
-          const giftAmount = {
-            'starter': '3.5g',
-            'classic': '7g', 
-            'black': '14g',
-            'ultra': '28g'
-          }[product?.tier?.toLowerCase()] || '7g';
+          // Find corresponding strain info from original order data
+          const originalItem = orderData.items.find(orderItem => 
+            orderItem.product?.id === item.product_id
+          );
+          const strainInfo = originalItem?.strain;
+          
           const unitPrice = parseFloat(item.unit_price).toFixed(2);
           const totalPrice = parseFloat(item.total_price).toFixed(2);
           
-          return `• **${item.quantity}x ${tierName}** (${giftAmount} complimentary)\n   $${unitPrice} each = $${totalPrice} total`;
+          let itemDescription = `• **${item.quantity}x ${tierName}** - $${unitPrice} each = $${totalPrice} total`;
+          
+          if (strainInfo) {
+            itemDescription += `\n   **Strain:** ${strainInfo.name} • ${strainInfo.type} • ${strainInfo.thcLow}–${strainInfo.thcHigh}% THC`;
+          }
+          
+          itemDescription += `\n   **Includes:** ${tierInfo.oneLiner}`;
+          
+          return itemDescription;
         }).join('\n\n') : `No items found (Error: ${orderItemsError?.message || 'Unknown error'})`;
 
         const embed = {
@@ -352,7 +386,7 @@ export async function POST(request: NextRequest) {
             },
             { 
               name: "📍 Delivery Details", 
-              value: `**Address:** ${orderRecord.delivery_address_line1}\n${orderRecord.delivery_city}, DC ${orderRecord.delivery_zip}\n**Preferred Time:** ${orderData.deliveryDetails.preferredTime || 'Not specified'}`,
+              value: `**Address:** ${orderRecord.delivery_address_line1}\n${orderRecord.delivery_city}, DC ${orderRecord.delivery_zip}\n**Preferred Time:** ${orderData.deliveryDetails.timePreference || 'Not specified'}`,
               inline: false 
             },
             { 
