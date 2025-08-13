@@ -283,6 +283,30 @@ export default function CheckoutPage() {
       if (response.ok && responseData.success) {
         const { orderId: newOrderId } = responseData;
         setOrderId(newOrderId);
+        
+        // Fetch the actual order data from database to show correct totals
+        try {
+          const orderResponse = await fetch(`/api/orders/${newOrderId}`);
+          if (orderResponse.ok) {
+            const orderData = await orderResponse.json();
+            setConfirmedOrder({
+              subtotal: orderData.subtotal,
+              delivery_fee: orderData.delivery_fee,
+              total: orderData.total,
+              order_number: orderData.order_number
+            });
+          }
+        } catch (error) {
+          console.error('Failed to fetch order details:', error);
+          // Fallback to calculated values if API fails
+          setConfirmedOrder({
+            subtotal: cartTotal,
+            delivery_fee: hasDelivery ? 0 : 10,
+            total: finalTotal,
+            order_number: newOrderId
+          });
+        }
+        
         setIsOrderComplete(true);
         clearCart();
       } else {
@@ -374,15 +398,17 @@ export default function CheckoutPage() {
               <div className="border-t border-gray-200 dark:border-gray-600 mt-4 pt-4 space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Subtotal</span>
-                  <span>${cartTotal.toFixed(2)}</span>
+                  <span className="text-right">${confirmedOrder?.subtotal.toFixed(2) || cartTotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Delivery</span>
-                  <span>{hasDelivery ? 'FREE' : '$10.00'}</span>
+                  <span className="text-right">
+                    {confirmedOrder?.delivery_fee === 0 || (confirmedOrder === null && hasDelivery) ? 'FREE' : `$${(confirmedOrder?.delivery_fee || 10).toFixed(2)}`}
+                  </span>
                 </div>
                 <div className="flex justify-between text-lg font-semibold text-gray-900 dark:text-white border-t border-gray-200 dark:border-gray-600 pt-2">
                   <span>Total</span>
-                  <span>${finalTotal}</span>
+                  <span className="text-right">${confirmedOrder?.total.toFixed(2) || finalTotal.toFixed(2)}</span>
                 </div>
               </div>
             </div>
