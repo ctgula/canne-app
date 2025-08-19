@@ -69,6 +69,12 @@ export default function CheckoutPage() {
     delivery_fee: number;
     total: number;
     order_number: string;
+    items: Array<{
+      product_name: string;
+      quantity: number;
+      price: number;
+      strain: string;
+    }>;
   } | null>(null);
   const [phoneError, setPhoneError] = useState<string>('');
 
@@ -323,7 +329,8 @@ export default function CheckoutPage() {
               subtotal: orderData.subtotal,
               delivery_fee: orderData.delivery_fee,
               total: orderData.total,
-              order_number: orderData.order_number
+              order_number: orderData.order_number,
+              items: orderData.items || []
             });
           }
         } catch (error) {
@@ -333,7 +340,13 @@ export default function CheckoutPage() {
             subtotal: cartTotal,
             delivery_fee: hasDelivery ? 0 : 10,
             total: finalTotal,
-            order_number: newOrderId
+            order_number: newOrderId,
+            items: items.map(item => ({
+              product_name: item.product.name,
+              quantity: item.quantity,
+              price: item.product.price,
+              strain: item.strain.name
+            }))
           });
         }
         
@@ -398,36 +411,46 @@ export default function CheckoutPage() {
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Order Summary</h2>
             
             <div className="space-y-2 mb-4">
-              {items.map((item) => (
-                <div key={`${item.product.id}-${item.strain.name}`} className="flex justify-between items-center">
+              {confirmedOrder?.items.map((item, index) => (
+                <div key={`${item.product_name}-${index}`} className="flex justify-between items-center">
                   <div className="flex-1">
-                    <p className="font-medium text-gray-900 dark:text-white text-sm">{item.product.name}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-500">Qty: {item.quantity}</p>
+                    <p className="font-medium text-gray-900 dark:text-white text-sm">{item.product_name}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-500">
+                      {item.strain} • Qty: {item.quantity}
+                    </p>
                   </div>
                   <span className="font-medium text-gray-900 dark:text-white text-sm">
-                    ${(item.product.price * item.quantity).toFixed(2)}
+                    ${(item.price * item.quantity).toFixed(2)}
                   </span>
                 </div>
-              ))}
+              )) || (
+                <div className="text-center py-4">
+                  <p className="text-gray-500 dark:text-gray-400">Loading order details...</p>
+                </div>
+              )}
             </div>
 
             <div className="border-t border-gray-200 dark:border-gray-600 pt-4 space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Subtotal</span>
-                <span className="text-right">${confirmedOrder?.subtotal.toFixed(2) || cartTotal.toFixed(2)}</span>
+                <span className="text-right">
+                  {confirmedOrder ? `$${confirmedOrder.subtotal.toFixed(2)}` : 'Loading...'}
+                </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span>Delivery</span>
                 <span className="text-right">
                   {confirmedOrder ? 
                     (confirmedOrder.delivery_fee === 0 ? 'FREE' : `$${confirmedOrder.delivery_fee.toFixed(2)}`) :
-                    (hasDelivery ? 'FREE' : '$10.00')
+                    'Loading...'
                   }
                 </span>
               </div>
               <div className="flex justify-between text-lg font-semibold text-gray-900 dark:text-white border-t border-gray-200 dark:border-gray-600 pt-2">
                 <span>Total</span>
-                <span className="text-right">${confirmedOrder?.total.toFixed(2) || finalTotal.toFixed(2)}</span>
+                <span className="text-right">
+                  {confirmedOrder ? `$${confirmedOrder.total.toFixed(2)}` : 'Loading...'}
+                </span>
               </div>
             </div>
           </div>

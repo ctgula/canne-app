@@ -20,10 +20,15 @@ export async function GET(
       );
     }
 
-    // Fetch order data from database
+    // Fetch order data with items from database
     const { data: order, error } = await supabaseAdmin
       .from('orders')
-      .select('id, order_number, subtotal, delivery_fee, total, status, created_at')
+      .select(`
+        id, order_number, subtotal, delivery_fee, total, status, created_at,
+        order_items (
+          product_name, quantity, price, strain
+        )
+      `)
       .eq('id', orderId)
       .single();
 
@@ -51,7 +56,8 @@ export async function GET(
       delivery_fee: parseFloat(order.delivery_fee) || 0,
       total: parseFloat(order.total) || 0,
       status: order.status,
-      created_at: order.created_at
+      created_at: order.created_at,
+      items: order.order_items || []
     });
 
   } catch (error) {
