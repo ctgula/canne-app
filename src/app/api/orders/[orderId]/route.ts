@@ -26,7 +26,7 @@ export async function GET(
       .select(`
         id, order_number, subtotal, delivery_fee, total, status, created_at,
         order_items (
-          product_name, quantity, price, strain
+          product_id, quantity, price, tier, weight, color_theme
         )
       `)
       .eq('id', orderId)

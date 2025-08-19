@@ -70,10 +70,12 @@ export default function CheckoutPage() {
     total: number;
     order_number: string;
     items: Array<{
-      product_name: string;
+      product_id: string;
       quantity: number;
       price: number;
-      strain: string;
+      tier: string;
+      weight: string;
+      color_theme: string;
     }>;
   } | null>(null);
   const [phoneError, setPhoneError] = useState<string>('');
@@ -320,35 +322,46 @@ export default function CheckoutPage() {
         const { orderId: newOrderId } = responseData;
         setOrderId(newOrderId);
         
-        // Fetch the actual order data from database to show correct totals
-        try {
-          const orderResponse = await fetch(`/api/orders/${newOrderId}`);
-          if (orderResponse.ok) {
-            const orderData = await orderResponse.json();
+        // Wait a moment for order to be fully inserted, then fetch the actual order data
+        setTimeout(async () => {
+          try {
+            console.log('Fetching order data for ID:', newOrderId);
+            const orderResponse = await fetch(`/api/orders/${newOrderId}`);
+            console.log('Order response status:', orderResponse.status);
+            
+            if (orderResponse.ok) {
+              const orderData = await orderResponse.json();
+              console.log('Order data received:', orderData);
+              setConfirmedOrder({
+                subtotal: orderData.subtotal,
+                delivery_fee: orderData.delivery_fee,
+                total: orderData.total,
+                order_number: orderData.order_number,
+                items: orderData.items || []
+              });
+            } else {
+              console.error('Order API response not OK:', await orderResponse.text());
+              throw new Error('Failed to fetch order');
+            }
+          } catch (error) {
+            console.error('Failed to fetch order details:', error);
+            // Fallback to calculated values if API fails
             setConfirmedOrder({
-              subtotal: orderData.subtotal,
-              delivery_fee: orderData.delivery_fee,
-              total: orderData.total,
-              order_number: orderData.order_number,
-              items: orderData.items || []
+              subtotal: cartTotal,
+              delivery_fee: hasDelivery ? 0 : 10,
+              total: finalTotal,
+              order_number: newOrderId,
+              items: items.map(item => ({
+                product_id: item.product.id,
+                quantity: item.quantity,
+                price: item.product.price,
+                tier: item.product.tier,
+                weight: item.product.weight,
+                color_theme: item.product.color_theme
+              }))
             });
           }
-        } catch (error) {
-          console.error('Failed to fetch order details:', error);
-          // Fallback to calculated values if API fails
-          setConfirmedOrder({
-            subtotal: cartTotal,
-            delivery_fee: hasDelivery ? 0 : 10,
-            total: finalTotal,
-            order_number: newOrderId,
-            items: items.map(item => ({
-              product_name: item.product.name,
-              quantity: item.quantity,
-              price: item.product.price,
-              strain: item.strain.name
-            }))
-          });
-        }
+        }, 1000);
         
         setIsOrderComplete(true);
         clearCart();
@@ -412,11 +425,11 @@ export default function CheckoutPage() {
             
             <div className="space-y-2 mb-4">
               {confirmedOrder?.items.map((item, index) => (
-                <div key={`${item.product_name}-${index}`} className="flex justify-between items-center">
+                <div key={`${item.product_id}-${index}`} className="flex justify-between items-center">
                   <div className="flex-1">
-                    <p className="font-medium text-gray-900 dark:text-white text-sm">{item.product_name}</p>
+                    <p className="font-medium text-gray-900 dark:text-white text-sm">{item.tier} Tier</p>
                     <p className="text-xs text-gray-500 dark:text-gray-500">
-                      {item.strain} • Qty: {item.quantity}
+                      {item.weight} • Qty: {item.quantity}
                     </p>
                   </div>
                   <span className="font-medium text-gray-900 dark:text-white text-sm">
