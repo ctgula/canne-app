@@ -117,8 +117,8 @@ export default function CheckoutPage() {
             <p className="text-gray-600 mb-8">
               Add some beautiful artwork to your cart before proceeding to checkout.
             </p>
-            <Link href="/" className="btn-primary">
-              Browse Art Collection
+            <Link href="/shop" className="inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-medium rounded-xl text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors duration-200 min-w-[200px]">
+              Browse Products
             </Link>
           </div>
         </div>
@@ -139,7 +139,7 @@ export default function CheckoutPage() {
             <p className="text-gray-600 mb-8">
               Add some items to your cart before proceeding to checkout.
             </p>
-            <Link href="/shop" className="btn-primary">
+            <Link href="/shop" className="inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-medium rounded-xl text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors duration-200 min-w-[200px]">
               Browse Products
             </Link>
           </div>
