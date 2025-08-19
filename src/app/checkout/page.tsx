@@ -72,10 +72,15 @@ export default function CheckoutPage() {
     items: Array<{
       product_id: string;
       quantity: number;
-      price: number;
-      tier: string;
-      weight: string;
-      color_theme: string;
+      unit_price: number;
+      strain: string;
+      thc_low: number;
+      thc_high: number;
+      products: {
+        tier: string;
+        weight: string;
+        color_theme: string;
+      };
     }>;
   } | null>(null);
   const [phoneError, setPhoneError] = useState<string>('');
@@ -354,10 +359,15 @@ export default function CheckoutPage() {
               items: items.map(item => ({
                 product_id: item.product.id,
                 quantity: item.quantity,
-                price: item.product.price,
-                tier: item.product.tier,
-                weight: item.product.weight,
-                color_theme: item.product.color_theme
+                unit_price: item.product.price,
+                strain: item.strain.name,
+                thc_low: item.strain.thcLow,
+                thc_high: item.strain.thcHigh,
+                products: {
+                  tier: item.product.tier,
+                  weight: item.product.weight,
+                  color_theme: item.product.color_theme
+                }
               }))
             });
           }
@@ -423,17 +433,22 @@ export default function CheckoutPage() {
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 mb-8">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Order Summary</h2>
             
-            <div className="space-y-2 mb-4">
+            <div className="space-y-3 mb-4">
               {confirmedOrder?.items.map((item, index) => (
-                <div key={`${item.product_id}-${index}`} className="flex justify-between items-center">
+                <div key={`${item.product_id}-${index}`} className="flex justify-between items-start">
                   <div className="flex-1">
-                    <p className="font-medium text-gray-900 dark:text-white text-sm">{item.tier} Tier</p>
+                    <p className="font-medium text-gray-900 dark:text-white text-sm">
+                      {item.products?.tier || 'Classic'} Tier
+                    </p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">
+                      <span className="font-medium">{item.strain}</span> • {item.thc_low}–{item.thc_high}% THC
+                    </p>
                     <p className="text-xs text-gray-500 dark:text-gray-500">
-                      {item.weight} • Qty: {item.quantity}
+                      {item.products?.weight || '3.5g'} • Qty: {item.quantity}
                     </p>
                   </div>
                   <span className="font-medium text-gray-900 dark:text-white text-sm">
-                    ${(item.price * item.quantity).toFixed(2)}
+                    ${(item.unit_price * item.quantity).toFixed(2)}
                   </span>
                 </div>
               )) || (
