@@ -127,6 +127,27 @@ export default function CheckoutPage() {
   }
 
   const cartTotal = getTotal();
+  
+  // Prevent checkout with empty cart or zero total
+  if (cartTotal <= 0 && !isOrderComplete) {
+    return (
+      <div className="min-h-screen">
+        <Header />
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">Cart is empty</h1>
+            <p className="text-gray-600 mb-8">
+              Add some items to your cart before proceeding to checkout.
+            </p>
+            <Link href="/shop" className="btn-primary">
+              Browse Products
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
   const hasDelivery = cartTotal >= 35;
   const finalTotal = hasDelivery ? cartTotal : cartTotal + 10;
   
@@ -348,213 +369,103 @@ export default function CheckoutPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20">
         <Header />
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center mb-8">
-            <div className="w-24 h-24 bg-gradient-to-br from-green-100 to-green-200 rounded-full flex items-center justify-center mx-auto mb-6">
-              <CheckCircle className="h-12 w-12 text-green-600" />
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle className="h-8 w-8 text-green-600" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Order Confirmed!</h1>
-            <p className="text-xl text-gray-600 dark:text-gray-300 mb-2">
-              Thank you for your purchase, {deliveryDetails.name}!
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Order Confirmed!</h1>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">
+              Thank you, {deliveryDetails.name}!
             </p>
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 inline-block mb-4">
-              <p className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border border-gray-100 dark:border-gray-700 inline-block">
+              <p className="font-semibold text-gray-900 dark:text-white">
                 Order #{orderId}
               </p>
               <p className="text-sm text-gray-500 dark:text-gray-500">
-                Placed on {new Date().toLocaleDateString('en-US', { 
-                  weekday: 'long', 
-                  year: 'numeric', 
-                  month: 'long', 
+                {new Date().toLocaleDateString('en-US', { 
+                  month: 'short', 
                   day: 'numeric',
                   hour: 'numeric',
                   minute: '2-digit'
                 })}
               </p>
-              <p className="text-sm text-gray-500 dark:text-gray-500">
-                Confirmation sent to {deliveryDetails.email}
+            </div>
+          </div>
+
+          {/* Single Order Summary Card */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 mb-8">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Order Summary</h2>
+            
+            <div className="space-y-2 mb-4">
+              {items.map((item) => (
+                <div key={`${item.product.id}-${item.strain.name}`} className="flex justify-between items-center">
+                  <div className="flex-1">
+                    <p className="font-medium text-gray-900 dark:text-white text-sm">{item.product.name}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-500">Qty: {item.quantity}</p>
+                  </div>
+                  <span className="font-medium text-gray-900 dark:text-white text-sm">
+                    ${(item.product.price * item.quantity).toFixed(2)}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div className="border-t border-gray-200 dark:border-gray-600 pt-4 space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>Subtotal</span>
+                <span className="text-right">${confirmedOrder?.subtotal.toFixed(2) || cartTotal.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>Delivery</span>
+                <span className="text-right">
+                  {confirmedOrder ? 
+                    (confirmedOrder.delivery_fee === 0 ? 'FREE' : `$${confirmedOrder.delivery_fee.toFixed(2)}`) :
+                    (hasDelivery ? 'FREE' : '$10.00')
+                  }
+                </span>
+              </div>
+              <div className="flex justify-between text-lg font-semibold text-gray-900 dark:text-white border-t border-gray-200 dark:border-gray-600 pt-2">
+                <span>Total</span>
+                <span className="text-right">${confirmedOrder?.total.toFixed(2) || finalTotal.toFixed(2)}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Delivery Info */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 mb-8">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Delivery Details</h2>
+            <div className="space-y-2 text-sm">
+              <p className="text-gray-600 dark:text-gray-400">
+                {deliveryDetails.address}, {deliveryDetails.city}, DC {deliveryDetails.zipCode}
+              </p>
+              <p className="text-gray-600 dark:text-gray-400">
+                Expected: {deliveryDetails.timePreference}
               </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-            {/* Order Summary */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
-                  <CreditCard className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+          {/* Simple Next Steps */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 mb-8">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">What's Next?</h2>
+            <div className="space-y-3 text-sm">
+              <div className="flex items-center gap-3">
+                <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
                 </div>
-                Order Summary
-              </h2>
-              
-              <div className="space-y-3">
-                {items.map((item) => (
-                  <div key={`${item.product.id}-${item.strain.name}`} className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <h3 className="font-medium text-gray-900 dark:text-white text-sm">{item.product.name}</h3>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">
-                        {item.strain.name} • {item.strain.type} • {item.strain.thcLow}–{item.strain.thcHigh}% THC
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-500">Qty: {item.quantity}</p>
-                    </div>
-                    <span className="font-medium text-gray-900 dark:text-white text-sm">
-                      ${(item.product.price * item.quantity).toFixed(2)}
-                    </span>
-                  </div>
-                ))}
+                <span className="text-gray-600 dark:text-gray-400">Order confirmed - we're preparing your items</span>
               </div>
-
-              <div className="border-t border-gray-200 dark:border-gray-600 mt-4 pt-4 space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Subtotal</span>
-                  <span className="text-right">${confirmedOrder?.subtotal.toFixed(2) || cartTotal.toFixed(2)}</span>
+              <div className="flex items-center gap-3">
+                <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+                  <Clock className="h-4 w-4 text-blue-600" />
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span>Delivery</span>
-                  <span className="text-right">
-                    {confirmedOrder ? 
-                      (confirmedOrder.delivery_fee === 0 ? 'FREE' : `$${confirmedOrder.delivery_fee.toFixed(2)}`) :
-                      (hasDelivery ? 'FREE' : '$10.00')
-                    }
-                  </span>
-                </div>
-                <div className="flex justify-between text-lg font-semibold text-gray-900 dark:text-white border-t border-gray-200 dark:border-gray-600 pt-2">
-                  <span>Total</span>
-                  <span className="text-right">${confirmedOrder?.total.toFixed(2) || finalTotal.toFixed(2)}</span>
-                </div>
+                <span className="text-gray-600 dark:text-gray-400">Expected delivery: {deliveryDetails.timePreference}</span>
               </div>
-            </div>
-
-            {/* Delivery Information */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                <div className="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
-                  <Truck className="h-4 w-4 text-green-600 dark:text-green-400" />
+              <div className="flex items-center gap-3">
+                <div className="w-6 h-6 bg-amber-100 rounded-full flex items-center justify-center">
+                  <span className="text-amber-600 text-xs font-bold">ID</span>
                 </div>
-                Delivery Details
-              </h2>
-              
-              <div className="space-y-3 text-sm">
-                <div>
-                  <p className="font-medium text-gray-900 dark:text-white">Delivery Address</p>
-                  <p className="text-gray-600 dark:text-gray-400">
-                    {deliveryDetails.address}
-                    {deliveryDetails.apartment && `, ${deliveryDetails.apartment}`}
-                  </p>
-                  <p className="text-gray-600 dark:text-gray-400">
-                    {deliveryDetails.city}, DC {deliveryDetails.zipCode}
-                  </p>
-                </div>
-                
-                <div>
-                  <p className="font-medium text-gray-900 dark:text-white">Delivery Time</p>
-                  <p className="text-gray-600 dark:text-gray-400">{deliveryDetails.timePreference}</p>
-                </div>
-                
-                <div>
-                  <p className="font-medium text-gray-900 dark:text-white">Contact</p>
-                  <p className="text-gray-600 dark:text-gray-400">{deliveryDetails.phone}</p>
-                </div>
-                
-                {deliveryDetails.specialInstructions && (
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-white">Special Instructions</p>
-                    <p className="text-gray-600 dark:text-gray-400">{deliveryDetails.specialInstructions}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Order Status & Timeline */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-            {/* Order Status */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                  <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                </div>
-                Order Status & Timeline
-              </h2>
-              
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
-                    <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-white">Order Confirmed</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-500">Just now</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center">
-                    <Clock className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-white">Preparing Order</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-500">15-30 minutes</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
-                    <Truck className="h-4 w-4 text-gray-400" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-500 dark:text-gray-400">Out for Delivery</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-500">
-                      {deliveryDetails.timePreference === 'ASAP (60–90 min)' 
-                        ? '60-90 minutes' 
-                        : deliveryDetails.timePreference}
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
-                    <CheckCircle className="h-4 w-4 text-gray-400" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-500 dark:text-gray-400">Delivered</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-500">You'll receive a confirmation</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Important Information */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                <div className="w-8 h-8 bg-amber-100 dark:bg-amber-900/30 rounded-lg flex items-center justify-center">
-                  <span className="text-amber-600 dark:text-amber-400 text-sm font-bold">!</span>
-                </div>
-                Important Information
-              </h2>
-              
-              <div className="space-y-4 text-sm">
-                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                  <p className="font-medium text-blue-900 dark:text-blue-100 mb-1">ID Required</p>
-                  <p className="text-blue-700 dark:text-blue-300">Please have a valid government-issued ID ready. You must be 21+ to receive this order.</p>
-                </div>
-                
-                <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                  <p className="font-medium text-green-900 dark:text-green-100 mb-1">I-71 Compliant</p>
-                  <p className="text-green-700 dark:text-green-300">This purchase is compliant with Washington DC Initiative 71 regulations.</p>
-                </div>
-                
-                <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
-                  <p className="font-medium text-purple-900 dark:text-purple-100 mb-1">Driver Contact</p>
-                  <p className="text-purple-700 dark:text-purple-300">Your delivery driver will call {deliveryDetails.phone} when they arrive.</p>
-                </div>
-                
-                {deliveryDetails.specialInstructions && (
-                  <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
-                    <p className="font-medium text-gray-900 dark:text-white mb-1">Special Instructions</p>
-                    <p className="text-gray-700 dark:text-gray-300">{deliveryDetails.specialInstructions}</p>
-                  </div>
-                )}
+                <span className="text-gray-600 dark:text-gray-400">Have your ID ready (21+ required)</span>
               </div>
             </div>
           </div>
@@ -562,15 +473,12 @@ export default function CheckoutPage() {
           {/* Action Buttons */}
           <div className="text-center space-y-4">
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/" className="btn-primary">
+              <Link href="/shop" className="btn-primary">
                 Continue Shopping
-              </Link>
-              <Link href="/how-it-works" className="btn-secondary">
-                Learn More About I-71
               </Link>
             </div>
             <p className="text-sm text-gray-500 dark:text-gray-500">
-              Questions? Contact us at support@canne.art or (202) 555-CANNE
+              Questions? Contact us at support@canne.art
             </p>
           </div>
         </div>

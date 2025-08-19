@@ -177,7 +177,16 @@ export async function POST(request: NextRequest) {
     if (isNaN(subtotal) || subtotal <= 0) {
       console.error('Invalid subtotal calculated:', subtotal);
       return NextResponse.json(
-        { success: false, error: `Invalid subtotal calculated: ${subtotal}. Items: ${JSON.stringify(orderData.items)}` },
+        { success: false, error: `Cannot process order with $0.00 subtotal. Please add items to your cart and try again.` },
+        { status: 400 }
+      );
+    }
+
+    // Prevent processing orders with zero or negative totals
+    if (total <= 0) {
+      console.error('Invalid total amount:', total);
+      return NextResponse.json(
+        { success: false, error: `Cannot process order with $${total.toFixed(2)} total. Please refresh the page and try again.` },
         { status: 400 }
       );
     }
