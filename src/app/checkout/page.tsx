@@ -12,6 +12,8 @@ import { Truck, MapPin, Clock, CreditCard, ArrowLeft, CheckCircle, Shield, Lock 
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 
+import CheckoutFAQ from './components/CheckoutFAQ';
+
 // Types for checkout
 interface DeliveryDetails {
   name: string;
@@ -866,32 +868,11 @@ export default function CheckoutPage() {
                 </AnimatePresence>
               </div>
 
-              {/* Submit Button */}
-              <motion.button
-                type="submit"
-                aria-disabled={!form.formState.isValid || isSubmitting}
-                disabled={!form.formState.isValid || isSubmitting}
-                whileHover={{ scale: form.formState.isValid && !isSubmitting ? 1.02 : 1 }}
-                whileTap={{ scale: form.formState.isValid && !isSubmitting ? 0.98 : 1 }}
-                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold py-5 px-8 rounded-2xl shadow-lg hover:shadow-xl disabled:shadow-none transition-all duration-300 disabled:cursor-not-allowed text-lg flex items-center justify-center gap-3"
-              >
-                {isSubmitting ? (
-                  <>
-                    <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent"></div>
-                    <span>Processing Order...</span>
-                  </>
-                ) : (
-                  <>
-                    <Lock className="h-5 w-5" />
-                    <span>Complete Secure Order - ${finalTotal}</span>
-                  </>
-                )}
-              </motion.button>
             </form>
           </div>
 
-          {/* Order Summary */}
-          <div className="lg:sticky lg:top-8 h-fit">
+          {/* Order Summary and Actions */}
+          <aside className="w-full lg:w-96 lg:pl-8 lg:sticky lg:top-8 h-fit space-y-6">
             <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Order Summary</h2>
               
@@ -949,7 +930,30 @@ export default function CheckoutPage() {
                 </div>
               </div>
             </div>
-          </div>
+
+            <CheckoutFAQ className="lg:sticky top-24" />
+
+            <motion.button
+              onClick={() => onSubmit()}
+              aria-disabled={!form.formState.isValid || isSubmitting}
+              disabled={!form.formState.isValid || isSubmitting}
+              whileHover={{ scale: form.formState.isValid && !isSubmitting ? 1.02 : 1 }}
+              whileTap={{ scale: form.formState.isValid && !isSubmitting ? 0.98 : 1 }}
+              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold py-5 px-8 rounded-2xl shadow-lg hover:shadow-xl disabled:shadow-none transition-all duration-300 disabled:cursor-not-allowed text-lg flex items-center justify-center gap-3"
+            >
+              {isSubmitting ? (
+                <>
+                  <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent"></div>
+                  <span>Processing Order...</span>
+                </>
+              ) : (
+                <>
+                  <Lock className="h-5 w-5" />
+                  <span>Complete Secure Order - ${finalTotal}</span>
+                </>
+              )}
+            </motion.button>
+          </aside>
         </div>
       </div>
     </motion.div>
