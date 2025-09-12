@@ -25,14 +25,20 @@ function CopyChip({ value, label }: { value: string; label: string }) {
   );
 }
 
-export default function PayPage({ params }: { params: { shortCode: string } }) {
+export default async function PayPage({ params }: { params: Promise<{ shortCode: string }> }) {
+  const resolvedParams = await params;
+  const shortCode = decodeURIComponent(resolvedParams.shortCode); // e.g. ORD-9A32
+  
+  return <PayPageClient shortCode={shortCode} />;
+}
+
+function PayPageClient({ shortCode }: { shortCode: string }) {
   const [amount, setAmount] = useState<number>(25); // default $25
   const [qr, setQr] = useState<string>("");
   const [handle, setHandle] = useState("");
   const [screenshotUrl, setScreenshotUrl] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [orderStatus, setOrderStatus] = useState<string>("awaiting_payment");
-  const shortCode = decodeURIComponent(params.shortCode); // e.g. ORD-9A32
 
   const deepLink = useMemo(() => {
     // Cash App deep link
