@@ -57,41 +57,41 @@ export default function ProductsPresenter() {
   const getTierData = (tier: string) => {
     const tierData = {
       starter: {
-        subtitle: '1 Digital print + ⅛ oz gift',
-        description: 'Moroccan Peach or Biscotti Pancakes 18–22% THC. Includes 2 premium logo stickers.',
+        subtitle: 'Includes 1 Cannè Sticker + Complimentary Gift (3.5g flower)',
+        description: 'Moroccan Peach or Biscotti Pancakes 18–22% THC. Includes 1 premium Cannè sticker.',
         strainType: 'Hybrid',
         effects: ['Chill', 'Creative'],
-        artStyle: 'Digital Prints',
+        artStyle: 'Cannè Stickers',
         giftAmount: '3.5g',
         price: 25,
         icon: <Leaf className="w-4 h-4" />
       },
       classic: {
-        subtitle: '2 Prints + ¼ oz gift',
-        description: 'Same two cultivars, 20–24% THC. Comes with art mini-card + sticker duo.',
+        subtitle: 'Includes 2 Cannè Stickers + Complimentary Gift (7g flower)',
+        description: 'Same two cultivars, 20–24% THC. Comes with 2 premium Cannè stickers.',
         strainType: 'Sativa',
         effects: ['Focus', 'Creative'],
-        artStyle: 'Signature Series',
+        artStyle: 'Cannè Stickers',
         giftAmount: '7g',
         price: 45,
         icon: <Brain className="w-4 h-4" />
       },
       black: {
-        subtitle: '4 Prints + ½ oz gift',
-        description: 'Limited foil editions + tote bag + 3 stickers. 24–28% hybrid.',
+        subtitle: 'Includes 3 Cannè Stickers + Complimentary Gift (14g premium flower)',
+        description: 'Premium cultivars, 24–28% hybrid. Comes with 3 premium Cannè stickers.',
         strainType: 'Indica',
         effects: ['Chill', 'Relax'],
-        artStyle: 'Limited Collection',
+        artStyle: 'Cannè Stickers',
         giftAmount: '14g',
         price: 75,
         icon: <Smile className="w-4 h-4" />
       },
       ultra: {
-        subtitle: 'Gallery set + 1 oz gift',
-        description: 'Holo card + tote + papers + 5 stickers. Split ounce of both strains (22–28% THC).',
+        subtitle: 'Includes 4 Cannè Stickers + Complimentary Gift (28g premium flower + Premium badge)',
+        description: 'Premium badge + 4 Cannè stickers. Split ounce of both strains (22–28% THC).',
         strainType: 'Premium Mix',
         effects: ['Focus', 'Euphoric'],
-        artStyle: 'Exclusive Gallery',
+        artStyle: 'Cannè Stickers',
         giftAmount: '28g',
         price: 150,
         icon: <Sparkles className="w-4 h-4" />
