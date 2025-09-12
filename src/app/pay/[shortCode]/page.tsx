@@ -145,7 +145,9 @@ function PayPageClient({ shortCode }: { shortCode: string }) {
               </div>
             )}
             <a
-              href={deepLink}
+              href="https://cash.app/$cjdj1"
+              target="_blank"
+              rel="noopener noreferrer"
               className="w-full max-w-xs rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 px-6 py-3 text-white font-semibold hover:from-pink-700 hover:to-purple-700 transition-all text-center"
             >
               Open in Cash App
