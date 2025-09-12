@@ -1,8 +1,16 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { createClient } from '@supabase/supabase-js';
 
 export async function POST(req: Request) {
   try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    
+    if (!supabaseUrl || !supabaseKey) {
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+    }
+    
+    const supabase = createClient(supabaseUrl, supabaseKey);
     const { short_code } = await req.json();
 
     const { error } = await supabase

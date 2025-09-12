@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
 import { createClient } from '@supabase/supabase-js';
 
-export async function POST(req: Request) {
+export async function GET(req: Request, { params }: { params: Promise<{ shortCode: string }> }) {
   try {
+    const resolvedParams = await params;
+    const shortCode = resolvedParams.shortCode;
+    
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     
@@ -11,25 +14,21 @@ export async function POST(req: Request) {
     }
     
     const supabase = createClient(supabaseUrl, supabaseKey);
-    const { short_code, cashapp_handle, screenshot_url } = await req.json();
 
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from("cashapp_orders")
-      .update({
-        status: "verifying",
-        cashapp_handle,
-        payment_screenshot_url: screenshot_url
-      })
-      .eq("short_code", short_code);
+      .select("*")
+      .eq("short_code", shortCode)
+      .single();
 
     if (error) {
-      console.error('Error updating Cash App order:', error);
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      console.error('Error fetching Cash App order:', error);
+      return NextResponse.json({ error: error.message }, { status: 404 });
     }
     
-    return NextResponse.json({ ok: true });
+    return NextResponse.json(data);
   } catch (error) {
-    console.error('Error in Cash App payment submission:', error);
+    console.error('Error in Cash App order fetch:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

@@ -33,12 +33,32 @@ export default async function PayPage({ params }: { params: Promise<{ shortCode:
 }
 
 function PayPageClient({ shortCode }: { shortCode: string }) {
-  const [amount, setAmount] = useState<number>(25); // default $25
+  const [orderData, setOrderData] = useState<{ amount_cents: number } | null>(null);
   const [qr, setQr] = useState<string>("");
   const [handle, setHandle] = useState("");
   const [screenshotUrl, setScreenshotUrl] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [orderStatus, setOrderStatus] = useState<string>("awaiting_payment");
+
+  // Fetch order data to get the correct amount
+  useEffect(() => {
+    async function fetchOrderData() {
+      try {
+        const response = await fetch(`/api/cashapp-orders/${shortCode}`);
+        if (response.ok) {
+          const data = await response.json();
+          setOrderData(data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch order data:', error);
+        // Fallback to default amount
+        setOrderData({ amount_cents: 2500 });
+      }
+    }
+    fetchOrderData();
+  }, [shortCode]);
+
+  const amount = orderData ? orderData.amount_cents / 100 : 25;
 
   const deepLink = useMemo(() => {
     // Cash App deep link
