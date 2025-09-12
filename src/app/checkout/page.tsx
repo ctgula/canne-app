@@ -8,9 +8,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Checkbox } from '@/components/ui/checkbox';
 import Header from '@/components/Header';
 import { useCartStore } from '@/services/CartService';
-import { Truck, MapPin, Clock, CreditCard, ArrowLeft, CheckCircle, Shield, Lock } from 'lucide-react';
+import { Truck, MapPin, Clock, CreditCard, ArrowLeft, CheckCircle, Shield, Lock, Smartphone } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useCashAppPayment } from '@/lib/cashapp-payment';
 
 import CheckoutFAQ from './components/CheckoutFAQ';
 
@@ -63,9 +64,11 @@ interface OrderCartItem {
 
 export default function CheckoutPage() {
   const { items, clearCart, getTotal } = useCartStore();
+  const { initiatePayment } = useCashAppPayment();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOrderComplete, setIsOrderComplete] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<'regular' | 'cashapp'>('regular');
   const [confirmedOrder, setConfirmedOrder] = useState<{
     subtotal: number;
     delivery_fee: number;
@@ -234,8 +237,46 @@ export default function CheckoutPage() {
     } catch {}
   };
 
+  const handleCashAppPayment = async (data: CheckboxForm) => {
+    // Validate form first
+    const validationErrors = [];
+    
+    if (!deliveryDetails.name.trim()) {
+      validationErrors.push('Full name is required');
+    }
+    
+    if (!deliveryDetails.email?.trim()) {
+      validationErrors.push('Email address is required');
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(deliveryDetails.email)) {
+      validationErrors.push('Please enter a valid email address');
+    }
+    
+    const phoneValidationError = validatePhoneNumber(deliveryDetails.phone);
+    if (phoneValidationError) {
+      validationErrors.push(phoneValidationError);
+      setPhoneError(phoneValidationError);
+    }
+    
+    if (validationErrors.length > 0) {
+      alert(`Please complete your information first:\n\n• ${validationErrors.join('\n• ')}`);
+      return;
+    }
+
+    // Initiate Cash App payment
+    const success = await initiatePayment(finalTotal, deliveryDetails.phone.replace(/\D/g, ''));
+    if (!success) {
+      alert('Failed to create Cash App payment. Please try again.');
+    }
+  };
+
   const submitHandler = async (data: CheckboxForm) => {
     if (isSubmitting) return;
+    
+    // Handle Cash App payment separately
+    if (paymentMethod === 'cashapp') {
+      await handleCashAppPayment(data);
+      return;
+    }
     
     // Comprehensive form validation with better UX
     const validationErrors = [];
@@ -933,23 +974,72 @@ export default function CheckoutPage() {
 
             <CheckoutFAQ className="lg:sticky top-24" />
 
+            {/* Payment Method Selection */}
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Payment Method</h3>
+              <div className="space-y-3">
+                <label className="flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all hover:bg-gray-50 dark:hover:bg-gray-700" 
+                       style={{ borderColor: paymentMethod === 'regular' ? '#8B5CF6' : '#E5E7EB' }}>
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="regular"
+                    checked={paymentMethod === 'regular'}
+                    onChange={(e) => setPaymentMethod(e.target.value as 'regular' | 'cashapp')}
+                    className="w-4 h-4 text-purple-600"
+                  />
+                  <Lock className="h-5 w-5 text-gray-600" />
+                  <div>
+                    <div className="font-medium text-gray-900 dark:text-white">Standard Checkout</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Complete order with delivery</div>
+                  </div>
+                </label>
+                
+                <label className="flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all hover:bg-gray-50 dark:hover:bg-gray-700"
+                       style={{ borderColor: paymentMethod === 'cashapp' ? '#8B5CF6' : '#E5E7EB' }}>
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="cashapp"
+                    checked={paymentMethod === 'cashapp'}
+                    onChange={(e) => setPaymentMethod(e.target.value as 'regular' | 'cashapp')}
+                    className="w-4 h-4 text-purple-600"
+                  />
+                  <Smartphone className="h-5 w-5 text-green-600" />
+                  <div>
+                    <div className="font-medium text-gray-900 dark:text-white">Cash App Payment</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Pay instantly with Cash App</div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
             <motion.button
               onClick={() => onSubmit()}
               aria-disabled={!form.formState.isValid || isSubmitting}
               disabled={!form.formState.isValid || isSubmitting}
               whileHover={{ scale: form.formState.isValid && !isSubmitting ? 1.02 : 1 }}
               whileTap={{ scale: form.formState.isValid && !isSubmitting ? 0.98 : 1 }}
-              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold py-5 px-8 rounded-2xl shadow-lg hover:shadow-xl disabled:shadow-none transition-all duration-300 disabled:cursor-not-allowed text-lg flex items-center justify-center gap-3"
+              className={`w-full font-semibold py-5 px-8 rounded-2xl shadow-lg hover:shadow-xl disabled:shadow-none transition-all duration-300 disabled:cursor-not-allowed text-lg flex items-center justify-center gap-3 ${
+                paymentMethod === 'cashapp' 
+                  ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-500 text-white'
+                  : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-gray-400 disabled:to-gray-500 text-white'
+              }`}
             >
               {isSubmitting ? (
                 <>
                   <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent"></div>
-                  <span>Processing Order...</span>
+                  <span>Processing...</span>
+                </>
+              ) : paymentMethod === 'cashapp' ? (
+                <>
+                  <Smartphone className="h-5 w-5" />
+                  <span>Pay with Cash App - ${finalTotal.toFixed(2)}</span>
                 </>
               ) : (
                 <>
                   <Lock className="h-5 w-5" />
-                  <span>Complete Secure Order - ${finalTotal}</span>
+                  <span>Complete Secure Order - ${finalTotal.toFixed(2)}</span>
                 </>
               )}
             </motion.button>
