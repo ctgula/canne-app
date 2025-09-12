@@ -46,6 +46,9 @@ export default function Footer() {
             <Link href="/about" className="text-gray-700 hover:text-gray-900 text-sm">
               About
             </Link>
+            <Link href="/drivers" className="text-gray-700 hover:text-gray-900 text-sm">
+              Drivers
+            </Link>
           </div>
         </div>
       </div>
