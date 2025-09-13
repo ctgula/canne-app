@@ -1,7 +1,7 @@
 // Test script for complete order verification and dispatch flow
 const { default: fetch } = require('node-fetch');
 
-const BASE_URL = 'http://localhost:4000';
+const BASE_URL = 'https://canne.app';
 
 async function testCompleteOrderFlow() {
   console.log('🧪 Testing Complete Order Verification & Dispatch Flow...\n');
