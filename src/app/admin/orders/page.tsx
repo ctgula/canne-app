@@ -2,29 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Package, 
-  Phone, 
-  MapPin, 
-  Clock, 
-  CheckCircle, 
-  AlertCircle, 
-  Truck, 
-  Eye,
-  DollarSign,
-  Users,
-  RefreshCw,
-  Search,
-  Filter,
-  Calendar,
-  TrendingUp,
-  Activity,
-  CreditCard,
-  User,
-  Mail,
-  ExternalLink,
-  Download
-} from 'lucide-react';
+import { Search, Filter, SortAsc, Eye, DollarSign, Truck, CheckCircle, X, RefreshCw, AlertCircle, Clock, Package, Activity, TrendingUp, Phone, CreditCard, ExternalLink, User, Calendar } from 'lucide-react';
+import ConfirmDialog from '@/components/ConfirmDialog';
+import { useToast, ToastContainer } from '@/components/Toast';
 
 interface CashAppOrder {
   id: string;
@@ -47,6 +27,12 @@ interface Driver {
   phone: string;
   email: string;
   is_active: boolean;
+}
+
+interface PayoutSummary {
+  queued_payouts: number;
+  paid_out: number;
+  completed_deliveries: number;
 }
 
 const statusColors = {
@@ -72,15 +58,28 @@ const statusIcons = {
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<CashAppOrder[]>([]);
   const [drivers, setDrivers] = useState<Driver[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const [password, setPassword] = useState('');
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'date' | 'status' | 'amount'>('date');
   const [selectedOrder, setSelectedOrder] = useState<CashAppOrder | null>(null);
   const [showOrderDetails, setShowOrderDetails] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [payoutSummary, setPayoutSummary] = useState<PayoutSummary | null>(null);
+
+  // Toast and confirmation states
+  const { toasts, success, error: showError, warning } = useToast();
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    action: () => void;
+    variant?: 'danger' | 'warning' | 'info';
+    loading?: boolean;
+  }>({ isOpen: false, title: '', message: '', action: () => {} });
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -109,6 +108,191 @@ export default function AdminOrdersPage() {
       console.error('Error fetching orders:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleMarkPaid = async (orderId: string) => {
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return;
+
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Mark Order as Paid',
+      message: `Are you sure you want to mark order ${order.short_code} as paid? This will trigger a payment confirmation notification to the customer.`,
+      variant: 'info',
+      action: async () => {
+        setConfirmDialog(prev => ({ ...prev, loading: true }));
+        try {
+          const response = await fetch('/api/orders/mark-paid', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ orderId }),
+          });
+
+          if (response.ok) {
+            // Optimistic update
+            setOrders(prev => prev.map(order => 
+              order.id === orderId 
+                ? { ...order, status: 'paid' }
+                : order
+            ));
+            success('Order Marked as Paid', `Order ${order.short_code} has been marked as paid and customer notified.`);
+            await fetchOrders(); // Refresh to get latest data
+          } else {
+            const errorData = await response.json();
+            showError('Failed to Mark Paid', errorData.error || 'An error occurred while marking the order as paid.');
+          }
+        } catch (error) {
+          console.error('Error marking order as paid:', error);
+          showError('Network Error', 'Failed to connect to the server. Please try again.');
+        } finally {
+          setConfirmDialog(prev => ({ ...prev, isOpen: false, loading: false }));
+        }
+      }
+    });
+  };
+
+  const handleAssignDriver = async (orderId: string, driverId: string) => {
+    const order = orders.find(o => o.id === orderId);
+    const driver = drivers.find(d => d.id === driverId);
+    if (!order || !driver) return;
+
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Assign Driver',
+      message: `Assign ${driver.full_name} to order ${order.short_code}? This will notify both the customer and driver.`,
+      variant: 'info',
+      action: async () => {
+        setConfirmDialog(prev => ({ ...prev, loading: true }));
+        try {
+          const response = await fetch('/api/orders/assign-driver', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ orderId, driverId }),
+          });
+
+          if (response.ok) {
+            // Optimistic update
+            setOrders(prev => prev.map(order => 
+              order.id === orderId 
+                ? { ...order, status: 'assigned', driver_id: driverId, driver_name: driver.full_name }
+                : order
+            ));
+            success('Driver Assigned', `${driver.full_name} has been assigned to order ${order.short_code}.`);
+            await fetchOrders(); // Refresh to get latest data
+          } else {
+            const errorData = await response.json();
+            showError('Failed to Assign Driver', errorData.error || 'An error occurred while assigning the driver.');
+          }
+        } catch (error) {
+          console.error('Error assigning driver:', error);
+          showError('Network Error', 'Failed to connect to the server. Please try again.');
+        } finally {
+          setConfirmDialog(prev => ({ ...prev, isOpen: false, loading: false }));
+        }
+      }
+    });
+  };
+
+  const handleCompleteOrder = async (orderId: string) => {
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return;
+
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Complete Order',
+      message: `Mark order ${order.short_code} as delivered? This will notify the customer and finalize the order.`,
+      variant: 'info',
+      action: async () => {
+        setConfirmDialog(prev => ({ ...prev, loading: true }));
+        try {
+          const response = await fetch('/api/orders/complete', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ orderId }),
+          });
+
+          if (response.ok) {
+            // Optimistic update
+            setOrders(prev => prev.map(order => 
+              order.id === orderId 
+                ? { ...order, status: 'delivered' }
+                : order
+            ));
+            success('Order Completed', `Order ${order.short_code} has been marked as delivered.`);
+            await fetchOrders(); // Refresh to get latest data
+          } else {
+            const errorData = await response.json();
+            showError('Failed to Complete Order', errorData.error || 'An error occurred while completing the order.');
+          }
+        } catch (error) {
+          console.error('Error completing order:', error);
+          showError('Network Error', 'Failed to connect to the server. Please try again.');
+        } finally {
+          setConfirmDialog(prev => ({ ...prev, isOpen: false, loading: false }));
+        }
+      }
+    });
+  };
+
+  const handleRefundOrder = async (orderId: string) => {
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return;
+
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Refund Order',
+      message: `Are you sure you want to refund order ${order.short_code}? This action cannot be undone and will notify the customer.`,
+      variant: 'danger',
+      action: async () => {
+        setConfirmDialog(prev => ({ ...prev, loading: true }));
+        try {
+          const response = await fetch('/api/orders/refund', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ orderId }),
+          });
+
+          if (response.ok) {
+            // Optimistic update
+            setOrders(prev => prev.map(order => 
+              order.id === orderId 
+                ? { ...order, status: 'refunded' }
+                : order
+            ));
+            success('Order Refunded', `Order ${order.short_code} has been refunded and customer notified.`);
+            await fetchOrders(); // Refresh to get latest data
+          } else {
+            const errorData = await response.json();
+            showError('Failed to Refund Order', errorData.error || 'An error occurred while refunding the order.');
+          }
+        } catch (error) {
+          console.error('Error refunding order:', error);
+          showError('Network Error', 'Failed to connect to the server. Please try again.');
+        } finally {
+          setConfirmDialog(prev => ({ ...prev, isOpen: false, loading: false }));
+        }
+      }
+    });
+  };
+
+  const fetchDrivers = async () => {
+    try {
+      const response = await fetch('/api/drivers');
+      if (response.ok) {
+        const data = await response.json();
+        setDrivers(data.drivers || []);
+      }
+    } catch (error) {
+      console.error('Error fetching drivers:', error);
     }
   };
 
@@ -147,173 +331,6 @@ export default function AdminOrdersPage() {
       const today = new Date().toDateString();
       return new Date(o.created_at).toDateString() === today;
     }).length
-  };
-
-  const fetchDrivers = async () => {
-    try {
-      const response = await fetch('/api/drivers');
-      if (response.ok) {
-        const data = await response.json();
-        setDrivers(data.drivers || []);
-      }
-    } catch (error) {
-      console.error('Error fetching drivers:', error);
-    }
-  };
-
-  const markPaid = async (shortCode: string) => {
-    setActionLoading(shortCode);
-    
-    // Optimistic update
-    setOrders(prev => prev.map(order => 
-      order.short_code === shortCode 
-        ? { ...order, status: 'paid' as const }
-        : order
-    ));
-    
-    try {
-      const response = await fetch('/api/orders/mark-paid', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ short_code: shortCode })
-      });
-
-      if (response.ok) {
-        fetchOrders(); // Refresh orders to get latest data
-      } else {
-        // Revert optimistic update on failure
-        fetchOrders();
-        alert('Failed to mark order as paid');
-      }
-    } catch (error) {
-      console.error('Error marking order as paid:', error);
-      fetchOrders(); // Revert optimistic update
-      alert('Error marking order as paid');
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  const assignDriver = async (shortCode: string, driverId: string) => {
-    setActionLoading(shortCode);
-    
-    // Optimistic update
-    setOrders(prev => prev.map(order => 
-      order.short_code === shortCode 
-        ? { ...order, status: 'assigned' as const, driver_id: driverId }
-        : order
-    ));
-    
-    try {
-      const response = await fetch('/api/orders/assign-driver', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ short_code: shortCode, driver_id: driverId })
-      });
-
-      if (response.ok) {
-        fetchOrders(); // Refresh orders to get latest data
-      } else {
-        // Revert optimistic update on failure
-        fetchOrders();
-        alert('Failed to assign driver');
-      }
-    } catch (error) {
-      console.error('Error assigning driver:', error);
-      fetchOrders(); // Revert optimistic update
-      alert('Error assigning driver');
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  const completeOrder = async (shortCode: string) => {
-    setActionLoading(shortCode);
-    try {
-      const response = await fetch('/api/orders/complete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ short_code: shortCode })
-      });
-
-      if (response.ok) {
-        fetchOrders(); // Refresh orders
-      } else {
-        alert('Failed to complete order');
-      }
-    } catch (error) {
-      console.error('Error completing order:', error);
-      alert('Error completing order');
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  const updateOrderStatus = async (shortCode: string, newStatus: string) => {
-    setActionLoading(shortCode);
-    try {
-      let response;
-      
-      switch (newStatus) {
-        case 'paid':
-          response = await fetch('/api/orders/mark-paid', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ short_code: shortCode })
-          });
-          break;
-        case 'delivered':
-          response = await fetch('/api/orders/complete', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ short_code: shortCode })
-          });
-          break;
-        default:
-          // For other status changes, we'd need a generic update endpoint
-          alert('Status change not implemented yet');
-          return;
-      }
-
-      if (response && response.ok) {
-        fetchOrders(); // Refresh orders
-        setShowOrderDetails(false); // Close modal
-      } else {
-        alert('Failed to update order status');
-      }
-    } catch (error) {
-      console.error('Error updating order status:', error);
-      alert('Error updating order status');
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  const refundOrder = async (shortCode: string) => {
-    if (!confirm('Are you sure you want to refund this order? This action cannot be undone.')) {
-      return;
-    }
-
-    setActionLoading(shortCode);
-    try {
-      const response = await fetch('/api/orders/refund', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ short_code: shortCode })
-      });
-
-      if (response.ok) {
-        fetchOrders(); // Refresh orders
-        setShowOrderDetails(false); // Close modal
-      } else {
-        alert('Failed to refund order');
-      }
-    } catch (error) {
-      console.error('Error refunding order:', error);
-      alert('Error refunding order');
-    } finally {
-      setActionLoading(null);
-    }
   };
 
   if (!isAuthenticated) {
@@ -443,7 +460,7 @@ export default function AdminOrdersPage() {
                   placeholder="Search orders by code, phone, or Cash App handle..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500"
                 />
               </div>
             </div>
@@ -576,19 +593,17 @@ export default function AdminOrdersPage() {
                     <div className="flex gap-2">
                       {order.status === 'verifying' && (
                         <button
-                          onClick={() => markPaid(order.short_code)}
-                          disabled={actionLoading === order.short_code}
-                          className="px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50 transition-colors"
+                          onClick={() => handleMarkPaid(order.id)}
+                          className="px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700"
                         >
-                          {actionLoading === order.short_code ? 'Processing...' : 'Mark Paid'}
+                          Mark Paid
                         </button>
                       )}
                       
                       {order.status === 'paid' && (
                         <select
-                          onChange={(e) => e.target.value && assignDriver(order.short_code, e.target.value)}
+                          onChange={(e) => e.target.value && handleAssignDriver(order.id, e.target.value)}
                           className="px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500"
-                          disabled={actionLoading === order.short_code}
                         >
                           <option value="">Assign Driver</option>
                           {drivers.filter(d => d.is_active).map(driver => (
@@ -601,11 +616,10 @@ export default function AdminOrdersPage() {
                       
                       {order.status === 'assigned' && (
                         <button
-                          onClick={() => completeOrder(order.short_code)}
-                          disabled={actionLoading === order.short_code}
-                          className="px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700 disabled:opacity-50 transition-colors"
+                          onClick={() => handleCompleteOrder(order.id)}
+                          className="px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700"
                         >
-                          {actionLoading === order.short_code ? 'Processing...' : 'Complete Order'}
+                          Complete Order
                         </button>
                       )}
                     </div>
@@ -724,19 +738,17 @@ export default function AdminOrdersPage() {
                   <div className="flex gap-3">
                     {selectedOrder.status === 'verifying' && (
                       <button
-                        onClick={() => updateOrderStatus(selectedOrder.short_code, 'paid')}
-                        disabled={actionLoading === selectedOrder.short_code}
-                        className="px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50 transition-colors"
+                        onClick={() => handleMarkPaid(selectedOrder.id)}
+                        className="px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700"
                       >
-                        {actionLoading === selectedOrder.short_code ? 'Processing...' : 'Mark as Paid'}
+                        Mark as Paid
                       </button>
                     )}
                     
                     {selectedOrder.status === 'paid' && drivers.length > 0 && (
                       <select
-                        onChange={(e) => e.target.value && assignDriver(selectedOrder.short_code, e.target.value)}
+                        onChange={(e) => e.target.value && handleAssignDriver(selectedOrder.id, e.target.value)}
                         className="px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500"
-                        disabled={actionLoading === selectedOrder.short_code}
                       >
                         <option value="">Assign Driver</option>
                         {drivers.filter(d => d.is_active).map(driver => (
@@ -749,22 +761,19 @@ export default function AdminOrdersPage() {
                     
                     {selectedOrder.status === 'assigned' && (
                       <button
-                        onClick={() => updateOrderStatus(selectedOrder.short_code, 'delivered')}
-                        disabled={actionLoading === selectedOrder.short_code}
-                        className="px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700 disabled:opacity-50 transition-colors"
+                        onClick={() => handleCompleteOrder(selectedOrder.id)}
+                        className="px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700"
                       >
-                        {actionLoading === selectedOrder.short_code ? 'Processing...' : 'Mark as Delivered'}
+                        Mark as Delivered
                       </button>
                     )}
                     
-                    {/* Refund Action */}
                     {(selectedOrder.status === 'awaiting_payment' || selectedOrder.status === 'verifying' || selectedOrder.status === 'paid') && (
                       <button
-                        onClick={() => refundOrder(selectedOrder.short_code)}
-                        disabled={actionLoading === selectedOrder.short_code}
-                        className="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 disabled:opacity-50 transition-colors"
+                        onClick={() => handleRefundOrder(selectedOrder.id)}
+                        className="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700"
                       >
-                        {actionLoading === selectedOrder.short_code ? 'Processing...' : 'Refund Order'}
+                        Refund Order
                       </button>
                     )}
                     
@@ -780,6 +789,20 @@ export default function AdminOrdersPage() {
             </motion.div>
           </div>
         )}
+        
+        {/* Toast Container */}
+        <ToastContainer toasts={toasts} />
+        
+        {/* Confirmation Dialog */}
+        <ConfirmDialog
+          isOpen={confirmDialog.isOpen}
+          onClose={() => setConfirmDialog(prev => ({ ...prev, isOpen: false }))}
+          onConfirm={confirmDialog.action}
+          title={confirmDialog.title}
+          message={confirmDialog.message}
+          variant={confirmDialog.variant}
+          loading={confirmDialog.loading}
+        />
       </div>
     </div>
   );

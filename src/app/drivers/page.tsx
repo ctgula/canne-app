@@ -1,9 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
-import { motion } from "framer-motion";
-import { Package, MapPin, DollarSign, Clock, Phone, RefreshCw } from "lucide-react";
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { MapPin, Phone, DollarSign, Package, Clock, User, Navigation, ExternalLink, RefreshCw } from 'lucide-react';
+import { createClient } from '@supabase/supabase-js';
+
+// Initialize Supabase client
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 interface AssignedOrder {
   id: string;
@@ -11,12 +17,14 @@ interface AssignedOrder {
   customer_phone: string;
   amount_cents: number;
   status: string;
-  delivery_address?: string;
+  delivery_address_line1?: string;
+  delivery_address_line2?: string;
   delivery_city?: string;
   delivery_state?: string;
   delivery_zip?: string;
   delivery_notes?: string;
   created_at: string;
+  payout_amount?: number;
 }
 
 interface Payout {
@@ -93,8 +101,12 @@ export default function DriversPage() {
     setPayouts([]);
   };
 
-  const totalPendingPayout = payouts
+  const queuedPayouts = payouts
     .filter(p => p.status === 'queued')
+    .reduce((sum, p) => sum + p.amount_cents, 0);
+
+  const paidOut = payouts
+    .filter(p => p.status === 'paid')
     .reduce((sum, p) => sum + p.amount_cents, 0);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -169,27 +181,17 @@ export default function DriversPage() {
           </div>
 
           {/* Payout Summary */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Earnings Summary</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="text-center p-4 bg-green-50 rounded-xl">
-                <DollarSign className="w-8 h-8 text-green-600 mx-auto mb-2" />
-                <div className="text-2xl font-bold text-green-600">
-                  ${(totalPendingPayout / 100).toFixed(2)}
-                </div>
-                <div className="text-sm text-gray-600">Pending Payout</div>
+          <div className="text-center">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Earnings Summary</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-green-50 p-4 rounded-xl">
+                <p className="text-2xl font-bold text-green-600">${queuedPayouts.toFixed(2)}</p>
+                <p className="text-sm text-green-700">Queued Payouts</p>
+                <p className="text-xs text-green-600 mt-1">$8 base + $4 per extra</p>
               </div>
-              <div className="text-center p-4 bg-blue-50 rounded-xl">
-                <Package className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-                <div className="text-2xl font-bold text-blue-600">{assignedOrders.length}</div>
-                <div className="text-sm text-gray-600">Total Orders</div>
-              </div>
-              <div className="text-center p-4 bg-purple-50 rounded-xl">
-                <Clock className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-                <div className="text-2xl font-bold text-purple-600">
-                  {assignedOrders.filter(o => o.status === 'assigned').length}
-                </div>
-                <div className="text-sm text-gray-600">Active Jobs</div>
+              <div className="bg-blue-50 p-4 rounded-xl">
+                <p className="text-2xl font-bold text-blue-600">${paidOut.toFixed(2)}</p>
+                <p className="text-sm text-blue-700">Total Paid</p>
               </div>
             </div>
           </div>
@@ -210,54 +212,78 @@ export default function DriversPage() {
                   animate={{ opacity: 1, y: 0 }}
                   className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6"
                 >
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-lg font-semibold text-gray-900">{order.short_code}</h3>
-                        <div className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium border ${
-                          order.status === 'assigned' ? 'bg-purple-100 text-purple-800 border-purple-200' : 
-                          'bg-green-100 text-green-800 border-green-200'
-                        }`}>
-                          {order.status === 'assigned' ? 'Ready for Pickup' : 'Delivered'}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="relative">
+                        <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                          <Package className="w-5 h-5 text-purple-600" />
                         </div>
+                        {order.status === 'assigned' && (
+                          <div className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 rounded-full flex items-center justify-center">
+                            <span className="text-xs text-white font-bold">!</span>
+                          </div>
+                        )}
                       </div>
-                      
-                      <div className="space-y-2 text-gray-600">
+                      <div>
                         <div className="flex items-center gap-2">
-                          <Phone className="w-4 h-4" />
-                          <span>{order.customer_phone}</span>
+                          <h3 className="font-semibold text-gray-900">{order.short_code}</h3>
+                          {order.status === 'assigned' && (
+                            <span className="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full font-medium">
+                              New Job
+                            </span>
+                          )}
                         </div>
-                        
-                        {order.delivery_address && (
-                          <div className="flex items-start gap-2">
-                            <MapPin className="w-4 h-4 mt-1" />
-                            <div>
-                              <div>{order.delivery_address}</div>
-                              {order.delivery_city && (
-                                <div className="text-sm">
-                                  {order.delivery_city}, {order.delivery_state} {order.delivery_zip}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        )}
-                        
-                        {order.delivery_notes && (
-                          <div className="text-sm bg-yellow-50 p-3 rounded-lg">
-                            <strong>Notes:</strong> {order.delivery_notes}
-                          </div>
-                        )}
+                        <p className="text-sm text-gray-600">{order.customer_phone}</p>
                       </div>
                     </div>
-                    
                     <div className="text-right">
-                      <div className="text-lg font-semibold text-green-600">$8.00</div>
-                      <div className="text-sm text-gray-500">Payout</div>
+                      <p className="font-semibold text-green-600">${(order.amount_cents / 100).toFixed(2)}</p>
+                      <p className="text-xs text-gray-500">Payout: ${order.payout_amount?.toFixed(2) || '8.00'}</p>
                     </div>
                   </div>
                   
                   <div className="text-sm text-gray-500">
                     Order placed: {new Date(order.created_at).toLocaleString()}
+                  </div>
+
+                  <div className="space-y-2 text-gray-600">
+                    <div className="flex items-center gap-2">
+                      <Phone className="w-4 h-4" />
+                      <span>{order.customer_phone}</span>
+                    </div>
+                    
+                    {order.delivery_address_line1 && (
+                      <div className="flex items-start gap-3 mb-4">
+                        <MapPin className="w-4 h-4 text-gray-400 mt-1" />
+                        <div className="flex-1">
+                          <p className="text-sm text-gray-900">{order.delivery_address_line1}</p>
+                          {order.delivery_address_line2 && (
+                            <p className="text-sm text-gray-600">{order.delivery_address_line2}</p>
+                          )}
+                          <p className="text-sm text-gray-600">
+                            {order.delivery_city}, {order.delivery_state} {order.delivery_zip}
+                          </p>
+                          <div className="flex gap-2 mt-2">
+                            <a
+                              href={`geo:0,0?q=${encodeURIComponent(`${order.delivery_address_line1}, ${order.delivery_city}, ${order.delivery_state} ${order.delivery_zip}`)}`}
+                              className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 text-xs rounded-full hover:bg-blue-200 transition-colors"
+                            >
+                              <Navigation className="w-3 h-3" />
+                              Navigate
+                            </a>
+                            <a
+                              href={`https://maps.google.com/maps?q=${encodeURIComponent(`${order.delivery_address_line1}, ${order.delivery_city}, ${order.delivery_state} ${order.delivery_zip}`)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full hover:bg-green-200 transition-colors"
+                            >
+                              <ExternalLink className="w-3 h-3" />
+                              Google Maps
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               ))
