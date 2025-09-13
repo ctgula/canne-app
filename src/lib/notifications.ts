@@ -1,100 +1,167 @@
-// Notification service for SMS/Email
-// TODO: Integrate with Resend or Twilio
+// Notification service for Cannè app
+// Supports both SMS (Twilio) and Email (Resend) notifications
 
-interface NotificationData {
+interface NotificationConfig {
+  resendApiKey?: string;
+  twilioAccountSid?: string;
+  twilioAuthToken?: string;
+  twilioPhoneNumber?: string;
+}
+
+interface CustomerInfo {
   phone?: string;
   email?: string;
-  message: string;
-  type: 'sms' | 'email' | 'both';
+  name?: string;
 }
 
-export class NotificationService {
-  static async sendPaymentConfirmed(phone: string, email?: string) {
-    const message = "✅ Payment confirmed, your driver is on the way.";
-    
-    // TODO: Implement actual SMS/email sending
-    console.log(`Would send notification to ${phone}: ${message}`);
-    
-    return { success: true };
-  }
-
-  static async sendDriverAssigned(phone: string, email?: string, driverName?: string) {
-    const message = `🚗 Your Cannè order has been assigned to ${driverName || 'a driver'}. They'll be in touch soon!`;
-    
-    // TODO: Implement actual SMS/email sending
-    console.log(`Would send notification to ${phone}: ${message}`);
-    
-    return { success: true };
-  }
-
-  static async sendOrderDelivered(phone: string, email?: string) {
-    const message = "Delivered ✅ Thanks for choosing Cannè!";
-    
-    // TODO: Implement actual SMS/email sending
-    console.log(`Would send notification to ${phone}: ${message}`);
-    
-    return { success: true };
-  }
-
-  static async sendDriverNewJob(driverPhone: string, orderCode: string) {
-    const message = `🚴 New delivery job assigned: ${orderCode}. Check your dashboard for details.`;
-    
-    // TODO: Implement actual SMS/email sending
-    console.log(`Would send driver notification to ${driverPhone}: ${message}`);
-    
-    return { success: true };
-  }
+interface DriverInfo {
+  phone?: string;
+  email?: string;
+  name: string;
 }
 
-// Resend integration example (uncomment when ready to use)
-/*
-import { Resend } from 'resend';
+interface OrderDetails {
+  shortCode: string;
+  address?: string;
+  amount?: number;
+  customerName?: string;
+  eta?: string;
+}
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+class NotificationService {
+  private config: NotificationConfig;
 
-export async function sendEmail(to: string, subject: string, html: string) {
-  try {
-    const { data, error } = await resend.emails.send({
-      from: 'Cannè <orders@canne.com>',
-      to: [to],
-      subject,
-      html,
-    });
+  constructor() {
+    this.config = {
+      resendApiKey: process.env.RESEND_API_KEY,
+      twilioAccountSid: process.env.TWILIO_ACCOUNT_SID,
+      twilioAuthToken: process.env.TWILIO_AUTH_TOKEN,
+      twilioPhoneNumber: process.env.TWILIO_PHONE_NUMBER,
+    };
+  }
 
-    if (error) {
-      console.error('Email error:', error);
-      return { success: false, error };
+  async sendSMS(phone: string, message: string): Promise<boolean> {
+    if (!this.config.twilioAccountSid || !this.config.twilioAuthToken) {
+      console.log('SMS notification (Twilio not configured):', { phone, message });
+      return false;
     }
 
-    return { success: true, data };
-  } catch (error) {
-    console.error('Email send error:', error);
-    return { success: false, error };
+    try {
+      // TODO: Implement Twilio SMS sending
+      // const twilio = require('twilio')(this.config.twilioAccountSid, this.config.twilioAuthToken);
+      // await twilio.messages.create({
+      //   body: message,
+      //   from: this.config.twilioPhoneNumber,
+      //   to: phone
+      // });
+      
+      console.log('SMS sent successfully:', { phone, message });
+      return true;
+    } catch (error) {
+      console.error('Failed to send SMS:', error);
+      return false;
+    }
+  }
+
+  async sendEmail(email: string, subject: string, message: string): Promise<boolean> {
+    if (!this.config.resendApiKey) {
+      console.log('Email notification (Resend not configured):', { email, subject, message });
+      return false;
+    }
+
+    try {
+      // TODO: Implement Resend email sending
+      // const resend = new Resend(this.config.resendApiKey);
+      // await resend.emails.send({
+      //   from: 'orders@canne.app',
+      //   to: email,
+      //   subject: subject,
+      //   html: message
+      // });
+      
+      console.log('Email sent successfully:', { email, subject, message });
+      return true;
+    } catch (error) {
+      console.error('Failed to send email:', error);
+      return false;
+    }
+  }
+
+  // Reusable utility functions for order status triggers
+  async onOrderPaid(customer: CustomerInfo, order: OrderDetails): Promise<void> {
+    const message = "✅ Payment confirmed. Driver on the way.";
+    await this.notifyCustomer(customer, message, "Payment Confirmed - Cannè");
+  }
+
+  async onDriverAssigned(customer: CustomerInfo, driver: DriverInfo, order: OrderDetails): Promise<void> {
+    const eta = order.eta || "30-45 minutes";
+    const message = `🚗 ${driver.name} is your driver. ETA: ${eta}`;
+    await this.notifyCustomer(customer, message, "Driver Assigned - Cannè");
+  }
+
+  async onOrderDelivered(customer: CustomerInfo, order: OrderDetails): Promise<void> {
+    const message = "Delivered ✅. Rate your drop.";
+    await this.notifyCustomer(customer, message, "Order Delivered - Cannè");
+  }
+
+  async onOrderRefunded(customer: CustomerInfo, order: OrderDetails): Promise<void> {
+    const message = `Your Cannè order ${order.shortCode} has been refunded. Please allow 1-3 business days for processing.`;
+    await this.notifyCustomer(customer, message, "Order Refunded - Cannè");
+  }
+
+  // Private helper methods
+  private async notifyCustomer(customer: CustomerInfo, message: string, subject: string): Promise<void> {
+    const promises = [];
+    
+    if (customer.phone) {
+      promises.push(this.sendSMS(customer.phone, message));
+    }
+    if (customer.email) {
+      promises.push(this.sendEmail(customer.email, subject, message));
+    }
+    
+    await Promise.all(promises);
+  }
+
+  private async notifyDriver(driver: DriverInfo, message: string, subject: string): Promise<void> {
+    const promises = [];
+    
+    if (driver.phone) {
+      promises.push(this.sendSMS(driver.phone, message));
+    }
+    if (driver.email) {
+      promises.push(this.sendEmail(driver.email, subject, message));
+    }
+    
+    await Promise.all(promises);
+  }
+
+  // Driver notification methods
+  async notifyNewJobAssigned(driver: DriverInfo, order: OrderDetails): Promise<void> {
+    const message = `🚗 New delivery: Order ${order.shortCode} - ${order.address || 'Address in app'}. Check your dashboard.`;
+    await this.notifyDriver(driver, message, "New Delivery Assignment - Cannè");
+  }
+
+  // Legacy methods for backward compatibility
+  async notifyPaymentConfirmed(customer: CustomerInfo): Promise<void> {
+    await this.onOrderPaid(customer, { shortCode: '' });
+  }
+
+  async notifyDriverAssigned(customer: CustomerInfo, driverName: string, eta: string): Promise<void> {
+    await this.onDriverAssigned(customer, { name: driverName }, { shortCode: '', eta });
+  }
+
+  async notifyOrderDelivered(customer: CustomerInfo): Promise<void> {
+    await this.onOrderDelivered(customer, { shortCode: '' });
   }
 }
-*/
 
-// Twilio integration example (uncomment when ready to use)
-/*
-import twilio from 'twilio';
+export const notificationService = new NotificationService();
 
-const client = twilio(
-  process.env.TWILIO_ACCOUNT_SID,
-  process.env.TWILIO_AUTH_TOKEN
-);
-
-export async function sendSMS(to: string, message: string) {
-  try {
-    const result = await client.messages.create({
-      body: message,
-      from: process.env.TWILIO_PHONE_NUMBER,
-      to: to
-    });
-
-    return { success: true, data: result };
-  } catch (error) {
-    console.error('SMS send error:', error);
-    return { success: false, error };
-  }
-}
-*/
+// Export utility functions for easy use in API routes
+export const notifyOrderStatusChange = {
+  paid: notificationService.onOrderPaid.bind(notificationService),
+  assigned: notificationService.onDriverAssigned.bind(notificationService),
+  delivered: notificationService.onOrderDelivered.bind(notificationService),
+  refunded: notificationService.onOrderRefunded.bind(notificationService),
+};

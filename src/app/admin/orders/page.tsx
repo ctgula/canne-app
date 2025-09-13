@@ -426,6 +426,27 @@ export default function AdminOrdersPage() {
           </div>
         </div>
 
+        {/* Payout Summary */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-8">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Driver Payouts Summary</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="text-center p-4 bg-yellow-50 rounded-xl">
+              <p className="text-2xl font-bold text-yellow-600">
+                ${((orders.filter(o => o.status === 'delivered').length * 1500) / 100).toFixed(2)}
+              </p>
+              <p className="text-sm text-gray-600">Queued Payouts</p>
+            </div>
+            <div className="text-center p-4 bg-green-50 rounded-xl">
+              <p className="text-2xl font-bold text-green-600">$0.00</p>
+              <p className="text-sm text-gray-600">Paid Out</p>
+            </div>
+            <div className="text-center p-4 bg-blue-50 rounded-xl">
+              <p className="text-2xl font-bold text-blue-600">{orders.filter(o => o.status === 'delivered').length}</p>
+              <p className="text-sm text-gray-600">Completed Deliveries</p>
+            </div>
+          </div>
+        </div>
+
         {/* Orders List */}
         {loading ? (
           <div className="flex justify-center items-center py-12">
