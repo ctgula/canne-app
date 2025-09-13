@@ -163,6 +163,14 @@ export default function AdminOrdersPage() {
 
   const markPaid = async (shortCode: string) => {
     setActionLoading(shortCode);
+    
+    // Optimistic update
+    setOrders(prev => prev.map(order => 
+      order.short_code === shortCode 
+        ? { ...order, status: 'paid' as const }
+        : order
+    ));
+    
     try {
       const response = await fetch('/api/orders/mark-paid', {
         method: 'POST',
@@ -171,12 +179,15 @@ export default function AdminOrdersPage() {
       });
 
       if (response.ok) {
-        fetchOrders(); // Refresh orders
+        fetchOrders(); // Refresh orders to get latest data
       } else {
+        // Revert optimistic update on failure
+        fetchOrders();
         alert('Failed to mark order as paid');
       }
     } catch (error) {
       console.error('Error marking order as paid:', error);
+      fetchOrders(); // Revert optimistic update
       alert('Error marking order as paid');
     } finally {
       setActionLoading(null);
@@ -185,6 +196,14 @@ export default function AdminOrdersPage() {
 
   const assignDriver = async (shortCode: string, driverId: string) => {
     setActionLoading(shortCode);
+    
+    // Optimistic update
+    setOrders(prev => prev.map(order => 
+      order.short_code === shortCode 
+        ? { ...order, status: 'assigned' as const, driver_id: driverId }
+        : order
+    ));
+    
     try {
       const response = await fetch('/api/orders/assign-driver', {
         method: 'POST',
@@ -193,12 +212,15 @@ export default function AdminOrdersPage() {
       });
 
       if (response.ok) {
-        fetchOrders(); // Refresh orders
+        fetchOrders(); // Refresh orders to get latest data
       } else {
+        // Revert optimistic update on failure
+        fetchOrders();
         alert('Failed to assign driver');
       }
     } catch (error) {
       console.error('Error assigning driver:', error);
+      fetchOrders(); // Revert optimistic update
       alert('Error assigning driver');
     } finally {
       setActionLoading(null);
@@ -262,6 +284,33 @@ export default function AdminOrdersPage() {
     } catch (error) {
       console.error('Error updating order status:', error);
       alert('Error updating order status');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const refundOrder = async (shortCode: string) => {
+    if (!confirm('Are you sure you want to refund this order? This action cannot be undone.')) {
+      return;
+    }
+
+    setActionLoading(shortCode);
+    try {
+      const response = await fetch('/api/orders/refund', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ short_code: shortCode })
+      });
+
+      if (response.ok) {
+        fetchOrders(); // Refresh orders
+        setShowOrderDetails(false); // Close modal
+      } else {
+        alert('Failed to refund order');
+      }
+    } catch (error) {
+      console.error('Error refunding order:', error);
+      alert('Error refunding order');
     } finally {
       setActionLoading(null);
     }
@@ -705,6 +754,17 @@ export default function AdminOrdersPage() {
                         className="px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700 disabled:opacity-50 transition-colors"
                       >
                         {actionLoading === selectedOrder.short_code ? 'Processing...' : 'Mark as Delivered'}
+                      </button>
+                    )}
+                    
+                    {/* Refund Action */}
+                    {(selectedOrder.status === 'awaiting_payment' || selectedOrder.status === 'verifying' || selectedOrder.status === 'paid') && (
+                      <button
+                        onClick={() => refundOrder(selectedOrder.short_code)}
+                        disabled={actionLoading === selectedOrder.short_code}
+                        className="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 disabled:opacity-50 transition-colors"
+                      >
+                        {actionLoading === selectedOrder.short_code ? 'Processing...' : 'Refund Order'}
                       </button>
                     )}
                     
