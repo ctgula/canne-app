@@ -2,7 +2,27 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Filter, SortAsc, Eye, DollarSign, Truck, CheckCircle, X, RefreshCw, AlertCircle, Clock, Package, Activity, TrendingUp, Phone, CreditCard, ExternalLink, User, Calendar } from 'lucide-react';
+import { 
+  Phone, 
+  CreditCard, 
+  User, 
+  Calendar, 
+  Clock, 
+  Package, 
+  Search, 
+  Filter,
+  ChevronDown,
+  X,
+  CheckCircle,
+  AlertCircle,
+  Truck,
+  DollarSign,
+  Copy,
+  Eye,
+  MoreHorizontal,
+  RefreshCw,
+  ExternalLink
+} from 'lucide-react';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { useToast, ToastContainer } from '@/components/Toast';
 
@@ -58,28 +78,28 @@ const statusIcons = {
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<CashAppOrder[]>([]);
   const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<'date' | 'status' | 'amount'>('date');
-  const [selectedOrder, setSelectedOrder] = useState<CashAppOrder | null>(null);
+  const [dateFilter, setDateFilter] = useState<'today' | 'week' | 'all'>('all');
+  const [sortBy, setSortBy] = useState<'date' | 'amount' | 'status'>('date');
   const [showOrderDetails, setShowOrderDetails] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [payoutSummary, setPayoutSummary] = useState<PayoutSummary | null>(null);
-
-  // Toast and confirmation states
-  const { toasts, success, error: showError, warning } = useToast();
+  const [selectedOrder, setSelectedOrder] = useState<CashAppOrder | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean;
     title: string;
     message: string;
-    action: () => void;
-    variant?: 'danger' | 'warning' | 'info';
-    loading?: boolean;
-  }>({ isOpen: false, title: '', message: '', action: () => {} });
+    variant: 'info' | 'danger';
+    loading: boolean;
+    action: () => Promise<void>;
+  }>({ isOpen: false, title: '', message: '', variant: 'info', loading: false, action: async () => {} });
+  
+  const { success, error: showError } = useToast();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [payoutSummary, setPayoutSummary] = useState<PayoutSummary | null>(null);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -356,39 +376,104 @@ export default function AdminOrdersPage() {
   // Filter and sort orders based on search, status, and sort preference
   const filteredOrders = orders
     .filter(order => {
-      const matchesSearch = order.short_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           order.customer_phone?.includes(searchTerm) ||
-                           order.cashapp_handle?.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSearch = 
+        order.short_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.customer_phone.includes(searchTerm) ||
+        (order.cashapp_handle && order.cashapp_handle.toLowerCase().includes(searchTerm.toLowerCase()));
+      
       const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
-      return matchesSearch && matchesStatus;
+      
+      const matchesDate = (() => {
+        if (dateFilter === 'all') return true;
+        const orderDate = new Date(order.created_at);
+        const now = new Date();
+        
+        if (dateFilter === 'today') {
+          return orderDate.toDateString() === now.toDateString();
+        }
+        
+        if (dateFilter === 'week') {
+          const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          return orderDate >= weekAgo;
+        }
+        
+        return true;
+      })();
+      
+      return matchesSearch && matchesStatus && matchesDate;
     })
     .sort((a, b) => {
       switch (sortBy) {
-        case 'status':
-          const statusOrder = ['pending', 'awaiting_payment', 'verifying', 'paid', 'assigned', 'delivered', 'refunded'];
-          return statusOrder.indexOf(a.status) - statusOrder.indexOf(b.status);
+        case 'date':
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
         case 'amount':
           return b.amount_cents - a.amount_cents;
-        case 'date':
+        case 'status':
+          return a.status.localeCompare(b.status);
         default:
-          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+          return 0;
       }
     });
 
-  // Calculate analytics
-  const analytics = {
-    total: orders.length,
-    pending: orders.filter(o => o.status === 'awaiting_payment' || o.status === 'pending').length,
-    verifying: orders.filter(o => o.status === 'verifying').length,
-    paid: orders.filter(o => o.status === 'paid').length,
-    assigned: orders.filter(o => o.status === 'assigned').length,
-    delivered: orders.filter(o => o.status === 'delivered').length,
-    totalRevenue: orders.filter(o => o.status === 'delivered').reduce((sum, o) => sum + o.amount_cents, 0),
-    todayOrders: orders.filter(o => {
-      const today = new Date().toDateString();
-      return new Date(o.created_at).toDateString() === today;
-    }).length
+  const statusCounts = orders.reduce((acc, order) => {
+    acc[order.status] = (acc[order.status] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    // Toast will be handled by the existing toast system in the component
   };
+
+  const openOrderDetails = (order: CashAppOrder) => {
+    setSelectedOrder(order);
+    setShowOrderDetails(true);
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Only handle shortcuts when not typing in inputs
+      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLSelectElement) {
+        return;
+      }
+
+      switch (event.key) {
+        case '/':
+          event.preventDefault();
+          document.getElementById('search-input')?.focus();
+          break;
+        case 'Escape':
+          if (showOrderDetails) {
+            setShowOrderDetails(false);
+          }
+          break;
+        case 'r':
+          if (event.metaKey || event.ctrlKey) {
+            event.preventDefault();
+            fetchOrders();
+          }
+          break;
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+          if (event.metaKey || event.ctrlKey) {
+            event.preventDefault();
+            const filters = ['all', 'awaiting_payment', 'verifying', 'paid', 'assigned', 'delivered'];
+            const filterIndex = parseInt(event.key) - 1;
+            if (filterIndex < filters.length) {
+              setStatusFilter(filters[filterIndex]);
+            }
+          }
+          break;
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [showOrderDetails]);
 
   if (!isAuthenticated) {
     return (
@@ -424,128 +509,93 @@ export default function AdminOrdersPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-6 py-8 max-w-7xl">
-        {/* Header */}
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Cannè Admin Dashboard</h1>
-            <p className="text-gray-600 mt-1">Order Management & Analytics</p>
+            <h1 className="text-3xl font-bold text-gray-900">Order Management</h1>
+            <p className="text-gray-600 mt-2">Manage customer orders and driver assignments</p>
           </div>
           <div className="flex items-center gap-3">
+            <div className="hidden lg:block text-sm text-gray-500">
+              <kbd className="px-2 py-1 bg-gray-100 rounded text-xs">⌘/Ctrl+R</kbd> Refresh •
+              <kbd className="px-2 py-1 bg-gray-100 rounded text-xs">/</kbd> Search •
+              <kbd className="px-2 py-1 bg-gray-100 rounded text-xs">⌘/Ctrl+1-6</kbd> Filter
+            </div>
             <button
               onClick={fetchOrders}
               disabled={loading}
-              className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors disabled:opacity-50"
+              aria-label="Refresh orders"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
               Refresh
             </button>
-            <button
-              onClick={() => setIsAuthenticated(false)}
-              className="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors"
-            >
-              Logout
-            </button>
           </div>
         </div>
 
-        {/* Analytics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total Orders</p>
-                <p className="text-2xl font-bold text-gray-900">{analytics.total}</p>
-              </div>
-              <div className="p-3 bg-blue-50 rounded-xl">
-                <Package className="w-6 h-6 text-blue-600" />
-              </div>
-            </div>
-            <p className="text-sm text-gray-500 mt-2">{analytics.todayOrders} today</p>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Revenue</p>
-                <p className="text-2xl font-bold text-gray-900">${(analytics.totalRevenue / 100).toFixed(2)}</p>
-              </div>
-              <div className="p-3 bg-green-50 rounded-xl">
-                <DollarSign className="w-6 h-6 text-green-600" />
-              </div>
-            </div>
-            <p className="text-sm text-gray-500 mt-2">Delivered orders</p>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Active Orders</p>
-                <p className="text-2xl font-bold text-gray-900">{analytics.verifying + analytics.paid + analytics.assigned}</p>
-              </div>
-              <div className="p-3 bg-purple-50 rounded-xl">
-                <Activity className="w-6 h-6 text-purple-600" />
-              </div>
-            </div>
-            <p className="text-sm text-gray-500 mt-2">In progress</p>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Completion Rate</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {analytics.total > 0 ? Math.round((analytics.delivered / analytics.total) * 100) : 0}%
-                </p>
-              </div>
-              <div className="p-3 bg-emerald-50 rounded-xl">
-                <TrendingUp className="w-6 h-6 text-emerald-600" />
-              </div>
-            </div>
-            <p className="text-sm text-gray-500 mt-2">{analytics.delivered} delivered</p>
-          </div>
-        </div>
-
-        {/* Filters and Search */}
+        {/* Search and Filters */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-8">
-          <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex flex-col lg:flex-row gap-4 mb-6">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <input
+                  id="search-input"
                   type="text"
-                  placeholder="Search orders by code, phone, or Cash App handle..."
+                  placeholder="Search orders by ID, phone, or cashtag... (Press / to focus)"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500"
+                  className="pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent w-full"
+                  aria-label="Search orders"
                 />
               </div>
             </div>
-            <div className="flex gap-3">
+            
+            <div className="flex gap-3 flex-wrap">
               <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 bg-white min-w-[150px]"
+                value={dateFilter}
+                onChange={(e) => setDateFilter(e.target.value as 'today' | 'week' | 'all')}
+                className="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500"
               >
-                <option value="all">All Status</option>
-                <option value="awaiting_payment">Awaiting Payment</option>
-                <option value="verifying">Verifying</option>
-                <option value="paid">Paid</option>
-                <option value="assigned">Assigned</option>
-                <option value="delivered">Delivered</option>
-                <option value="refunded">Refunded</option>
+                <option value="all">All Time</option>
+                <option value="today">Today</option>
+                <option value="week">Last 7 Days</option>
               </select>
               
               <select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as 'date' | 'status' | 'amount')}
-                className="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 bg-white min-w-[120px]"
+                onChange={(e) => setSortBy(e.target.value as 'date' | 'amount' | 'status')}
+                className="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500"
               >
                 <option value="date">Sort by Date</option>
-                <option value="status">Sort by Status</option>
                 <option value="amount">Sort by Amount</option>
+                <option value="status">Sort by Status</option>
               </select>
             </div>
+          </div>
+          
+          {/* Status Filter Tabs */}
+          <div className="flex flex-wrap gap-2">
+            {[
+              { key: 'all', label: 'All Orders', count: orders.length },
+              { key: 'awaiting_payment', label: 'Awaiting Payment', count: statusCounts.awaiting_payment || 0 },
+              { key: 'verifying', label: 'Verifying', count: statusCounts.verifying || 0 },
+              { key: 'paid', label: 'Paid', count: statusCounts.paid || 0 },
+              { key: 'assigned', label: 'Assigned', count: statusCounts.assigned || 0 },
+              { key: 'delivered', label: 'Delivered', count: statusCounts.delivered || 0 },
+            ].map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setStatusFilter(tab.key)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  statusFilter === tab.key
+                    ? 'bg-purple-100 text-purple-800 border border-purple-200'
+                    : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                {tab.label} ({tab.count})
+              </button>
+            ))}
           </div>
         </div>
 
@@ -569,97 +619,159 @@ export default function AdminOrdersPage() {
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Orders List */}
-        {loading ? (
-          <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+      {/* Status Filter Tabs */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-8">
+        <div className="flex flex-wrap gap-2">
+          {[
+            { key: 'all', label: 'All Orders', count: orders.length },
+            { key: 'awaiting_payment', label: 'Awaiting Payment', count: statusCounts.awaiting_payment || 0 },
+            { key: 'verifying', label: 'Verifying', count: statusCounts.verifying || 0 },
+            { key: 'paid', label: 'Paid', count: statusCounts.paid || 0 },
+            { key: 'assigned', label: 'Assigned', count: statusCounts.assigned || 0 },
+            { key: 'delivered', label: 'Delivered', count: statusCounts.delivered || 0 },
+          ].map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setStatusFilter(tab.key)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                statusFilter === tab.key
+                  ? 'bg-purple-100 text-purple-800 border border-purple-200'
+                  : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              {tab.label} ({tab.count})
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Payout Summary */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-8">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Driver Payouts Summary</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="text-center p-4 bg-yellow-50 rounded-xl">
+            <p className="text-2xl font-bold text-yellow-600">
+              ${((orders.filter(o => o.status === 'delivered').length * 1500) / 100).toFixed(2)}
+            </p>
+            <p className="text-sm text-gray-600">Queued Payouts</p>
           </div>
-        ) : (
-          <div className="space-y-4">
-            {filteredOrders.map((order) => {
-              const StatusIcon = statusIcons[order.status];
-              const assignedDriver = drivers.find(d => d.id === order.driver_id);
-              
-              return (
-                <motion.div
-                  key={order.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-3">
-                        <h3 className="text-lg font-semibold text-gray-900">{order.short_code}</h3>
-                        <div className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium border ${statusColors[order.status]}`}>
-                          <StatusIcon className="w-4 h-4" />
-                          {order.status.replace('_', ' ')}
-                        </div>
-                        <button
-                          onClick={() => {
-                            setSelectedOrder(order);
-                            setShowOrderDetails(true);
-                          }}
-                          className="text-purple-600 hover:text-purple-700 p-1 rounded-lg hover:bg-purple-50 transition-colors"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <DollarSign className="w-4 h-4 text-green-600" />
-                          <span className="font-medium">${(order.amount_cents / 100).toFixed(2)}</span>
-                        </div>
-                        
-                        {order.customer_phone && (
-                          <div className="flex items-center gap-2 text-gray-600">
-                            <Phone className="w-4 h-4 text-blue-600" />
-                            <span>{order.customer_phone}</span>
-                          </div>
-                        )}
-                        
-                        {order.cashapp_handle && (
-                          <div className="flex items-center gap-2">
-                            <CreditCard className="w-4 h-4 text-green-600" />
-                            <span className="text-green-600 font-medium">@{order.cashapp_handle}</span>
-                          </div>
-                        )}
-                        
-                        {assignedDriver && (
-                          <div className="flex items-center gap-2 text-gray-600">
-                            <User className="w-4 h-4 text-purple-600" />
-                            <span>{assignedDriver.full_name}</span>
-                          </div>
-                        )}
-                      </div>
-                      
-                      <div className="mt-3 flex items-center gap-4 text-xs text-gray-500">
-                        <div className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3" />
-                          <span>{new Date(order.created_at).toLocaleDateString()}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          <span>{new Date(order.created_at).toLocaleTimeString()}</span>
-                        </div>
+          <div className="text-center p-4 bg-green-50 rounded-xl">
+            <p className="text-2xl font-bold text-green-600">$0.00</p>
+            <p className="text-sm text-gray-600">Paid Out</p>
+          </div>
+          <div className="text-center p-4 bg-blue-50 rounded-xl">
+            <p className="text-2xl font-bold text-blue-600">{orders.filter(o => o.status === 'delivered').length}</p>
+            <p className="text-sm text-gray-600">Completed Deliveries</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Orders List */}
+      {loading ? (
+        <div className="flex justify-center items-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+          {filteredOrders.map((order) => {
+            const StatusIcon = statusIcons[order.status];
+            const assignedDriver = drivers.find(d => d.id === order.driver_id);
+            
+            return (
+              <motion.div
+                key={order.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow cursor-pointer"
+                onClick={() => openOrderDetails(order)}
+              >
+                {/* Header */}
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center">
+                        <StatusIcon className="w-5 h-5 text-gray-600" />
                       </div>
                     </div>
-                    
-                    <div className="flex gap-2 flex-wrap">
-                      {/* Status Change Dropdown */}
-                      <select
-                        value=""
-                        onChange={(e) => {
-                          if (e.target.value) {
-                            handleStatusChange(order.id, e.target.value);
-                            e.target.value = ''; // Reset dropdown
-                          }
+                    <div>
+                      <h3 className="font-semibold text-gray-900">{order.short_code}</h3>
+                      <div className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${statusColors[order.status]}`}>
+                        {order.status.replace('_', ' ').toUpperCase()}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="text-right">
+                    <div className="text-xl font-bold text-green-600">
+                      ${(order.amount_cents / 100).toFixed(2)}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {new Date(order.created_at).toLocaleDateString()}
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Customer Info */}
+                <div className="space-y-2 mb-4">
+                  {order.customer_phone && (
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <Phone className="w-4 h-4 text-blue-500" />
+                      <span>{order.customer_phone}</span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          copyToClipboard(order.customer_phone);
                         }}
-                        className="px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 text-sm"
+                        className="ml-auto p-1 hover:bg-gray-100 rounded"
                       >
-                        <option value="">Change Status</option>
+                        <Copy className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )}
+                  
+                  {order.cashapp_handle && (
+                    <div className="flex items-center gap-2 text-sm text-green-600">
+                      <CreditCard className="w-4 h-4" />
+                      <span>@{order.cashapp_handle}</span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          copyToClipboard(order.cashapp_handle!);
+                        }}
+                        className="ml-auto p-1 hover:bg-gray-100 rounded"
+                      >
+                        <Copy className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )}
+                  
+                  {assignedDriver && (
+                    <div className="flex items-center gap-2 text-sm text-purple-600">
+                      <User className="w-4 h-4" />
+                      <span>{assignedDriver.full_name}</span>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Actions */}
+                <div className="flex items-center gap-2 pt-4 border-t border-gray-100">
+                  {/* Actions Dropdown */}
+                  <div className="relative group">
+                    <button
+                      onClick={(e) => e.stopPropagation()}
+                      className="flex items-center gap-1 px-3 py-2 text-sm bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                      <MoreHorizontal className="w-4 h-4" />
+                      Actions
+                      <ChevronDown className="w-3 h-3" />
+                    </button>
+                    
+                    {/* Dropdown Menu */}
+                    <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
+                      <div className="p-1">
+                        {/* Status Changes */}
                         {(() => {
                           const validTransitions: Record<string, string[]> = {
                             'pending': ['awaiting_payment', 'verifying'],
@@ -672,90 +784,84 @@ export default function AdminOrdersPage() {
                           };
                           
                           const statusLabels: Record<string, string> = {
-                            'pending': 'Pending',
-                            'awaiting_payment': 'Awaiting Payment',
-                            'verifying': 'Verifying',
-                            'paid': 'Paid',
-                            'assigned': 'Assigned',
-                            'delivered': 'Delivered',
-                            'refunded': 'Refunded'
+                            'pending': 'Mark Pending',
+                            'awaiting_payment': 'Mark Awaiting Payment',
+                            'verifying': 'Mark Verifying',
+                            'paid': 'Mark Paid',
+                            'assigned': 'Mark Assigned',
+                            'delivered': 'Mark Delivered',
+                            'refunded': 'Mark Refunded'
                           };
                           
                           const availableStatuses = validTransitions[order.status] || [];
                           
                           return availableStatuses.map(status => (
-                            <option key={status} value={status}>
+                            <button
+                              key={status}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleStatusChange(order.id, status);
+                              }}
+                              className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 rounded transition-colors"
+                            >
                               {statusLabels[status]}
-                            </option>
+                            </button>
                           ));
                         })()}
-                      </select>
-                      
-                      {/* Driver Assignment for Paid Orders */}
-                      {order.status === 'paid' && (
-                        <select
-                          onChange={(e) => e.target.value && handleAssignDriver(order.id, e.target.value)}
-                          className="px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 text-sm"
-                        >
-                          <option value="">Assign Driver</option>
-                          {drivers.filter(d => d.is_active).map(driver => (
-                            <option key={driver.id} value={driver.id}>
-                              {driver.full_name}
-                            </option>
-                          ))}
-                        </select>
-                      )}
-                      
-                      {/* Quick Action Buttons */}
-                      {order.status === 'verifying' && (
-                        <button
-                          onClick={() => handleStatusChange(order.id, 'paid')}
-                          className="px-3 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 text-sm"
-                        >
-                          Mark Paid
-                        </button>
-                      )}
-                      
-                      {order.status === 'assigned' && (
-                        <button
-                          onClick={() => handleStatusChange(order.id, 'delivered')}
-                          className="px-3 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700 text-sm"
-                        >
-                          Mark Delivered
-                        </button>
-                      )}
-                      
-                      {order.status === 'delivered' && (
-                        <button
-                          onClick={() => handleStatusChange(order.id, 'assigned')}
-                          className="px-3 py-2 bg-orange-600 text-white rounded-xl hover:bg-orange-700 text-sm"
-                        >
-                          Mark Undelivered
-                        </button>
-                      )}
+                        
+                        {/* Driver Assignment */}
+                        {order.status === 'paid' && (
+                          <>
+                            <div className="border-t border-gray-100 my-1"></div>
+                            <div className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                              Assign Driver
+                            </div>
+                            {drivers.filter(d => d.is_active).map(driver => (
+                              <button
+                                key={driver.id}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleAssignDriver(order.id, driver.id);
+                                }}
+                                className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 rounded transition-colors"
+                              >
+                                {driver.full_name}
+                              </button>
+                            ))}
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
                   
-                  <div className="text-sm text-gray-500">
-                    Created: {new Date(order.created_at).toLocaleString()}
-                  </div>
-                </motion.div>
-              );
-            })}
-            
-            {filteredOrders.length === 0 && (
-              <div className="text-center py-12 bg-white rounded-2xl border border-gray-200">
-                <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  {searchTerm || statusFilter !== 'all' ? 'No matching orders' : 'No orders found'}
-                </h3>
-                <p className="text-gray-500">
-                  {searchTerm || statusFilter !== 'all' ? 'Try adjusting your search or filters' : 'Orders will appear here once customers start placing them'}
-                </p>
-              </div>
-            )}
-          </div>
-        )}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openOrderDetails(order);
+                    }}
+                    className="flex items-center gap-1 px-3 py-2 text-sm text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                  >
+                    <Eye className="w-4 h-4" />
+                    Details
+                  </button>
+                </div>
+              </motion.div>
+            );
+          })}
+          
+          {filteredOrders.length === 0 && (
+            <div className="col-span-full text-center py-12 bg-white rounded-2xl border border-gray-200">
+              <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                {searchTerm || statusFilter !== 'all' ? 'No matching orders' : 'No orders found'}
+              </h3>
+              <p className="text-gray-500">
+                {searchTerm || statusFilter !== 'all' ? 'Try adjusting your search or filters' : 'Orders will appear here once customers start placing them'}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
         
         {/* Order Details Modal */}
         {showOrderDetails && selectedOrder && (
@@ -763,18 +869,22 @@ export default function AdminOrdersPage() {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+              className="bg-white rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
             >
               <div className="p-6 border-b border-gray-200">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-semibold text-gray-900">Order Details</h2>
+                  <div className="flex items-center gap-4">
+                    <h2 className="text-2xl font-bold text-gray-900">Order {selectedOrder.short_code}</h2>
+                    <div className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium border ${statusColors[selectedOrder.status]}`}>
+                      {React.createElement(statusIcons[selectedOrder.status], { className: "w-4 h-4" })}
+                      {selectedOrder.status.replace('_', ' ').toUpperCase()}
+                    </div>
+                  </div>
                   <button
                     onClick={() => setShowOrderDetails(false)}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-500 hover:text-gray-700"
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+                    <X className="w-5 h-5" />
                   </button>
                 </div>
               </div>
@@ -808,14 +918,48 @@ export default function AdminOrdersPage() {
                 {selectedOrder.customer_phone && (
                   <div>
                     <label className="text-sm font-medium text-gray-600">Customer Phone</label>
-                    <p className="text-gray-900">{selectedOrder.customer_phone}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <p className="text-gray-900">{selectedOrder.customer_phone}</p>
+                      <button
+                        onClick={() => copyToClipboard(selectedOrder.customer_phone)}
+                        className="p-1 hover:bg-gray-100 rounded"
+                        title="Copy phone number"
+                      >
+                        <Copy className="w-4 h-4 text-gray-400" />
+                      </button>
+                      <a
+                        href={`tel:${selectedOrder.customer_phone}`}
+                        className="p-1 hover:bg-blue-50 rounded"
+                        title="Call customer"
+                      >
+                        <Phone className="w-4 h-4 text-blue-600" />
+                      </a>
+                    </div>
                   </div>
                 )}
                 
                 {selectedOrder.cashapp_handle && (
                   <div>
                     <label className="text-sm font-medium text-gray-600">Cash App Handle</label>
-                    <p className="text-green-600 font-medium">@{selectedOrder.cashapp_handle}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <p className="text-green-600 font-medium">@{selectedOrder.cashapp_handle}</p>
+                      <button
+                        onClick={() => copyToClipboard(selectedOrder.cashapp_handle!)}
+                        className="p-1 hover:bg-gray-100 rounded"
+                        title="Copy CashApp handle"
+                      >
+                        <Copy className="w-4 h-4 text-gray-400" />
+                      </button>
+                      <a
+                        href={`https://cash.app/$${selectedOrder.cashapp_handle}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-1 hover:bg-green-50 rounded"
+                        title="Open in CashApp"
+                      >
+                        <ExternalLink className="w-4 h-4 text-green-600" />
+                      </a>
+                    </div>
                   </div>
                 )}
                 
@@ -914,7 +1058,6 @@ export default function AdminOrdersPage() {
           variant={confirmDialog.variant}
           loading={confirmDialog.loading}
         />
-      </div>
     </div>
   );
 }
