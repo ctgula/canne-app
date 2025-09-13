@@ -13,33 +13,22 @@ export async function POST(req: Request) {
     const supabase = createClient(supabaseUrl, supabaseKey);
     const { short_code } = await req.json();
 
-    // Get order details for notification
-    const { data: order, error: fetchError } = await supabase
-      .from("cashapp_orders")
-      .select("customer_phone, customer_email")
-      .eq("short_code", short_code)
-      .single();
-
-    if (fetchError) {
-      console.error('Error fetching order for notification:', fetchError);
-    }
-
+    // Update order status to delivered
     const { error } = await supabase
       .from("cashapp_orders")
-      .update({ status: "paid" })
+      .update({ status: "delivered" })
       .eq("short_code", short_code);
 
     if (error) {
-      console.error('Error marking Cash App order as paid:', error);
+      console.error('Error completing order:', error);
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
     
-    // TODO: Send customer notification
-    // "✅ Payment confirmed, your driver is on the way."
+    // Note: Payout remains in "queued" status until manually paid
     
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error in Cash App payment confirmation:', error);
+    console.error('Error in order completion:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
