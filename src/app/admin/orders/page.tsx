@@ -78,6 +78,7 @@ export default function AdminOrdersPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<'date' | 'status' | 'amount'>('date');
   const [selectedOrder, setSelectedOrder] = useState<CashAppOrder | null>(null);
   const [showOrderDetails, setShowOrderDetails] = useState(false);
 
@@ -111,14 +112,27 @@ export default function AdminOrdersPage() {
     }
   };
 
-  // Filter orders based on search and status
-  const filteredOrders = orders.filter(order => {
-    const matchesSearch = order.short_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.customer_phone?.includes(searchTerm) ||
-                         order.cashapp_handle?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  // Filter and sort orders based on search, status, and sort preference
+  const filteredOrders = orders
+    .filter(order => {
+      const matchesSearch = order.short_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           order.customer_phone?.includes(searchTerm) ||
+                           order.cashapp_handle?.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
+      return matchesSearch && matchesStatus;
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case 'status':
+          const statusOrder = ['pending', 'awaiting_payment', 'verifying', 'paid', 'assigned', 'delivered', 'refunded'];
+          return statusOrder.indexOf(a.status) - statusOrder.indexOf(b.status);
+        case 'amount':
+          return b.amount_cents - a.amount_cents;
+        case 'date':
+        default:
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
+    });
 
   // Calculate analytics
   const analytics = {
@@ -208,6 +222,46 @@ export default function AdminOrdersPage() {
     } catch (error) {
       console.error('Error completing order:', error);
       alert('Error completing order');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const updateOrderStatus = async (shortCode: string, newStatus: string) => {
+    setActionLoading(shortCode);
+    try {
+      let response;
+      
+      switch (newStatus) {
+        case 'paid':
+          response = await fetch('/api/orders/mark-paid', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ short_code: shortCode })
+          });
+          break;
+        case 'delivered':
+          response = await fetch('/api/orders/complete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ short_code: shortCode })
+          });
+          break;
+        default:
+          // For other status changes, we'd need a generic update endpoint
+          alert('Status change not implemented yet');
+          return;
+      }
+
+      if (response && response.ok) {
+        fetchOrders(); // Refresh orders
+        setShowOrderDetails(false); // Close modal
+      } else {
+        alert('Failed to update order status');
+      }
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      alert('Error updating order status');
     } finally {
       setActionLoading(null);
     }
@@ -357,6 +411,16 @@ export default function AdminOrdersPage() {
                 <option value="assigned">Assigned</option>
                 <option value="delivered">Delivered</option>
                 <option value="refunded">Refunded</option>
+              </select>
+              
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as 'date' | 'status' | 'amount')}
+                className="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 bg-white min-w-[120px]"
+              >
+                <option value="date">Sort by Date</option>
+                <option value="status">Sort by Status</option>
+                <option value="amount">Sort by Amount</option>
               </select>
             </div>
           </div>
@@ -511,9 +575,11 @@ export default function AdminOrdersPage() {
                   <h2 className="text-xl font-semibold text-gray-900">Order Details</h2>
                   <button
                     onClick={() => setShowOrderDetails(false)}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-500 hover:text-gray-700"
                   >
-                    ✕
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
                   </button>
                 </div>
               </div>
@@ -581,6 +647,54 @@ export default function AdminOrdersPage() {
                     </p>
                   </div>
                 )}
+                
+                {/* Status Change Section */}
+                <div className="border-t border-gray-200 pt-6">
+                  <label className="text-sm font-medium text-gray-600 block mb-3">Change Order Status</label>
+                  <div className="flex gap-3">
+                    {selectedOrder.status === 'verifying' && (
+                      <button
+                        onClick={() => updateOrderStatus(selectedOrder.short_code, 'paid')}
+                        disabled={actionLoading === selectedOrder.short_code}
+                        className="px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50 transition-colors"
+                      >
+                        {actionLoading === selectedOrder.short_code ? 'Processing...' : 'Mark as Paid'}
+                      </button>
+                    )}
+                    
+                    {selectedOrder.status === 'paid' && drivers.length > 0 && (
+                      <select
+                        onChange={(e) => e.target.value && assignDriver(selectedOrder.short_code, e.target.value)}
+                        className="px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500"
+                        disabled={actionLoading === selectedOrder.short_code}
+                      >
+                        <option value="">Assign Driver</option>
+                        {drivers.filter(d => d.is_active).map(driver => (
+                          <option key={driver.id} value={driver.id}>
+                            {driver.full_name}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                    
+                    {selectedOrder.status === 'assigned' && (
+                      <button
+                        onClick={() => updateOrderStatus(selectedOrder.short_code, 'delivered')}
+                        disabled={actionLoading === selectedOrder.short_code}
+                        className="px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700 disabled:opacity-50 transition-colors"
+                      >
+                        {actionLoading === selectedOrder.short_code ? 'Processing...' : 'Mark as Delivered'}
+                      </button>
+                    )}
+                    
+                    <button
+                      onClick={() => setShowOrderDetails(false)}
+                      className="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-colors"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
               </div>
             </motion.div>
           </div>
