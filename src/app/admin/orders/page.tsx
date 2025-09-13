@@ -128,7 +128,7 @@ export default function AdminOrdersPage() {
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ orderId }),
+            body: JSON.stringify({ short_code: order.short_code }),
           });
 
           if (response.ok) {
@@ -172,7 +172,7 @@ export default function AdminOrdersPage() {
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ orderId, driverId }),
+            body: JSON.stringify({ short_code: order.short_code, driver_id: driverId }),
           });
 
           if (response.ok) {
@@ -215,7 +215,7 @@ export default function AdminOrdersPage() {
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ orderId }),
+            body: JSON.stringify({ short_code: order.short_code }),
           });
 
           if (response.ok) {
@@ -233,6 +233,63 @@ export default function AdminOrdersPage() {
           }
         } catch (error) {
           console.error('Error completing order:', error);
+          showError('Network Error', 'Failed to connect to the server. Please try again.');
+        } finally {
+          setConfirmDialog(prev => ({ ...prev, isOpen: false, loading: false }));
+        }
+      }
+    });
+  };
+
+  const handleStatusChange = async (orderId: string, newStatus: string, reason?: string) => {
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return;
+
+    const statusLabels: Record<string, string> = {
+      'pending': 'Pending',
+      'awaiting_payment': 'Awaiting Payment',
+      'verifying': 'Verifying',
+      'paid': 'Paid',
+      'assigned': 'Assigned',
+      'delivered': 'Delivered',
+      'refunded': 'Refunded'
+    };
+
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Change Order Status',
+      message: `Change order ${order.short_code} from ${statusLabels[order.status]} to ${statusLabels[newStatus]}?`,
+      variant: 'info',
+      action: async () => {
+        setConfirmDialog(prev => ({ ...prev, loading: true }));
+        try {
+          const response = await fetch('/api/orders/change-status', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+              short_code: order.short_code, 
+              new_status: newStatus,
+              reason 
+            }),
+          });
+
+          if (response.ok) {
+            // Optimistic update
+            setOrders(prev => prev.map(o => 
+              o.id === orderId 
+                ? { ...o, status: newStatus as CashAppOrder['status'] }
+                : o
+            ));
+            success('Status Changed', `Order ${order.short_code} status changed to ${statusLabels[newStatus]}.`);
+            await fetchOrders(); // Refresh to get latest data
+          } else {
+            const errorData = await response.json();
+            showError('Failed to Change Status', errorData.error || 'An error occurred while changing the order status.');
+          }
+        } catch (error) {
+          console.error('Error changing order status:', error);
           showError('Network Error', 'Failed to connect to the server. Please try again.');
         } finally {
           setConfirmDialog(prev => ({ ...prev, isOpen: false, loading: false }));
@@ -590,20 +647,55 @@ export default function AdminOrdersPage() {
                       </div>
                     </div>
                     
-                    <div className="flex gap-2">
-                      {order.status === 'verifying' && (
-                        <button
-                          onClick={() => handleMarkPaid(order.id)}
-                          className="px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700"
-                        >
-                          Mark Paid
-                        </button>
-                      )}
+                    <div className="flex gap-2 flex-wrap">
+                      {/* Status Change Dropdown */}
+                      <select
+                        value=""
+                        onChange={(e) => {
+                          if (e.target.value) {
+                            handleStatusChange(order.id, e.target.value);
+                            e.target.value = ''; // Reset dropdown
+                          }
+                        }}
+                        className="px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 text-sm"
+                      >
+                        <option value="">Change Status</option>
+                        {(() => {
+                          const validTransitions: Record<string, string[]> = {
+                            'pending': ['awaiting_payment', 'verifying'],
+                            'awaiting_payment': ['pending', 'verifying', 'paid'],
+                            'verifying': ['awaiting_payment', 'paid', 'refunded'],
+                            'paid': ['verifying', 'assigned', 'refunded'],
+                            'assigned': ['paid', 'delivered', 'refunded'],
+                            'delivered': ['assigned', 'refunded'],
+                            'refunded': ['verifying', 'paid']
+                          };
+                          
+                          const statusLabels: Record<string, string> = {
+                            'pending': 'Pending',
+                            'awaiting_payment': 'Awaiting Payment',
+                            'verifying': 'Verifying',
+                            'paid': 'Paid',
+                            'assigned': 'Assigned',
+                            'delivered': 'Delivered',
+                            'refunded': 'Refunded'
+                          };
+                          
+                          const availableStatuses = validTransitions[order.status] || [];
+                          
+                          return availableStatuses.map(status => (
+                            <option key={status} value={status}>
+                              {statusLabels[status]}
+                            </option>
+                          ));
+                        })()}
+                      </select>
                       
+                      {/* Driver Assignment for Paid Orders */}
                       {order.status === 'paid' && (
                         <select
                           onChange={(e) => e.target.value && handleAssignDriver(order.id, e.target.value)}
-                          className="px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500"
+                          className="px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 text-sm"
                         >
                           <option value="">Assign Driver</option>
                           {drivers.filter(d => d.is_active).map(driver => (
@@ -614,12 +706,31 @@ export default function AdminOrdersPage() {
                         </select>
                       )}
                       
+                      {/* Quick Action Buttons */}
+                      {order.status === 'verifying' && (
+                        <button
+                          onClick={() => handleStatusChange(order.id, 'paid')}
+                          className="px-3 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 text-sm"
+                        >
+                          Mark Paid
+                        </button>
+                      )}
+                      
                       {order.status === 'assigned' && (
                         <button
-                          onClick={() => handleCompleteOrder(order.id)}
-                          className="px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700"
+                          onClick={() => handleStatusChange(order.id, 'delivered')}
+                          className="px-3 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700 text-sm"
                         >
-                          Complete Order
+                          Mark Delivered
+                        </button>
+                      )}
+                      
+                      {order.status === 'delivered' && (
+                        <button
+                          onClick={() => handleStatusChange(order.id, 'assigned')}
+                          className="px-3 py-2 bg-orange-600 text-white rounded-xl hover:bg-orange-700 text-sm"
+                        >
+                          Mark Undelivered
                         </button>
                       )}
                     </div>
