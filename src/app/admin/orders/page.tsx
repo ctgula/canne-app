@@ -24,7 +24,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import ConfirmDialog from '@/components/ConfirmDialog';
-import { useToast, ToastContainer } from '@/components/Toast';
+import { useToast } from '@/components/Toast';
 
 interface CashAppOrder {
   id: string;
@@ -140,6 +140,7 @@ export default function AdminOrdersPage() {
       title: 'Mark Order as Paid',
       message: `Are you sure you want to mark order ${order.short_code} as paid? This will trigger a payment confirmation notification to the customer.`,
       variant: 'info',
+      loading: false,
       action: async () => {
         setConfirmDialog(prev => ({ ...prev, loading: true }));
         try {
@@ -184,6 +185,7 @@ export default function AdminOrdersPage() {
       title: 'Assign Driver',
       message: `Assign ${driver.full_name} to order ${order.short_code}? This will notify both the customer and driver.`,
       variant: 'info',
+      loading: false,
       action: async () => {
         setConfirmDialog(prev => ({ ...prev, loading: true }));
         try {
@@ -227,6 +229,7 @@ export default function AdminOrdersPage() {
       title: 'Complete Order',
       message: `Mark order ${order.short_code} as delivered? This will notify the customer and finalize the order.`,
       variant: 'info',
+      loading: false,
       action: async () => {
         setConfirmDialog(prev => ({ ...prev, loading: true }));
         try {
@@ -280,6 +283,7 @@ export default function AdminOrdersPage() {
       title: 'Change Order Status',
       message: `Change order ${order.short_code} from ${statusLabels[order.status]} to ${statusLabels[newStatus]}?`,
       variant: 'info',
+      loading: false,
       action: async () => {
         setConfirmDialog(prev => ({ ...prev, loading: true }));
         try {
@@ -327,6 +331,7 @@ export default function AdminOrdersPage() {
       title: 'Refund Order',
       message: `Are you sure you want to refund order ${order.short_code}? This action cannot be undone and will notify the customer.`,
       variant: 'danger',
+      loading: false,
       action: async () => {
         setConfirmDialog(prev => ({ ...prev, loading: true }));
         try {
@@ -1045,8 +1050,6 @@ export default function AdminOrdersPage() {
           </div>
         )}
         
-        {/* Toast Container */}
-        <ToastContainer toasts={toasts} />
         
         {/* Confirmation Dialog */}
         <ConfirmDialog
