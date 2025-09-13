@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Poppins } from 'next/font/google';
+import { Inter, Poppins } from "next/font/google";
 import "./globals.css";
 import "../styles/mobile-optimizations.css";
 import { ThemeProvider } from '@/contexts/ThemeContext';
@@ -7,11 +7,13 @@ import Toaster from '@/components/Toaster';
 import CartHydration from '@/components/CartHydration';
 import ThemeScript from './ThemeScript';
 import HydrationHandler from '@/components/HydrationHandler';
+import React from 'react';
 
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
   display: 'swap',
+  preload: true
 });
 
 const poppins = Poppins({
