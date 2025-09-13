@@ -2,8 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { MapPin, Phone, DollarSign, Package, Clock, User, Navigation, ExternalLink, RefreshCw } from 'lucide-react';
+import { MapPin, Phone, DollarSign, Package, Clock, User, Navigation, ExternalLink, RefreshCw, Loader2 } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import toast, { Toaster } from 'react-hot-toast';
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -35,13 +39,46 @@ interface Payout {
   created_at: string;
 }
 
+// Form validation schema
+const driverApplicationSchema = z.object({
+  name: z.string().min(2, 'Name must be at least 2 characters'),
+  phone: z.string().regex(/^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/, 'Please enter a valid phone number'),
+  email: z.string().email('Please enter a valid email address'),
+  availability: z.array(z.string()).min(1, 'Please select at least one availability option'),
+  vehicleType: z.string().optional(),
+  cashappHandle: z.string().optional(),
+  about: z.string().max(500, 'Description must be 500 characters or less').optional()
+});
+
+type DriverApplicationForm = z.infer<typeof driverApplicationSchema>;
+
 export default function DriversPage() {
   const [view, setView] = useState<'application' | 'dashboard'>('application');
   const [driverId, setDriverId] = useState<string>('');
   const [assignedOrders, setAssignedOrders] = useState<AssignedOrder[]>([]);
   const [payouts, setPayouts] = useState<Payout[]>([]);
   const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    watch
+  } = useForm<DriverApplicationForm>({
+    resolver: zodResolver(driverApplicationSchema),
+    defaultValues: {
+      name: '',
+      phone: '',
+      email: '',
+      availability: [],
+      vehicleType: '',
+      cashappHandle: '',
+      about: ''
+    }
+  });
 
   useEffect(() => {
     // Check if driver is logged in (simple localStorage check)
@@ -109,50 +146,42 @@ export default function DriversPage() {
     .filter(p => p.status === 'paid')
     .reduce((sum, p) => sum + p.amount_cents, 0);
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setLoading(true);
-    setStatus("idle");
-
-    const form = new FormData(e.currentTarget);
-    const availability = form.getAll("availability") as string[];
-    
-    // Validate that at least one availability option is selected
-    if (availability.length === 0) {
-      setLoading(false);
-      setStatus("error");
-      return;
-    }
-
-    const payload = {
-      full_name: form.get("full_name") as string,
-      phone: form.get("phone") as string,
-      email: form.get("email") as string,
-      availability: availability,
-      experience: form.get("experience") as string || null,
-    };
+  const onSubmit = async (data: DriverApplicationForm) => {
+    setIsSubmitting(true);
+    setShowSuccess(false);
 
     try {
-      const { data, error } = await supabase.from("drivers").insert([payload]).select();
-      
-      if (error) {
-        console.error("Driver application error:", error);
-        setStatus("error");
-      } else {
-        setStatus("success");
-        (e.target as HTMLFormElement).reset();
-        // Show driver ID for future login
-        if (data && data[0]) {
-          alert(`Application submitted! Your Driver ID is: ${data[0].id}\n\nSave this ID to access your driver dashboard.`);
-        }
+      const response = await fetch('/api/drivers/apply', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Failed to submit application');
       }
-    } catch (err) {
-      console.error("Unexpected error:", err);
-      setStatus("error");
+
+      // Success
+      setShowSuccess(true);
+      reset();
+      toast.success('Application submitted successfully! We\'ll contact you within 24 hours.');
+      
+      // Scroll to success message
+      setTimeout(() => {
+        document.getElementById('success-message')?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+
+    } catch (error) {
+      console.error('Application submission error:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to submit application. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
-    
-    setLoading(false);
-  }
+  };
 
   if (view === 'dashboard') {
     return (
@@ -342,104 +371,278 @@ export default function DriversPage() {
           </h3>
 
           {/* Application Form */}
-          <form onSubmit={handleSubmit} className="space-y-6 text-left">
-            <div>
-              <input
-                required
-                name="full_name"
-                type="text"
-                placeholder="First & LAST Name"
-                className="w-full rounded-lg border-2 border-gray-300 px-4 py-3 text-lg focus:border-green-500 focus:outline-none transition-colors"
-              />
-            </div>
-
-            <div>
-              <input
-                required
-                type="tel"
-                name="phone"
-                placeholder="Phone Number"
-                className="w-full rounded-lg border-2 border-gray-300 px-4 py-3 text-lg focus:border-green-500 focus:outline-none transition-colors"
-              />
-            </div>
-
-            <div>
-              <input
-                required
-                type="email"
-                name="email"
-                placeholder="Email"
-                className="w-full rounded-lg border-2 border-gray-300 px-4 py-3 text-lg focus:border-green-500 focus:outline-none transition-colors"
-              />
-            </div>
-
-            <fieldset className="space-y-3">
-              <legend className="font-semibold text-lg text-black mb-3">
-                Availability (select at least one) *
-              </legend>
-              <label className="flex items-center space-x-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="availability"
-                  value="Lunch"
-                  className="w-5 h-5 text-green-600 border-2 border-gray-300 rounded focus:ring-green-500"
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8">
+            <form onSubmit={handleSubmit(onSubmit)} className="max-w-xl mx-auto space-y-6 text-left">
+              {/* Name Field */}
+              <div className="space-y-2">
+                <label htmlFor="name" className="block text-sm font-medium text-gray-900">
+                  Full Name *
+                </label>
+                <Controller
+                  name="name"
+                  control={control}
+                  render={({ field }) => (
+                    <input
+                      {...field}
+                      id="name"
+                      type="text"
+                      placeholder="First & Last Name"
+                      aria-invalid={errors.name ? 'true' : 'false'}
+                      aria-describedby={errors.name ? 'name-error' : undefined}
+                      className={`w-full rounded-xl border-2 px-4 py-3 text-lg transition-colors focus:outline-none ${
+                        errors.name
+                          ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
+                          : 'border-gray-300 focus:border-purple-500 focus:ring-purple-500/20'
+                      }`}
+                    />
+                  )}
                 />
-                <span className="text-lg">Lunch (11am - 3pm)</span>
-              </label>
-              <label className="flex items-center space-x-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="availability"
-                  value="Dinner"
-                  className="w-5 h-5 text-green-600 border-2 border-gray-300 rounded focus:ring-green-500"
-                />
-                <span className="text-lg">Dinner (5pm - 10pm)</span>
-              </label>
-              <label className="flex items-center space-x-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="availability"
-                  value="Late-night"
-                  className="w-5 h-5 text-green-600 border-2 border-gray-300 rounded focus:ring-green-500"
-                />
-                <span className="text-lg">Late-night (10pm - 2am)</span>
-              </label>
-            </fieldset>
+                {errors.name && (
+                  <p id="name-error" className="text-sm text-red-600" role="alert">
+                    {errors.name.message}
+                  </p>
+                )}
+              </div>
 
-            <div>
-              <textarea
-                name="experience"
-                placeholder="Tell us about your delivery experience, vehicle type, and why you'd be great for this role (optional)"
-                rows={4}
-                className="w-full rounded-lg border-2 border-gray-300 px-4 py-3 text-lg focus:border-green-500 focus:outline-none transition-colors resize-vertical"
-              />
-            </div>
+              {/* Phone Field */}
+              <div className="space-y-2">
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-900">
+                  Phone Number *
+                </label>
+                <Controller
+                  name="phone"
+                  control={control}
+                  render={({ field }) => (
+                    <input
+                      {...field}
+                      id="phone"
+                      type="tel"
+                      placeholder="(555) 123-4567"
+                      aria-invalid={errors.phone ? 'true' : 'false'}
+                      aria-describedby={errors.phone ? 'phone-error' : undefined}
+                      className={`w-full rounded-xl border-2 px-4 py-3 text-lg transition-colors focus:outline-none ${
+                        errors.phone
+                          ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
+                          : 'border-gray-300 focus:border-purple-500 focus:ring-purple-500/20'
+                      }`}
+                    />
+                  )}
+                />
+                {errors.phone && (
+                  <p id="phone-error" className="text-sm text-red-600" role="alert">
+                    {errors.phone.message}
+                  </p>
+                )}
+              </div>
 
-            <button
-              disabled={loading}
-              type="submit"
-              className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white py-4 rounded-lg font-semibold text-lg transition-colors"
+              {/* Email Field */}
+              <div className="space-y-2">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-900">
+                  Email Address *
+                </label>
+                <Controller
+                  name="email"
+                  control={control}
+                  render={({ field }) => (
+                    <input
+                      {...field}
+                      id="email"
+                      type="email"
+                      placeholder="your.email@example.com"
+                      aria-invalid={errors.email ? 'true' : 'false'}
+                      aria-describedby={errors.email ? 'email-error' : undefined}
+                      className={`w-full rounded-xl border-2 px-4 py-3 text-lg transition-colors focus:outline-none ${
+                        errors.email
+                          ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
+                          : 'border-gray-300 focus:border-purple-500 focus:ring-purple-500/20'
+                      }`}
+                    />
+                  )}
+                />
+                {errors.email && (
+                  <p id="email-error" className="text-sm text-red-600" role="alert">
+                    {errors.email.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Availability Checkboxes */}
+              <div className="space-y-3">
+                <fieldset>
+                  <legend className="text-sm font-medium text-gray-900 mb-3">
+                    Availability (select at least one) *
+                  </legend>
+                  <Controller
+                    name="availability"
+                    control={control}
+                    render={({ field }) => (
+                      <div className="space-y-3" role="group" aria-labelledby="availability-legend">
+                        {[
+                          { value: 'lunch', label: 'Lunch (11am - 3pm)' },
+                          { value: 'dinner', label: 'Dinner (5pm - 10pm)' },
+                          { value: 'late-night', label: 'Late-night (10pm - 2am)' }
+                        ].map((option) => (
+                          <label
+                            key={option.value}
+                            htmlFor={`availability-${option.value}`}
+                            className="flex items-center space-x-3 cursor-pointer p-3 rounded-lg hover:bg-gray-50 transition-colors"
+                          >
+                            <input
+                              id={`availability-${option.value}`}
+                              type="checkbox"
+                              value={option.value}
+                              checked={field.value.includes(option.value)}
+                              onChange={(e) => {
+                                const updatedValue = e.target.checked
+                                  ? [...field.value, option.value]
+                                  : field.value.filter((v) => v !== option.value);
+                                field.onChange(updatedValue);
+                              }}
+                              className="w-5 h-5 text-purple-600 border-2 border-gray-300 rounded focus:ring-purple-500 focus:ring-2"
+                            />
+                            <span className="text-lg text-gray-900">{option.label}</span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  />
+                  {errors.availability && (
+                    <p className="text-sm text-red-600 mt-2" role="alert">
+                      {errors.availability.message}
+                    </p>
+                  )}
+                </fieldset>
+              </div>
+
+              {/* Vehicle Type */}
+              <div className="space-y-2">
+                <label htmlFor="vehicleType" className="block text-sm font-medium text-gray-900">
+                  Vehicle Type (optional)
+                </label>
+                <Controller
+                  name="vehicleType"
+                  control={control}
+                  render={({ field }) => (
+                    <select
+                      {...field}
+                      id="vehicleType"
+                      className="w-full rounded-xl border-2 border-gray-300 px-4 py-3 text-lg focus:border-purple-500 focus:outline-none focus:ring-purple-500/20 transition-colors"
+                    >
+                      <option value="">Select vehicle type</option>
+                      <option value="car">Car</option>
+                      <option value="bike">Bike</option>
+                      <option value="scooter">Scooter</option>
+                      <option value="on-foot">On Foot</option>
+                    </select>
+                  )}
+                />
+              </div>
+
+              {/* Cash App Handle */}
+              <div className="space-y-2">
+                <label htmlFor="cashappHandle" className="block text-sm font-medium text-gray-900">
+                  Cash App Handle (optional)
+                </label>
+                <Controller
+                  name="cashappHandle"
+                  control={control}
+                  render={({ field }) => (
+                    <input
+                      {...field}
+                      id="cashappHandle"
+                      type="text"
+                      placeholder="$YourCashTag"
+                      className="w-full rounded-xl border-2 border-gray-300 px-4 py-3 text-lg focus:border-purple-500 focus:outline-none focus:ring-purple-500/20 transition-colors"
+                    />
+                  )}
+                />
+                <p className="text-sm text-gray-600">For future payouts (can be added later)</p>
+              </div>
+
+              {/* About Field */}
+              <div className="space-y-2">
+                <label htmlFor="about" className="block text-sm font-medium text-gray-900">
+                  Tell us about yourself (optional)
+                </label>
+                <Controller
+                  name="about"
+                  control={control}
+                  render={({ field }) => (
+                    <textarea
+                      {...field}
+                      id="about"
+                      rows={4}
+                      placeholder="Tell us about your delivery experience and why you'd be great for this role..."
+                      aria-invalid={errors.about ? 'true' : 'false'}
+                      aria-describedby={errors.about ? 'about-error' : 'about-help'}
+                      className={`w-full rounded-xl border-2 px-4 py-3 text-lg transition-colors focus:outline-none resize-vertical ${
+                        errors.about
+                          ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
+                          : 'border-gray-300 focus:border-purple-500 focus:ring-purple-500/20'
+                      }`}
+                    />
+                  )}
+                />
+                <p id="about-help" className="text-sm text-gray-600">
+                  {watch('about')?.length || 0}/500 characters
+                </p>
+                {errors.about && (
+                  <p id="about-error" className="text-sm text-red-600" role="alert">
+                    {errors.about.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Submit Button */}
+              <button
+                disabled={isSubmitting}
+                type="submit"
+                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-gray-400 disabled:to-gray-400 text-white py-4 rounded-xl font-semibold text-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-lg"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  'Submit Application'
+                )}
+              </button>
+            </form>
+          </div>
+
+          {/* Success Message */}
+          {showSuccess && (
+            <motion.div
+              id="success-message"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-8 p-6 bg-green-50 border border-green-200 rounded-2xl shadow-sm"
+              role="alert"
+              aria-live="polite"
             >
-              {loading ? "Submitting..." : "Submit Application"}
-            </button>
-          </form>
+              <div className="text-center">
+                <div className="text-4xl mb-4">🎉</div>
+                <h3 className="text-xl font-semibold text-green-800 mb-2">
+                  Application Submitted Successfully!
+                </h3>
+                <p className="text-green-700 text-lg">
+                  Thanks for your interest in joining the Cannè team! We'll review your application and contact you within 24 hours via text or email.
+                </p>
+              </div>
+            </motion.div>
+          )}
 
-          {/* Status Messages */}
-          {status === "success" && (
-            <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-              <p className="text-green-800 text-lg font-medium">
-                ✅ Thanks! We'll be in touch shortly.
-              </p>
-            </div>
-          )}
-          
-          {status === "error" && (
-            <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-800 text-lg font-medium">
-                ❌ Something went wrong. Please make sure all required fields are filled out and try again.
-              </p>
-            </div>
-          )}
+          <Toaster
+            position="bottom-right"
+            toastOptions={{
+              duration: 4000,
+              style: {
+                background: '#363636',
+                color: '#fff',
+              },
+            }}
+          />
         </section>
       </main>
     </div>
