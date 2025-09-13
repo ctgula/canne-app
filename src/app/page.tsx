@@ -87,7 +87,7 @@ export default function Home() {
                   alt="Cannè Logo" 
                   width={200} 
                   height={200} 
-                  className="relative w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 lg:w-48 lg:h-48 drop-shadow-2xl" 
+                  className="relative w-32 h-32 md:w-40 md:h-40 drop-shadow-2xl mx-auto" 
                   priority
                 />
               </motion.div>
