@@ -86,6 +86,7 @@ export default function AdminOrdersPage() {
   const [showOrderDetails, setShowOrderDetails] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<CashAppOrder | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>({});
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean;
     title: string;
@@ -435,6 +436,20 @@ export default function AdminOrdersPage() {
     setShowOrderDetails(true);
   };
 
+  const toggleDropdown = (orderId: string) => {
+    setOpenDropdowns(prev => ({
+      ...prev,
+      [orderId]: !prev[orderId]
+    }));
+  };
+
+  const closeDropdown = (orderId: string) => {
+    setOpenDropdowns(prev => ({
+      ...prev,
+      [orderId]: false
+    }));
+  };
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       // Only handle shortcuts when not typing in inputs
@@ -763,80 +778,112 @@ export default function AdminOrdersPage() {
                 {/* Actions */}
                 <div className="flex items-center gap-2 pt-4 border-t border-gray-100">
                   {/* Actions Dropdown */}
-                  <div className="relative group">
+                  <div className="relative">
                     <button
-                      onClick={(e) => e.stopPropagation()}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleDropdown(order.id);
+                      }}
                       className="flex items-center gap-1 px-3 py-2 text-sm bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
                     >
                       <MoreHorizontal className="w-4 h-4" />
                       Actions
-                      <ChevronDown className="w-3 h-3" />
+                      <ChevronDown className={`w-3 h-3 transition-transform ${openDropdowns[order.id] ? 'rotate-180' : ''}`} />
                     </button>
                     
                     {/* Dropdown Menu */}
-                    <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
-                      <div className="p-1">
-                        {/* Status Changes */}
-                        {(() => {
-                          const validTransitions: Record<string, string[]> = {
-                            'pending': ['awaiting_payment', 'verifying'],
-                            'awaiting_payment': ['pending', 'verifying', 'paid'],
-                            'verifying': ['awaiting_payment', 'paid', 'refunded'],
-                            'paid': ['verifying', 'assigned', 'refunded'],
-                            'assigned': ['paid', 'delivered', 'refunded'],
-                            'delivered': ['assigned', 'refunded'],
-                            'refunded': ['verifying', 'paid']
-                          };
-                          
-                          const statusLabels: Record<string, string> = {
-                            'pending': 'Mark Pending',
-                            'awaiting_payment': 'Mark Awaiting Payment',
-                            'verifying': 'Mark Verifying',
-                            'paid': 'Mark Paid',
-                            'assigned': 'Mark Assigned',
-                            'delivered': 'Mark Delivered',
-                            'refunded': 'Mark Refunded'
-                          };
-                          
-                          const availableStatuses = validTransitions[order.status] || [];
-                          
-                          return availableStatuses.map(status => (
-                            <button
-                              key={status}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleStatusChange(order.id, status);
-                              }}
-                              className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 rounded transition-colors"
-                            >
-                              {statusLabels[status]}
-                            </button>
-                          ));
-                        })()}
-                        
-                        {/* Driver Assignment */}
-                        {order.status === 'paid' && (
-                          <>
-                            <div className="border-t border-gray-100 my-1"></div>
-                            <div className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">
-                              Assign Driver
-                            </div>
-                            {drivers.filter(d => d.is_active).map(driver => (
-                              <button
-                                key={driver.id}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleAssignDriver(order.id, driver.id);
-                                }}
-                                className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 rounded transition-colors"
-                              >
-                                {driver.full_name}
-                              </button>
-                            ))}
-                          </>
-                        )}
-                      </div>
-                    </div>
+                    {openDropdowns[order.id] && (
+                      <>
+                        {/* Backdrop to close dropdown */}
+                        <div 
+                          className="fixed inset-0 z-10"
+                          onClick={() => closeDropdown(order.id)}
+                        />
+                        <div className="absolute top-full left-0 mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-xl z-20">
+                          <div className="p-2">
+                            {/* Status Changes */}
+                            {(() => {
+                              const validTransitions: Record<string, string[]> = {
+                                'pending': ['awaiting_payment', 'verifying'],
+                                'awaiting_payment': ['pending', 'verifying', 'paid'],
+                                'verifying': ['awaiting_payment', 'paid', 'refunded'],
+                                'paid': ['verifying', 'assigned', 'refunded'],
+                                'assigned': ['paid', 'delivered', 'refunded'],
+                                'delivered': ['assigned', 'refunded'],
+                                'refunded': ['verifying', 'paid']
+                              };
+                              
+                              const statusLabels: Record<string, string> = {
+                                'pending': 'Mark as Pending',
+                                'awaiting_payment': 'Mark as Awaiting Payment',
+                                'verifying': 'Mark as Verifying',
+                                'paid': 'Mark as Paid',
+                                'assigned': 'Mark as Assigned',
+                                'delivered': 'Mark as Delivered',
+                                'refunded': 'Mark as Refunded'
+                              };
+
+                              const statusColors: Record<string, string> = {
+                                'pending': 'text-gray-700 hover:bg-gray-50',
+                                'awaiting_payment': 'text-yellow-700 hover:bg-yellow-50',
+                                'verifying': 'text-orange-700 hover:bg-orange-50',
+                                'paid': 'text-green-700 hover:bg-green-50',
+                                'assigned': 'text-purple-700 hover:bg-purple-50',
+                                'delivered': 'text-blue-700 hover:bg-blue-50',
+                                'refunded': 'text-red-700 hover:bg-red-50'
+                              };
+                              
+                              const availableStatuses = validTransitions[order.status] || [];
+                              
+                              return (
+                                <>
+                                  <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide border-b border-gray-100">
+                                    Change Status
+                                  </div>
+                                  {availableStatuses.map(status => (
+                                    <button
+                                      key={status}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleStatusChange(order.id, status);
+                                        closeDropdown(order.id);
+                                      }}
+                                      className={`w-full text-left px-3 py-2 text-sm rounded-md transition-colors ${statusColors[status]}`}
+                                    >
+                                      {statusLabels[status]}
+                                    </button>
+                                  ))}
+                                </>
+                              );
+                            })()}
+                            
+                            {/* Driver Assignment */}
+                            {order.status === 'paid' && drivers.filter(d => d.is_active).length > 0 && (
+                              <>
+                                <div className="border-t border-gray-100 my-2"></div>
+                                <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                                  Assign Driver
+                                </div>
+                                {drivers.filter(d => d.is_active).map(driver => (
+                                  <button
+                                    key={driver.id}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleAssignDriver(order.id, driver.id);
+                                      closeDropdown(order.id);
+                                    }}
+                                    className="w-full text-left px-3 py-2 text-sm text-purple-700 hover:bg-purple-50 rounded-md transition-colors flex items-center gap-2"
+                                  >
+                                    <User className="w-4 h-4" />
+                                    {driver.full_name}
+                                  </button>
+                                ))}
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
                   
                   <button

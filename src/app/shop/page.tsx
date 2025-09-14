@@ -35,6 +35,7 @@ export default function ShopPage() {
   
   // Strain selection state
   const [selectedStrains, setSelectedStrains] = useState<Record<string, StrainOption>>({});
+  const [strainQuantities, setStrainQuantities] = useState<Record<string, Record<string, number>>>({});
 
   // Use MCP-aligned products hook
   const {
@@ -130,9 +131,32 @@ export default function ShopPage() {
     }));
   }, []);
 
+  const getStrainQuantity = useCallback((productId: string, strainName: string): number => {
+    return strainQuantities[productId]?.[strainName] || 0;
+  }, [strainQuantities]);
+
+  const updateStrainQuantity = useCallback((productId: string, strainName: string, quantity: number) => {
+    setStrainQuantities(prev => ({
+      ...prev,
+      [productId]: {
+        ...prev[productId],
+        [strainName]: Math.max(0, quantity)
+      }
+    }));
+  }, []);
+
+  const getTotalProductQuantity = useCallback((productId: string): number => {
+    const productStrains = strainQuantities[productId] || {};
+    return Object.values(productStrains).reduce((sum, qty) => sum + qty, 0);
+  }, [strainQuantities]);
+
   const handleAddToCart = useCallback((product: DatabaseProduct) => {
-    const quantity = quantities[product.id] || 1;
-    const selectedStrain = getSelectedStrain(product.id);
+    const totalQuantity = getTotalProductQuantity(product.id);
+    
+    if (totalQuantity === 0) {
+      toast.error('Please select at least one strain before adding to cart');
+      return;
+    }
     
     // Convert DatabaseProduct to Product format for cart
     const productForCart = {
@@ -148,13 +172,28 @@ export default function ShopPage() {
       created_at: product.created_at
     };
     
-    addItem(productForCart, selectedStrain, quantity);
+    // Add each strain with its quantity to cart
+    const productStrains = strainQuantities[product.id] || {};
+    const selectedStrains = Object.entries(productStrains)
+      .filter(([_, qty]) => qty > 0)
+      .map(([strainName, qty]) => {
+        const strain = strainOptions.find(s => s.name === strainName);
+        return { strain: strain!, quantity: qty };
+      });
+    
+    selectedStrains.forEach(({ strain, quantity }) => {
+      addItem(productForCart, strain, quantity);
+    });
     
     // Enhanced success message with strain info
+    const strainSummary = selectedStrains.map(({ strain, quantity }) => 
+      `${quantity}x ${strain.name}`
+    ).join(', ');
+    
     toast.success(
-      `${quantity}x ${product.name} (${selectedStrain.name}) added! FREE cannabis gift included!`,
+      `${product.name} added: ${strainSummary}. FREE cannabis gift included!`,
       {
-        id: `add-to-cart-${product.id}`, // Unique ID for toast replacement
+        id: `add-to-cart-${product.id}`,
         duration: 4000,
         style: {
           background: 'linear-gradient(135deg, #ec4899, #8b5cf6)',
@@ -163,12 +202,12 @@ export default function ShopPage() {
       }
     );
     
-    // Reset quantity after adding to cart
-    setQuantities(prev => ({
+    // Reset strain quantities after adding to cart
+    setStrainQuantities(prev => ({
       ...prev,
-      [product.id]: 1
+      [product.id]: {}
     }));
-  }, [quantities, addItem, getSelectedStrain]);
+  }, [strainQuantities, addItem, getTotalProductQuantity]);
   
   const updateQuantity = useCallback((productId: string, newQuantity: number) => {
     if (newQuantity < 1 || newQuantity > 10) return; // Limit quantities between 1-10
@@ -374,28 +413,62 @@ export default function ShopPage() {
                     })()}
                   </div>
                   
-                  {/* Strain Selector */}
-                  <div className="mt-3 px-2 space-y-2">
-                    <label className="text-xs font-medium text-gray-700 dark:text-gray-300">Strain</label>
-                    <div className="relative">
-                      <select
-                        value={getSelectedStrain(product.id).name}
-                        onChange={(e) => {
-                          const selectedStrain = strainOptions.find(s => s.name === e.target.value);
-                          if (selectedStrain) {
-                            updateSelectedStrain(product.id, selectedStrain);
-                          }
-                        }}
-                        className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl text-xs focus:ring-2 focus:ring-purple-500 focus:border-transparent appearance-none cursor-pointer"
-                      >
-                        {strainOptions.map((strain) => (
-                          <option key={strain.name} value={strain.name}>
-                            {strain.name} • {strain.type} • {strain.thcLow}–{strain.thcHigh}% THC
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none" />
+                  {/* Enhanced Strain Selector with Quantities */}
+                  <div className="mt-3 px-2 space-y-3">
+                    <label className="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">Cannabis Strains</label>
+                    <div className="space-y-2">
+                      {strainOptions.map((strain) => {
+                        const currentQty = getStrainQuantity(product.id, strain.name);
+                        return (
+                          <div key={strain.name} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex-1">
+                                <div className="font-medium text-sm text-gray-900 dark:text-white">{strain.name}</div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400 capitalize">
+                                  {strain.type} • {strain.thcLow}–{strain.thcHigh}% THC
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-1 ml-2">
+                                <button
+                                  onClick={() => updateStrainQuantity(product.id, strain.name, currentQty - 1)}
+                                  disabled={currentQty <= 0}
+                                  className="w-7 h-7 flex items-center justify-center bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-500 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+                                >
+                                  −
+                                </button>
+                                <div className="w-8 text-center">
+                                  <span className="text-sm font-medium text-gray-900 dark:text-white">{currentQty}</span>
+                                </div>
+                                <button
+                                  onClick={() => updateStrainQuantity(product.id, strain.name, currentQty + 1)}
+                                  disabled={currentQty >= 5}
+                                  className="w-7 h-7 flex items-center justify-center bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-500 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+                                >
+                                  +
+                                </button>
+                              </div>
+                            </div>
+                            {currentQty > 0 && (
+                              <div className="text-xs text-green-600 dark:text-green-400 font-medium">
+                                {currentQty} × selected
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
+                    
+                    {/* Total Summary */}
+                    {getTotalProductQuantity(product.id) > 0 && (
+                      <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded-lg p-2">
+                        <div className="text-sm font-medium text-purple-800 dark:text-purple-200">
+                          Total: {getTotalProductQuantity(product.id)} strain{getTotalProductQuantity(product.id) !== 1 ? 's' : ''} selected
+                        </div>
+                        <div className="text-xs text-purple-600 dark:text-purple-300">
+                          ${(product.price * getTotalProductQuantity(product.id)).toFixed(2)}
+                        </div>
+                      </div>
+                    )}
                   </div>
                   
                   {/* Enhanced features list */}
@@ -446,12 +519,16 @@ export default function ShopPage() {
                 
                   {/* Enhanced add to cart button */}
                   <button
-                    className="mt-3 sm:mt-4 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg text-white w-full font-semibold transition bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 active:scale-95 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl touch-manipulation min-h-[44px]"
+                    className={`mt-3 sm:mt-4 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg text-white w-full font-semibold transition bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 active:scale-95 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl touch-manipulation min-h-[44px] ${getTotalProductQuantity(product.id) === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
                     onClick={() => handleAddToCart(product)}
+                    disabled={getTotalProductQuantity(product.id) === 0}
                   >
                     <ShoppingBag size={14} className="sm:w-4 sm:h-4" />
                     <span className="text-sm sm:text-base">
-                      {currentQuantity > 1 ? `Add ${currentQuantity}` : 'Add to Cart'}
+                      {getTotalProductQuantity(product.id) > 0 
+                        ? `Add ${getTotalProductQuantity(product.id)} to Cart • $${(product.price * getTotalProductQuantity(product.id)).toFixed(2)}`
+                        : 'Select Strains First'
+                      }
                     </span>
                   </button>
                 </motion.div>
