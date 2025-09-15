@@ -7,8 +7,9 @@ const supabase = createClient(
 );
 
 // GET - Get single driver with assignments
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const { data: driver, error } = await supabase
       .from('drivers')
       .select(`
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
           )
         )
       `)
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (error) {
@@ -43,8 +44,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 }
 
 // PATCH - Update driver
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const { name, phone, email, is_active } = body;
 
@@ -57,7 +59,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     const { data: driver, error } = await supabase
       .from('drivers')
       .update(updateData)
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single();
 
@@ -74,13 +76,14 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 }
 
 // DELETE - Delete driver
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     // Check if driver has any active assignments
     const { data: activeAssignments } = await supabase
       .from('driver_assignments')
       .select('id')
-      .eq('driver_id', params.id)
+      .eq('driver_id', id)
       .in('status', ['assigned', 'in_transit']);
 
     if (activeAssignments && activeAssignments.length > 0) {
@@ -92,7 +95,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     const { error } = await supabase
       .from('drivers')
       .delete()
-      .eq('id', params.id);
+      .eq('id', id);
 
     if (error) {
       console.error('Error deleting driver:', error);

@@ -7,8 +7,9 @@ const supabase = createClient(
 );
 
 // POST - Process driver payout
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const { amount_cents } = body;
 
@@ -20,7 +21,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     const { data: driver, error: driverError } = await supabase
       .from('drivers')
       .select('balance_cents, name')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (driverError || !driver) {
@@ -35,7 +36,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     const { data: payout, error: payoutError } = await supabase
       .from('driver_payouts')
       .insert({
-        driver_id: params.id,
+        driver_id: id,
         amount_cents,
         status: 'completed',
         processed_at: new Date().toISOString()
@@ -55,7 +56,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         balance_cents: driver.balance_cents - amount_cents,
         updated_at: new Date().toISOString()
       })
-      .eq('id', params.id);
+      .eq('id', id);
 
     if (updateError) {
       console.error('Error updating driver balance:', updateError);
@@ -68,7 +69,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     await supabase.from('admin_audit_log').insert({
       action: 'driver_payout',
       resource_type: 'driver',
-      resource_id: params.id,
+      resource_id: id,
       details: {
         driver_name: driver.name,
         payout_amount: amount_cents,
