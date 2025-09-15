@@ -59,7 +59,9 @@ const formatCurrency = (cents: number): string => {
 };
 
 const formatDate = (dateString: string): string => {
+  if (!dateString) return 'N/A';
   const date = new Date(dateString);
+  if (isNaN(date.getTime())) return 'Invalid Date';
   return date.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
@@ -70,8 +72,10 @@ const formatDate = (dateString: string): string => {
 };
 
 const getTimeAgo = (dateString: string): string => {
+  if (!dateString) return 'N/A';
   const now = new Date();
   const date = new Date(dateString);
+  if (isNaN(date.getTime())) return 'N/A';
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
   
   if (diffInSeconds < 60) return 'Just now';
@@ -140,12 +144,12 @@ export default function AdminOrdersPage() {
     }
   };
 
-  const handleStatusChange = async (orderId: string, currentStatus: string, newStatus: string) => {
+  const handleStatusChange = async (orderId: string, currentStatus: string, newStatus: string, reason?: string) => {
     try {
       const response = await fetch(`/api/admin/orders/${orderId}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus })
+        body: JSON.stringify({ status: newStatus, reason })
       });
 
       if (!response.ok) {
@@ -403,9 +407,13 @@ export default function AdminOrdersPage() {
                         {getValidTransitions(order.status).map((status) => (
                           <button
                             key={status}
-                            onClick={() => {
-                              handleStatusChange(order.id, order.status, status);
-                              setOpenDropdowns(new Set());
+                            onClick={async () => {
+                              try {
+                                await handleStatusChange(order.id, order.status, status);
+                                setOpenDropdowns(new Set());
+                              } catch (error) {
+                                console.error('Status change failed:', error);
+                              }
                             }}
                             className="w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 first:rounded-t-lg last:rounded-b-lg transition-colors"
                           >

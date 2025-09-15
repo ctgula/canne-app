@@ -58,16 +58,19 @@ export async function GET(request: NextRequest) {
     }
 
     // Transform data to match frontend expectations
-    const transformedOrders = (orders || []).map(order => ({
-      ...order,
-      order_number: order.short_code, // Map short_code to order_number
-      customers: {
-        first_name: order.customers?.name?.split(' ')[0] || '',
-        last_name: order.customers?.name?.split(' ').slice(1).join(' ') || '',
-        phone: order.customers?.phone || '',
-        email: order.customers?.email || ''
-      }
-    }));
+    const transformedOrders = (orders || []).map(order => {
+      const customer = Array.isArray(order.customers) ? order.customers[0] : order.customers;
+      return {
+        ...order,
+        order_number: order.short_code, // Map short_code to order_number
+        customers: {
+          first_name: customer?.name?.split(' ')[0] || '',
+          last_name: customer?.name?.split(' ').slice(1).join(' ') || '',
+          phone: customer?.phone || '',
+          email: customer?.email || ''
+        }
+      };
+    });
 
     return NextResponse.json({ orders: transformedOrders });
   } catch (error) {

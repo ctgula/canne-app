@@ -71,11 +71,21 @@ export async function GET(
       driver = driverData;
     }
 
+    // Transform data to match frontend expectations
+    const customer = Array.isArray(order.customers) ? order.customers[0] : order.customers;
+    const transformedOrder = {
+      ...order,
+      order_number: order.short_code, // Map short_code to order_number for compatibility
+      customers: {
+        name: customer?.name || '',
+        phone: customer?.phone || '',
+        email: customer?.email || ''
+      },
+      driver
+    };
+
     return NextResponse.json({ 
-      order: {
-        ...order,
-        driver
-      }
+      order: transformedOrder
     });
   } catch (error) {
     console.error('Error in GET /api/admin/orders/[id]:', error);
