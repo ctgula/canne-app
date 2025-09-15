@@ -175,13 +175,21 @@ async function handleStatusTransition(order: any, oldStatus: string, newStatus: 
   if (['refunded', 'canceled'].includes(newStatus) && oldStatus === 'paid') {
     // Restock inventory
     for (const item of order.order_items) {
-      await supabase
+      const { data: currentInventory } = await supabase
         .from('product_inventory')
-        .update({ 
-          stock: supabase.sql`stock + ${item.quantity}`,
-          updated_at: new Date().toISOString()
-        })
-        .eq('product_id', item.product_id);
+        .select('stock')
+        .eq('product_id', item.product_id)
+        .single();
+      
+      if (currentInventory) {
+        await supabase
+          .from('product_inventory')
+          .update({ 
+            stock: currentInventory.stock + item.quantity,
+            updated_at: new Date().toISOString()
+          })
+          .eq('product_id', item.product_id);
+      }
     }
 
     // Block payout if exists and not paid

@@ -28,7 +28,7 @@ import {
   Users
 } from 'lucide-react';
 import ConfirmDialog from '@/components/ConfirmDialog';
-import StatusChangeModal from '@/components/StatusChangeModal';
+import OrderDetailsDrawer from '@/components/OrderDetailsDrawer';
 import { useToast } from '@/components/Toast';
 import toast from 'react-hot-toast';
 
@@ -112,6 +112,12 @@ export default function AdminOrdersPage() {
     isOpen: boolean;
     newStatus: string;
   }>({ isOpen: false, newStatus: '' });
+  const [statusModal, setStatusModal] = useState<{
+    isOpen: boolean;
+    orderId: string;
+    currentStatus: string;
+    newStatus: string;
+  }>({ isOpen: false, orderId: '', currentStatus: '', newStatus: '' });
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean;
     title: string;
@@ -119,6 +125,8 @@ export default function AdminOrdersPage() {
     onConfirm: () => void;
   }>({ isOpen: false, title: '', message: '', onConfirm: () => {} });
   const [openDropdowns, setOpenDropdowns] = useState<Set<string>>(new Set());
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const { success: showSuccessToast, error: showErrorToast } = useToast();
 
