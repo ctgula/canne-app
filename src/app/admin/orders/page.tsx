@@ -24,6 +24,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import StatusChangeModal from '@/components/StatusChangeModal';
 import { useToast } from '@/components/Toast';
 
 interface CashAppOrder {
@@ -31,7 +32,7 @@ interface CashAppOrder {
   short_code: string;
   customer_phone: string;
   amount_cents: number;
-  status: 'pending' | 'awaiting_payment' | 'verifying' | 'paid' | 'assigned' | 'delivered' | 'refunded';
+  status: 'awaiting_payment' | 'verifying' | 'paid' | 'assigned' | 'delivered' | 'undelivered' | 'refunded' | 'canceled';
   cashapp_handle?: string;
   payment_screenshot_url?: string;
   driver_id?: string;
@@ -56,23 +57,25 @@ interface PayoutSummary {
 }
 
 const statusColors = {
-  pending: 'bg-gray-100 text-gray-800 border-gray-200',
   awaiting_payment: 'bg-yellow-100 text-yellow-800 border-yellow-200',
   verifying: 'bg-blue-100 text-blue-800 border-blue-200',
   paid: 'bg-green-100 text-green-800 border-green-200',
   assigned: 'bg-purple-100 text-purple-800 border-purple-200',
   delivered: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+  undelivered: 'bg-orange-100 text-orange-800 border-orange-200',
   refunded: 'bg-red-100 text-red-800 border-red-200',
+  canceled: 'bg-gray-100 text-gray-800 border-gray-200',
 };
 
 const statusIcons = {
-  pending: AlertCircle,
   awaiting_payment: Clock,
   verifying: Eye,
   paid: CheckCircle,
   assigned: Truck,
   delivered: Package,
+  undelivered: AlertCircle,
   refunded: AlertCircle,
+  canceled: X,
 };
 
 export default function AdminOrdersPage() {
@@ -95,6 +98,20 @@ export default function AdminOrdersPage() {
     loading: boolean;
     action: () => Promise<void>;
   }>({ isOpen: false, title: '', message: '', variant: 'info', loading: false, action: async () => {} });
+  
+  const [statusChangeModal, setStatusChangeModal] = useState<{
+    isOpen: boolean;
+    orderCode: string;
+    currentStatus: string;
+    targetStatus: string;
+    orderId: string;
+  }>({ isOpen: false, orderCode: '', currentStatus: '', targetStatus: '', orderId: '' });
+  
+  const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
+  const [bulkStatusModal, setBulkStatusModal] = useState<{
+    isOpen: boolean;
+    targetStatus: string;
+  }>({ isOpen: false, targetStatus: '' });
   
   const { success, error: showError } = useToast();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -265,62 +282,98 @@ export default function AdminOrdersPage() {
     });
   };
 
-  const handleStatusChange = async (orderId: string, newStatus: string, reason?: string) => {
+  const openStatusChangeModal = (orderId: string, targetStatus: string) => {
     const order = orders.find(o => o.id === orderId);
     if (!order) return;
-
-    const statusLabels: Record<string, string> = {
-      'pending': 'Pending',
-      'awaiting_payment': 'Awaiting Payment',
-      'verifying': 'Verifying',
-      'paid': 'Paid',
-      'assigned': 'Assigned',
-      'delivered': 'Delivered',
-      'refunded': 'Refunded'
-    };
-
-    setConfirmDialog({
+    
+    setStatusChangeModal({
       isOpen: true,
-      title: 'Change Order Status',
-      message: `Change order ${order.short_code} from ${statusLabels[order.status]} to ${statusLabels[newStatus]}?`,
-      variant: 'info',
-      loading: false,
-      action: async () => {
-        setConfirmDialog(prev => ({ ...prev, loading: true }));
-        try {
-          const response = await fetch('/api/orders/change-status', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ 
-              short_code: order.short_code, 
-              new_status: newStatus,
-              reason 
-            }),
-          });
-
-          if (response.ok) {
-            // Optimistic update
-            setOrders(prev => prev.map(o => 
-              o.id === orderId 
-                ? { ...o, status: newStatus as CashAppOrder['status'] }
-                : o
-            ));
-            success('Status Changed', `Order ${order.short_code} status changed to ${statusLabels[newStatus]}.`);
-            await fetchOrders(); // Refresh to get latest data
-          } else {
-            const errorData = await response.json();
-            showError('Failed to Change Status', errorData.error || 'An error occurred while changing the order status.');
-          }
-        } catch (error) {
-          console.error('Error changing order status:', error);
-          showError('Network Error', 'Failed to connect to the server. Please try again.');
-        } finally {
-          setConfirmDialog(prev => ({ ...prev, isOpen: false, loading: false }));
-        }
-      }
+      orderCode: order.short_code,
+      currentStatus: order.status,
+      targetStatus,
+      orderId
     });
+  };
+  
+  const handleStatusChange = async (newStatus: string, reason?: string) => {
+    const order = orders.find(o => o.id === statusChangeModal.orderId);
+    if (!order) return;
+
+    try {
+      const response = await fetch('/api/orders/change-status', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          short_code: order.short_code, 
+          new_status: newStatus,
+          reason,
+          admin_action: true
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        // Optimistic update
+        setOrders(prev => prev.map(o => 
+          o.id === statusChangeModal.orderId 
+            ? { ...o, status: newStatus as CashAppOrder['status'] }
+            : o
+        ));
+        success('Status Changed', `Order ${order.short_code} status changed to ${newStatus.replace('_', ' ')}.`);
+        await fetchOrders(); // Refresh to get latest data
+      } else {
+        const errorData = await response.json();
+        showError('Failed to Change Status', errorData.error || 'An error occurred while changing the order status.');
+        throw new Error(errorData.error);
+      }
+    } catch (error) {
+      console.error('Error changing order status:', error);
+      showError('Network Error', 'Failed to connect to the server. Please try again.');
+      throw error;
+    }
+  };
+  
+  const handleBulkStatusChange = async (newStatus: string, reason?: string) => {
+    const selectedOrdersList = Array.from(selectedOrders);
+    if (selectedOrdersList.length === 0) return;
+    
+    try {
+      const response = await fetch('/api/orders/bulk-change-status', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          order_ids: selectedOrdersList,
+          new_status: newStatus,
+          reason,
+          admin_action: true
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        // Optimistic update
+        setOrders(prev => prev.map(o => 
+          selectedOrdersList.includes(o.id)
+            ? { ...o, status: newStatus as CashAppOrder['status'] }
+            : o
+        ));
+        setSelectedOrders(new Set());
+        success('Bulk Status Changed', `${selectedOrdersList.length} orders updated to ${newStatus.replace('_', ' ')}.`);
+        await fetchOrders(); // Refresh to get latest data
+      } else {
+        const errorData = await response.json();
+        showError('Failed to Change Status', errorData.error || 'An error occurred while changing the order statuses.');
+        throw new Error(errorData.error);
+      }
+    } catch (error) {
+      console.error('Error changing order statuses:', error);
+      showError('Network Error', 'Failed to connect to the server. Please try again.');
+      throw error;
+    }
   };
 
   const handleRefundOrder = async (orderId: string) => {
@@ -449,6 +502,45 @@ export default function AdminOrdersPage() {
       [orderId]: false
     }));
   };
+  
+  const toggleOrderSelection = (orderId: string) => {
+    setSelectedOrders(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(orderId)) {
+        newSet.delete(orderId);
+      } else {
+        newSet.add(orderId);
+      }
+      return newSet;
+    });
+  };
+  
+  const selectAllOrders = () => {
+    if (selectedOrders.size === filteredOrders.length) {
+      setSelectedOrders(new Set());
+    } else {
+      setSelectedOrders(new Set(filteredOrders.map(o => o.id)));
+    }
+  };
+  
+  const getAllValidStatuses = (): string[] => {
+    return ['awaiting_payment', 'verifying', 'paid', 'assigned', 'delivered', 'undelivered', 'refunded', 'canceled'];
+  };
+  
+  const getValidTransitions = (currentStatus: string): string[] => {
+    const transitions: Record<string, string[]> = {
+      'awaiting_payment': ['verifying', 'paid', 'canceled'],
+      'verifying': ['awaiting_payment', 'paid', 'refunded', 'canceled'],
+      'paid': ['verifying', 'assigned', 'refunded', 'canceled'],
+      'assigned': ['paid', 'delivered', 'undelivered', 'refunded', 'canceled'],
+      'delivered': ['assigned', 'refunded'],
+      'undelivered': ['assigned', 'delivered', 'refunded', 'canceled'],
+      'refunded': ['verifying', 'paid'],
+      'canceled': ['awaiting_payment', 'verifying']
+    };
+    
+    return transitions[currentStatus] || [];
+  };
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -555,6 +647,43 @@ export default function AdminOrdersPage() {
 
         {/* Search and Filters */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-8">
+          {/* Bulk Actions Bar */}
+          {selectedOrders.size > 0 && (
+            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-medium text-purple-900">
+                    {selectedOrders.size} order{selectedOrders.size > 1 ? 's' : ''} selected
+                  </span>
+                  <button
+                    onClick={() => setSelectedOrders(new Set())}
+                    className="text-sm text-purple-600 hover:text-purple-700"
+                  >
+                    Clear selection
+                  </button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <select
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        setBulkStatusModal({ isOpen: true, targetStatus: e.target.value });
+                        e.target.value = '';
+                      }
+                    }}
+                    className="px-3 py-2 border border-purple-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500"
+                  >
+                    <option value="">Change Status (Bulk)</option>
+                    {getAllValidStatuses().map(status => (
+                      <option key={status} value={status}>
+                        {status.replace('_', ' ').toUpperCase()}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
+          
           <div className="flex flex-col lg:flex-row gap-4 mb-6">
             <div className="flex-1">
               <div className="relative">
@@ -595,27 +724,48 @@ export default function AdminOrdersPage() {
           </div>
           
           {/* Status Filter Tabs */}
-          <div className="flex flex-wrap gap-2">
-            {[
-              { key: 'all', label: 'All Orders', count: orders.length },
-              { key: 'awaiting_payment', label: 'Awaiting Payment', count: statusCounts.awaiting_payment || 0 },
-              { key: 'verifying', label: 'Verifying', count: statusCounts.verifying || 0 },
-              { key: 'paid', label: 'Paid', count: statusCounts.paid || 0 },
-              { key: 'assigned', label: 'Assigned', count: statusCounts.assigned || 0 },
-              { key: 'delivered', label: 'Delivered', count: statusCounts.delivered || 0 },
-            ].map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setStatusFilter(tab.key)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  statusFilter === tab.key
-                    ? 'bg-purple-100 text-purple-800 border border-purple-200'
-                    : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
-                }`}
-              >
-                {tab.label} ({tab.count})
-              </button>
-            ))}
+          <div className="flex items-center justify-between">
+            <div className="flex flex-wrap gap-2">
+              {[
+                { key: 'all', label: 'All Orders', count: orders.length },
+                { key: 'awaiting_payment', label: 'Awaiting Payment', count: statusCounts.awaiting_payment || 0 },
+                { key: 'verifying', label: 'Verifying', count: statusCounts.verifying || 0 },
+                { key: 'paid', label: 'Paid', count: statusCounts.paid || 0 },
+                { key: 'assigned', label: 'Assigned', count: statusCounts.assigned || 0 },
+                { key: 'delivered', label: 'Delivered', count: statusCounts.delivered || 0 },
+                { key: 'undelivered', label: 'Undelivered', count: statusCounts.undelivered || 0 },
+                { key: 'refunded', label: 'Refunded', count: statusCounts.refunded || 0 },
+                { key: 'canceled', label: 'Canceled', count: statusCounts.canceled || 0 },
+              ].map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setStatusFilter(tab.key)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    statusFilter === tab.key
+                      ? 'bg-purple-100 text-purple-800 border border-purple-200'
+                      : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  {tab.label} ({tab.count})
+                </button>
+              ))}
+            </div>
+            
+            {/* Select All Checkbox */}
+            {filteredOrders.length > 0 && (
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="select-all"
+                  checked={selectedOrders.size === filteredOrders.length && filteredOrders.length > 0}
+                  onChange={selectAllOrders}
+                  className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                />
+                <label htmlFor="select-all" className="text-sm text-gray-600">
+                  Select all ({filteredOrders.length})
+                </label>
+              </div>
+            )}
           </div>
         </div>
 
@@ -704,15 +854,30 @@ export default function AdminOrdersPage() {
                 key={order.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow cursor-pointer"
+                className={`bg-white rounded-2xl shadow-sm border p-6 hover:shadow-md transition-all cursor-pointer ${
+                  selectedOrders.has(order.id) 
+                    ? 'border-purple-300 bg-purple-50' 
+                    : 'border-gray-200'
+                }`}
                 onClick={() => openOrderDetails(order)}
               >
                 {/* Header */}
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="relative">
-                      <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center">
-                        <StatusIcon className="w-5 h-5 text-gray-600" />
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={selectedOrders.has(order.id)}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          toggleOrderSelection(order.id);
+                        }}
+                        className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                      />
+                      <div className="relative">
+                        <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center">
+                          <StatusIcon className="w-5 h-5 text-gray-600" />
+                        </div>
                       </div>
                     </div>
                     <div>
@@ -777,7 +942,28 @@ export default function AdminOrdersPage() {
                 
                 {/* Actions */}
                 <div className="flex items-center gap-2 pt-4 border-t border-gray-100">
-                  {/* Actions Dropdown */}
+                  {/* Status Change Dropdown */}
+                  <div className="relative">
+                    <select
+                      onClick={(e) => e.stopPropagation()}
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          openStatusChangeModal(order.id, e.target.value);
+                          e.target.value = '';
+                        }
+                      }}
+                      className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 bg-white"
+                    >
+                      <option value="">Change Status</option>
+                      {getValidTransitions(order.status).map(status => (
+                        <option key={status} value={status}>
+                          {status.replace('_', ' ').toUpperCase()}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  {/* Legacy Actions Dropdown */}
                   <div className="relative">
                     <button
                       onClick={(e) => {
@@ -801,61 +987,34 @@ export default function AdminOrdersPage() {
                         />
                         <div className="absolute top-full left-0 mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-xl z-20">
                           <div className="p-2">
-                            {/* Status Changes */}
-                            {(() => {
-                              const validTransitions: Record<string, string[]> = {
-                                'pending': ['awaiting_payment', 'verifying'],
-                                'awaiting_payment': ['pending', 'verifying', 'paid'],
-                                'verifying': ['awaiting_payment', 'paid', 'refunded'],
-                                'paid': ['verifying', 'assigned', 'refunded'],
-                                'assigned': ['paid', 'delivered', 'refunded'],
-                                'delivered': ['assigned', 'refunded'],
-                                'refunded': ['verifying', 'paid']
-                              };
-                              
-                              const statusLabels: Record<string, string> = {
-                                'pending': 'Mark as Pending',
-                                'awaiting_payment': 'Mark as Awaiting Payment',
-                                'verifying': 'Mark as Verifying',
-                                'paid': 'Mark as Paid',
-                                'assigned': 'Mark as Assigned',
-                                'delivered': 'Mark as Delivered',
-                                'refunded': 'Mark as Refunded'
-                              };
-
-                              const statusColors: Record<string, string> = {
-                                'pending': 'text-gray-700 hover:bg-gray-50',
-                                'awaiting_payment': 'text-yellow-700 hover:bg-yellow-50',
-                                'verifying': 'text-orange-700 hover:bg-orange-50',
-                                'paid': 'text-green-700 hover:bg-green-50',
-                                'assigned': 'text-purple-700 hover:bg-purple-50',
-                                'delivered': 'text-blue-700 hover:bg-blue-50',
-                                'refunded': 'text-red-700 hover:bg-red-50'
-                              };
-                              
-                              const availableStatuses = validTransitions[order.status] || [];
-                              
-                              return (
-                                <>
-                                  <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide border-b border-gray-100">
-                                    Change Status
-                                  </div>
-                                  {availableStatuses.map(status => (
-                                    <button
-                                      key={status}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleStatusChange(order.id, status);
-                                        closeDropdown(order.id);
-                                      }}
-                                      className={`w-full text-left px-3 py-2 text-sm rounded-md transition-colors ${statusColors[status]}`}
-                                    >
-                                      {statusLabels[status]}
-                                    </button>
-                                  ))}
-                                </>
-                              );
-                            })()}
+                            {/* Legacy Status Actions */}
+                            <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide border-b border-gray-100">
+                              Quick Actions
+                            </div>
+                            {order.status === 'verifying' && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleMarkPaid(order.id);
+                                  closeDropdown(order.id);
+                                }}
+                                className="w-full text-left px-3 py-2 text-sm text-green-700 hover:bg-green-50 rounded-md transition-colors"
+                              >
+                                Mark as Paid
+                              </button>
+                            )}
+                            {order.status === 'assigned' && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCompleteOrder(order.id);
+                                  closeDropdown(order.id);
+                                }}
+                                className="w-full text-left px-3 py-2 text-sm text-purple-700 hover:bg-purple-50 rounded-md transition-colors"
+                              >
+                                Mark as Delivered
+                              </button>
+                            )}
                             
                             {/* Driver Assignment */}
                             {order.status === 'paid' && drivers.filter(d => d.is_active).length > 0 && (
@@ -1097,6 +1256,28 @@ export default function AdminOrdersPage() {
           </div>
         )}
         
+        
+        {/* Status Change Modal */}
+        <StatusChangeModal
+          isOpen={statusChangeModal.isOpen}
+          onClose={() => setStatusChangeModal(prev => ({ ...prev, isOpen: false }))}
+          onConfirm={handleStatusChange}
+          orderCode={statusChangeModal.orderCode}
+          currentStatus={statusChangeModal.currentStatus}
+          targetStatus={statusChangeModal.targetStatus}
+        />
+        
+        {/* Bulk Status Change Modal */}
+        {bulkStatusModal.isOpen && (
+          <StatusChangeModal
+            isOpen={bulkStatusModal.isOpen}
+            onClose={() => setBulkStatusModal({ isOpen: false, targetStatus: '' })}
+            onConfirm={handleBulkStatusChange}
+            orderCode={`${selectedOrders.size} orders`}
+            currentStatus="multiple"
+            targetStatus={bulkStatusModal.targetStatus}
+          />
+        )}
         
         {/* Confirmation Dialog */}
         <ConfirmDialog
