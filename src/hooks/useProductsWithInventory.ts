@@ -15,15 +15,17 @@ interface ProductWithInventory {
   image_url: string; // Alias for hero_image_url
   created_at: string;
   updated_at: string;
-  weight?: string;
-  color_theme?: string;
-  features?: string[];
+  weight: string;
+  color_theme: string;
+  features: string[];
   product_inventory: Array<{
     stock: number;
     low_stock_threshold: number;
     allow_backorder: boolean;
   }>;
 }
+
+export type { ProductWithInventory };
 
 export function useProductsWithInventory() {
   const [products, setProducts] = useState<ProductWithInventory[]>([]);

@@ -7,7 +7,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useCartStore } from '@/services/CartService';
 import { DatabaseProduct } from '@/services/DatabaseService';
-import { useProductsWithInventory } from '@/hooks/useProductsWithInventory';
+import { useProductsWithInventory, ProductWithInventory } from '@/hooks/useProductsWithInventory';
 import toast from 'react-hot-toast';
 import { ShoppingBag, Star, Zap, Shield, Gift, Loader2, AlertCircle, ChevronDown, Package } from 'lucide-react';
 import Link from 'next/link';
@@ -47,18 +47,10 @@ export default function ShopPage() {
     isProductAvailable
   } = useProductsWithInventory();
 
-  // Test database connection on mount
+  // Initialize cart on mount
   useEffect(() => {
-    const initializeDatabase = async () => {
-      const isConnected = await testConnection();
-      if (!isConnected) {
-        toast.error('Database connection failed. Please check your internet connection.');
-      }
-    };
-
-    initializeDatabase();
     hydrateCart();
-  }, [testConnection, hydrateCart]);
+  }, [hydrateCart]);
 
   useEffect(() => {
     if (error) {
@@ -148,15 +140,27 @@ export default function ShopPage() {
     return Object.values(productStrains).reduce((sum, qty) => sum + qty, 0);
   }, [strainQuantities]);
 
-  const handleAddToCart = useCallback((product: DatabaseProduct) => {
+  const handleAddToCart = useCallback((product: ProductWithInventory) => {
     const totalQuantity = getTotalProductQuantity(product.id);
     
     if (totalQuantity === 0) {
       toast.error('Please select at least one strain before adding to cart');
       return;
     }
+
+    // Check stock availability
+    const stockStatus = getStockStatus(product);
+    if (!stockStatus.available) {
+      toast.error('This product is currently out of stock');
+      return;
+    }
+
+    if (stockStatus.stock < totalQuantity) {
+      toast.error(`Only ${stockStatus.stock} items available in stock`);
+      return;
+    }
     
-    // Convert DatabaseProduct to Product format for cart
+    // Convert ProductWithInventory to Product format for cart
     const productForCart = {
       id: product.id,
       name: product.name,
@@ -358,6 +362,27 @@ export default function ShopPage() {
                     {badge.icon}
                     {((product as any).display_tier || product.tier)}
                   </div>
+
+                  {/* Stock status badge */}
+                  {(() => {
+                    const stockStatus = getStockStatus(product);
+                    if (stockStatus.status === 'sold_out') {
+                      return (
+                        <div className="absolute top-3 left-3 px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 flex items-center gap-1">
+                          <AlertCircle size={12} />
+                          Sold Out
+                        </div>
+                      );
+                    } else if (stockStatus.status === 'low_stock') {
+                      return (
+                        <div className="absolute top-3 left-3 px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200 flex items-center gap-1">
+                          <Package size={12} />
+                          Low Stock ({stockStatus.stock})
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
                   
                   {/* Product Image */}
                   <div className="w-24 sm:w-32 h-24 sm:h-32 rounded-lg mb-3 sm:mb-4 overflow-hidden shadow-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
@@ -516,19 +541,33 @@ export default function ShopPage() {
                   </div>
                 
                   {/* Enhanced add to cart button */}
-                  <button
-                    className={`mt-3 sm:mt-4 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg text-white w-full font-semibold transition bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 active:scale-95 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl touch-manipulation min-h-[44px] ${getTotalProductQuantity(product.id) === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    onClick={() => handleAddToCart(product)}
-                    disabled={getTotalProductQuantity(product.id) === 0}
-                  >
-                    <ShoppingBag size={14} className="sm:w-4 sm:h-4" />
-                    <span className="text-sm sm:text-base">
-                      {getTotalProductQuantity(product.id) > 0 
-                        ? `Add ${getTotalProductQuantity(product.id)} to Cart • $${(product.price * getTotalProductQuantity(product.id)).toFixed(2)}`
-                        : 'Select Strains First'
-                      }
-                    </span>
-                  </button>
+                  {(() => {
+                    const stockStatus = getStockStatus(product);
+                    const totalQuantity = getTotalProductQuantity(product.id);
+                    const isDisabled = totalQuantity === 0 || !stockStatus.available;
+                    
+                    return (
+                      <button
+                        className={`mt-3 sm:mt-4 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg text-white w-full font-semibold transition flex items-center justify-center space-x-2 shadow-lg touch-manipulation min-h-[44px] ${
+                          isDisabled 
+                            ? 'bg-gray-400 cursor-not-allowed opacity-50' 
+                            : 'bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 active:scale-95 hover:shadow-xl'
+                        }`}
+                        onClick={() => handleAddToCart(product)}
+                        disabled={isDisabled}
+                      >
+                        <ShoppingBag size={14} className="sm:w-4 sm:h-4" />
+                        <span className="text-sm sm:text-base">
+                          {!stockStatus.available 
+                            ? 'Sold Out'
+                            : totalQuantity > 0 
+                              ? `Add ${totalQuantity} to Cart • $${(product.price * totalQuantity).toFixed(2)}`
+                              : 'Select Strains First'
+                          }
+                        </span>
+                      </button>
+                    );
+                  })()}
                 </motion.div>
               );
             })
