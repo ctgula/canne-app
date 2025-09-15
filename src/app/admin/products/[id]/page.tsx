@@ -51,7 +51,8 @@ const TIER_OPTIONS = [
   { value: 'Ultra', label: 'Ultra', color: 'bg-purple-100 text-purple-800' }
 ];
 
-export default function EditProductPage({ params }: { params: { id: string } }) {
+export default async function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const router = useRouter();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -62,11 +63,13 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
 
   useEffect(() => {
     fetchProduct();
-  }, [params.id]);
+  }, []);
 
   const fetchProduct = async () => {
+    if (!id) return;
+    
     try {
-      const response = await fetch(`/api/admin/products/${params.id}`);
+      const response = await fetch(`/api/admin/products/${id}`);
       if (!response.ok) throw new Error('Failed to fetch product');
       
       const data = await response.json();
@@ -87,7 +90,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
     setSaving(true);
     try {
       const inventory = product.product_inventory[0];
-      const response = await fetch(`/api/admin/products/${params.id}`, {
+      const response = await fetch(`/api/admin/products/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -126,7 +129,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
     }
 
     try {
-      const response = await fetch(`/api/admin/products/${params.id}/adjust-stock`, {
+      const response = await fetch(`/api/admin/products/${id}/adjust-stock`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -168,7 +171,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/-+/g, '-')
-      .trim('-');
+      .replace(/^-|-$/g, '');
   };
 
   const handleNameChange = (name: string) => {

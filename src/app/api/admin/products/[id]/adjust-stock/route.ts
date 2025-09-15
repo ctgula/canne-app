@@ -9,8 +9,9 @@ const supabase = createClient(
 // POST - Adjust stock (increment/decrement)
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const { adjustment, reason } = await request.json();
 
@@ -26,17 +27,22 @@ export async function POST(
       }, { status: 400 });
     }
 
-    // Get current inventory
-    const { data: inventory, error: invError } = await supabase
-      .from('product_inventory')
-      .select('stock, allow_backorder')
-      .eq('product_id', params.id)
+    // Get current product and inventory
+    const { data: product, error: productError } = await supabase
+      .from('products')
+      .select(`
+        *,
+        product_inventory (*)
+      `)
+      .eq('id', id)
       .single();
 
-    if (invError) {
-      console.error('Error fetching inventory:', invError);
-      return NextResponse.json({ error: 'Product inventory not found' }, { status: 404 });
+    if (productError) {
+      console.error('Error fetching product:', productError);
+      return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }
+
+    const inventory = product.product_inventory;
 
     const newStock = inventory.stock + adjustment;
 
@@ -47,16 +53,11 @@ export async function POST(
       }, { status: 400 });
     }
 
-    // Update stock atomically
-    const { data: updatedInventory, error: updateError } = await supabase
+    // Update inventory
+    const { error: updateError } = await supabase
       .from('product_inventory')
-      .update({ 
-        stock: newStock,
-        updated_at: new Date().toISOString()
-      })
-      .eq('product_id', params.id)
-      .select('stock')
-      .single();
+      .update({ stock: newStock })
+      .eq('product_id', id);
 
     if (updateError) {
       console.error('Error updating inventory:', updateError);
@@ -64,39 +65,36 @@ export async function POST(
     }
 
     // If stock hits 0 and backorder not allowed, deactivate product
-    if (updatedInventory.stock <= 0 && !inventory.allow_backorder) {
+    if (newStock <= 0 && !inventory.allow_backorder) {
       await supabase
         .from('products')
         .update({ is_active: false })
-        .eq('id', params.id);
+        .eq('id', id);
     }
     // If stock becomes available again, reactivate product
-    else if (updatedInventory.stock > 0) {
+    else if (newStock > 0) {
       await supabase
         .from('products')
         .update({ is_active: true })
-        .eq('id', params.id);
+        .eq('id', id);
     }
 
-    // Log audit trail
-    await supabase.from('product_changes').insert({
-      product_id: params.id,
-      action: 'stock_adjusted',
-      changes: { 
-        adjustment,
-        reason,
-        old_stock: inventory.stock,
-        new_stock: updatedInventory.stock
-      },
-      admin_user: 'admin', // TODO: Get from auth context
-      timestamp: new Date().toISOString()
-    });
+    // Log the adjustment
+    await supabase
+      .from('product_audit_log')
+      .insert({
+        product_id: id,
+        action: 'stock_adjustment',
+        old_values: { stock: inventory.stock },
+        new_values: { stock: newStock },
+        changed_by: 'admin',
+        reason: reason
+      });
 
     return NextResponse.json({
       success: true,
-      old_stock: inventory.stock,
-      new_stock: updatedInventory.stock,
-      adjustment
+      message: 'Stock adjusted successfully',
+      new_stock: newStock
     });
 
   } catch (error) {

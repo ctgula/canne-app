@@ -9,8 +9,9 @@ const supabase = createClient(
 // GET - Get single product with inventory
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const { data: product, error } = await supabase
       .from('products')
@@ -27,7 +28,7 @@ export async function GET(
           sort
         )
       `)
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (error) {
@@ -45,8 +46,9 @@ export async function GET(
 // PATCH - Update product
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const updates = await request.json();
     const {
@@ -68,7 +70,7 @@ export async function PATCH(
     const { data: currentProduct } = await supabase
       .from('products')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (!currentProduct) {
@@ -93,7 +95,7 @@ export async function PATCH(
       const { error: productError } = await supabase
         .from('products')
         .update(productUpdates)
-        .eq('id', params.id);
+        .eq('id', id);
 
       if (productError) {
         console.error('Error updating product:', productError);
@@ -115,7 +117,7 @@ export async function PATCH(
       const { error: inventoryError } = await supabase
         .from('product_inventory')
         .update(inventoryUpdates)
-        .eq('product_id', params.id);
+        .eq('product_id', id);
 
       if (inventoryError) {
         console.error('Error updating inventory:', inventoryError);
@@ -125,7 +127,7 @@ export async function PATCH(
 
     // Log audit trail
     await supabase.from('product_changes').insert({
-      product_id: params.id,
+      product_id: id,
       action: 'updated',
       changes: { 
         before: currentProduct,
@@ -145,14 +147,15 @@ export async function PATCH(
 // DELETE - Delete product
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     // Get current product for audit log
     const { data: currentProduct } = await supabase
       .from('products')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (!currentProduct) {
@@ -163,7 +166,7 @@ export async function DELETE(
     const { data: orderItems } = await supabase
       .from('order_items')
       .select('id')
-      .eq('product_id', params.id)
+      .eq('product_id', id)
       .limit(1);
 
     if (orderItems && orderItems.length > 0) {
@@ -176,7 +179,7 @@ export async function DELETE(
     const { error } = await supabase
       .from('products')
       .delete()
-      .eq('id', params.id);
+      .eq('id', id);
 
     if (error) {
       console.error('Error deleting product:', error);
@@ -185,7 +188,7 @@ export async function DELETE(
 
     // Log audit trail
     await supabase.from('product_changes').insert({
-      product_id: params.id,
+      product_id: id,
       action: 'deleted',
       changes: { deleted_product: currentProduct },
       admin_user: 'admin', // TODO: Get from auth context

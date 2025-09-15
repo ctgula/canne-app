@@ -120,7 +120,7 @@ export default function AdminOrdersPage() {
   }>({ isOpen: false, title: '', message: '', onConfirm: () => {} });
   const [openDropdowns, setOpenDropdowns] = useState<Set<string>>(new Set());
 
-  const { showToast } = useToast();
+  const { success: showSuccessToast, error: showErrorToast } = useToast();
 
   const getAllValidStatuses = (): string[] => {
     return ['awaiting_payment', 'verifying', 'paid', 'assigned', 'delivered', 'undelivered', 'refunded', 'canceled'];
