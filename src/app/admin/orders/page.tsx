@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { 
   Phone, 
   CreditCard, 
@@ -21,7 +23,9 @@ import {
   Eye,
   MoreHorizontal,
   RefreshCw,
-  ExternalLink
+  ExternalLink,
+  ShoppingBag,
+  Users
 } from 'lucide-react';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import StatusChangeModal from '@/components/StatusChangeModal';
@@ -77,6 +81,45 @@ const statusIcons = {
   refunded: AlertCircle,
   canceled: X,
 };
+
+// Admin Navigation Component
+function AdminNav() {
+  const pathname = usePathname();
+  
+  const navItems = [
+    { href: '/admin/orders', label: 'Orders', icon: Package },
+    { href: '/admin/products', label: 'Products', icon: ShoppingBag },
+    { href: '/admin/drivers', label: 'Drivers', icon: Users }
+  ];
+
+  return (
+    <div className="bg-white border-b border-gray-200 mb-6">
+      <div className="max-w-7xl mx-auto px-6">
+        <nav className="flex space-x-8">
+          {navItems.map((item) => {
+            const isActive = pathname === item.href;
+            const Icon = item.icon;
+            
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                  isActive
+                    ? 'border-purple-500 text-purple-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                <Icon size={16} />
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
+      </div>
+    </div>
+  );
+}
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<CashAppOrder[]>([]);
@@ -619,22 +662,120 @@ export default function AdminOrdersPage() {
     );
   }
 
+  const getAllValidStatuses = (): string[] => {
+    return ['awaiting_payment', 'verifying', 'paid', 'assigned', 'delivered', 'undelivered', 'refunded', 'canceled'];
+  };
+    
+  const getValidTransitions = (currentStatus: string): string[] => {
+    const transitions: Record<string, string[]> = {
+      'awaiting_payment': ['verifying', 'paid', 'canceled'],
+      'verifying': ['awaiting_payment', 'paid', 'refunded', 'canceled'],
+      'paid': ['verifying', 'assigned', 'refunded', 'canceled'],
+      'assigned': ['paid', 'delivered', 'undelivered', 'refunded', 'canceled'],
+      'delivered': ['assigned', 'refunded'],
+      'undelivered': ['assigned', 'delivered', 'refunded', 'canceled'],
+      'refunded': ['verifying', 'paid'],
+      'canceled': ['awaiting_payment', 'verifying']
+    };
+    
+    return transitions[currentStatus] || [];
+  };
+
+  useEffect(() => {
+  const handleKeyDown = (event: KeyboardEvent) => {
+    // Only handle shortcuts when not typing in inputs
+    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLSelectElement) {
+      return;
+    }
+
+    switch (event.key) {
+      case '/':
+        event.preventDefault();
+        document.getElementById('search-input')?.focus();
+        break;
+      case 'Escape':
+        if (showOrderDetails) {
+          setShowOrderDetails(false);
+        }
+        break;
+      case 'r':
+        if (event.metaKey || event.ctrlKey) {
+          event.preventDefault();
+          fetchOrders();
+        }
+        break;
+      case '1':
+      case '2':
+      case '3':
+      case '4':
+      case '5':
+      case '6':
+        if (event.metaKey || event.ctrlKey) {
+          event.preventDefault();
+          const filters = ['all', 'awaiting_payment', 'verifying', 'paid', 'assigned', 'delivered'];
+          const filterIndex = parseInt(event.key) - 1;
+          if (filterIndex < filters.length) {
+            setStatusFilter(filters[filterIndex]);
+          }
+        }
+        break;
+    }
+  };
+
+  document.addEventListener('keydown', handleKeyDown);
+  return () => document.removeEventListener('keydown', handleKeyDown);
+}, [showOrderDetails]);
+
+if (!isAuthenticated) {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Order Management</h1>
-            <p className="text-gray-600 mt-2">Manage customer orders and driver assignments</p>
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 flex items-center justify-center">
+      <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full border border-gray-100">
+        <div className="text-center mb-6">
+          <div className="w-16 h-16 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Package className="w-8 h-8 text-white" />
           </div>
-          <div className="flex items-center gap-3">
-            <div className="hidden lg:block text-sm text-gray-500">
-              <kbd className="px-2 py-1 bg-gray-100 rounded text-xs">⌘/Ctrl+R</kbd> Refresh •
-              <kbd className="px-2 py-1 bg-gray-100 rounded text-xs">/</kbd> Search •
-              <kbd className="px-2 py-1 bg-gray-100 rounded text-xs">⌘/Ctrl+1-6</kbd> Filter
-            </div>
-            <button
-              onClick={fetchOrders}
+          <h1 className="text-2xl font-bold text-gray-900">Cannè Admin</h1>
+          <p className="text-gray-600 mt-2">Order Management System</p>
+        </div>
+        <div className="space-y-4">
+          <input
+            type="password"
+            placeholder="Enter admin password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleAuth()}
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+          />
+          <button
+            onClick={handleAuth}
+            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all transform hover:scale-[1.02]"
+          >
+            Access Admin Panel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+return (
+  <div className="min-h-screen bg-gray-50">
+    <AdminNav />
+    <div className="p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Orders Dashboard</h1>
+            <p className="text-gray-600 mt-1">Manage and track all customer orders</p>
+          </div>
+          <button
+            onClick={fetchOrders}
+            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+          >
+            <RefreshCw size={16} />
+            Refresh
+          </button>
               disabled={loading}
               className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors disabled:opacity-50"
               aria-label="Refresh orders"

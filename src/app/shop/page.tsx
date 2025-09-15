@@ -7,9 +7,9 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useCartStore } from '@/services/CartService';
 import { DatabaseProduct } from '@/services/DatabaseService';
-import { useProducts } from '@/hooks/useProducts';
+import { useProductsWithInventory } from '@/hooks/useProductsWithInventory';
 import toast from 'react-hot-toast';
-import { ShoppingBag, Star, Zap, Shield, Gift, Loader2, AlertCircle, ChevronDown } from 'lucide-react';
+import { ShoppingBag, Star, Zap, Shield, Gift, Loader2, AlertCircle, ChevronDown, Package } from 'lucide-react';
 import Link from 'next/link';
 
 // Strain options
@@ -37,23 +37,15 @@ export default function ShopPage() {
   const [selectedStrains, setSelectedStrains] = useState<Record<string, StrainOption>>({});
   const [strainQuantities, setStrainQuantities] = useState<Record<string, Record<string, number>>>({});
 
-  // Use MCP-aligned products hook
+  // Use inventory-aware products hook
   const {
     products,
     loading,
     error,
-    count,
-    searchProducts,
-    getProductsByTier,
-    testConnection,
-    refresh,
-    clearError
-  } = useProducts({
-    autoFetch: true,
-    searchTerm,
-    sortBy,
-    sortOrder
-  });
+    refetch,
+    getStockStatus,
+    isProductAvailable
+  } = useProductsWithInventory();
 
   // Test database connection on mount
   useEffect(() => {
@@ -67,6 +59,12 @@ export default function ShopPage() {
     initializeDatabase();
     hydrateCart();
   }, [testConnection, hydrateCart]);
+
+  useEffect(() => {
+    if (error) {
+      toast.error('Failed to load products. Please refresh the page.');
+    }
+  }, [error]);
 
   // Memoized filtered and sorted products for better performance
   const filteredProducts = useMemo(() => {
