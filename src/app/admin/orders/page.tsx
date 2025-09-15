@@ -203,29 +203,52 @@ export default function AdminOrdersPage() {
     toast.success('Copied to clipboard');
   };
 
-  const openOrderDetails = (order: CashAppOrder) => {
-    setSelectedOrder(order);
-    setShowOrderDetails(true);
-  };
 
-  const handleStatusChange = async (orderId: string, newStatus: string) => {
+  const handleStatusChange = async (orderId: string, newStatus: string, reason?: string) => {
     try {
-      const response = await fetch('/api/orders/change-status', {
-        method: 'POST',
+      const response = await fetch(`/api/admin/orders/${orderId}/status`, {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ order_id: orderId, new_status: newStatus })
+        body: JSON.stringify({ status: newStatus, reason, admin_user: 'admin' })
       });
 
+      const data = await response.json();
+
       if (response.ok) {
-        toast.success('Order status updated successfully');
+        showSuccessToast('Status Updated', data.message || 'Order status updated successfully');
         fetchOrders();
       } else {
-        const error = await response.json();
-        toast.error(error.error || 'Failed to update order status');
+        showErrorToast('Update Failed', data.error || 'Failed to update order status');
       }
     } catch (error) {
-      toast.error('Error updating order status');
+      showErrorToast('Error', 'Error updating order status');
     }
+  };
+
+  const handleAssignDriver = async (orderId: string, driverId: string) => {
+    try {
+      const response = await fetch(`/api/admin/orders/${orderId}/assign-driver`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ driver_id: driverId, admin_user: 'admin' })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        showSuccessToast('Driver Assigned', data.message || 'Driver assigned successfully');
+        fetchOrders();
+      } else {
+        showErrorToast('Assignment Failed', data.error || 'Failed to assign driver');
+      }
+    } catch (error) {
+      showErrorToast('Error', 'Error assigning driver');
+    }
+  };
+
+  const openOrderDetails = (orderId: string) => {
+    setSelectedOrderId(orderId);
+    setIsDrawerOpen(true);
   };
 
   if (!isAuthenticated) {
