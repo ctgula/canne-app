@@ -143,12 +143,10 @@ export default function AdminDriversPage() {
   if (loading) {
     return (
       <AdminLayout 
-        activeTab="drivers"
-        searchTerm={searchTerm}
+        searchValue={searchTerm}
         onSearchChange={setSearchTerm}
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
-        statusCounts={{}}
       >
         <div className="animate-pulse">
           <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
@@ -168,16 +166,15 @@ export default function AdminDriversPage() {
 
   return (
     <AdminLayout 
-      activeTab="drivers"
-      searchTerm={searchTerm}
+      searchValue={searchTerm}
       onSearchChange={setSearchTerm}
       statusFilter={statusFilter}
       onStatusFilterChange={setStatusFilter}
-      statusCounts={{
-        all: drivers.length,
-        active: drivers.filter(d => d.is_active).length,
-        inactive: drivers.filter(d => !d.is_active).length
-      }}
+      statusOptions={[
+        { value: 'all', label: 'All Drivers', count: drivers.length },
+        { value: 'active', label: 'Active', count: drivers.filter(d => d.is_active).length },
+        { value: 'inactive', label: 'Inactive', count: drivers.filter(d => !d.is_active).length }
+      ]}
     >
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
