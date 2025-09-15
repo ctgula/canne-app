@@ -29,6 +29,13 @@ export async function GET(request: NextRequest) {
           name,
           phone,
           email
+        ),
+        order_items (
+          quantity,
+          products (
+            name,
+            price_cents
+          )
         )
       `)
       .order('created_at', { ascending: false });
@@ -50,7 +57,19 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });
     }
 
-    return NextResponse.json({ orders: orders || [] });
+    // Transform data to match frontend expectations
+    const transformedOrders = (orders || []).map(order => ({
+      ...order,
+      order_number: order.short_code, // Map short_code to order_number
+      customers: {
+        first_name: order.customers?.name?.split(' ')[0] || '',
+        last_name: order.customers?.name?.split(' ').slice(1).join(' ') || '',
+        phone: order.customers?.phone || '',
+        email: order.customers?.email || ''
+      }
+    }));
+
+    return NextResponse.json({ orders: transformedOrders });
   } catch (error) {
     console.error('Error in GET /api/admin/orders:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
