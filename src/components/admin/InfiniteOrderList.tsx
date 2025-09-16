@@ -222,13 +222,7 @@ export function InfiniteOrderList({
           >
             Try Again
           </button>
-          {/* Details Modal */}
-      <OrderDetailsModal
-        isOpen={detailsOpen}
-        orderId={detailsOrderId}
-        onClose={() => { setDetailsOpen(false); setDetailsOrderId(null); }}
-      />
-    </div>
+        </div>
       </div>
     );
   }
@@ -266,7 +260,6 @@ export function InfiniteOrderList({
             <div
               key={order.id}
               ref={index === orders.length - 1 ? lastOrderRef : undefined}
-              onClick={() => { setDetailsOrderId(order.id); setDetailsOpen(true); }}
             >
               <OrderListItem
                 order={order}
@@ -275,6 +268,7 @@ export function InfiniteOrderList({
                 onText={() => onText(order.id)}
                 onCall={() => onCall(order.id)}
                 onDirections={() => onDirections(order.id)}
+                onOpenDetails={() => { setDetailsOrderId(order.id); setDetailsOpen(true); }}
               />
             </div>
           ))
@@ -294,6 +288,13 @@ export function InfiniteOrderList({
           </div>
         )}
       </div>
+
+      {/* Details Modal */}
+      <OrderDetailsModal
+        isOpen={detailsOpen}
+        orderId={detailsOrderId}
+        onClose={() => { setDetailsOpen(false); setDetailsOrderId(null); }}
+      />
     </div>
   );
 }
