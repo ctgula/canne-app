@@ -26,15 +26,15 @@ export async function GET(request: NextRequest) {
           orders (
             order_number,
             total,
-            customer_phone,
-            delivery_address
+            phone,
+            delivery_address_line1
           )
         )
       `);
 
     // Apply filters
     if (search) {
-      query = query.or(`name.ilike.%${search}%,phone.ilike.%${search}%,email.ilike.%${search}%`);
+      query = query.or(`full_name.ilike.%${search}%,phone.ilike.%${search}%,email.ilike.%${search}%`);
     }
     if (active !== null) {
       query = query.eq('is_active', active === 'true');
@@ -58,10 +58,10 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, phone, email } = body;
+    const { full_name, phone, email } = body;
 
-    if (!name || !phone || !email) {
-      return NextResponse.json({ error: 'Name, phone, and email are required' }, { status: 400 });
+    if (!full_name || !phone || !email) {
+      return NextResponse.json({ error: 'Full name, phone, and email are required' }, { status: 400 });
     }
 
     // Check if driver with this phone or email already exists
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
     const { data: driver, error } = await supabase
       .from('drivers')
       .insert({
-        name,
+        full_name,
         phone,
         email,
         is_active: true,
