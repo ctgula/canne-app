@@ -104,13 +104,19 @@ export function InfiniteOrderList({
         phone: order.customers?.phone || order.phone || 'No phone',
         address: `${order.delivery_address_line1 || ''} ${order.delivery_city || ''}`.trim() || 'No address',
         items: order.order_items?.length || 0,
-        amount: order.total || 0,
+        // Backend returns dollar amounts; formatCurrency expects cents
+        amount: Math.round((order.total || 0) * 100),
         timePref: 'ASAP', // Default since not in current schema
         createdAt: order.created_at,
-        status: order.status === 'pending' ? 'pending' : 
-                order.status === 'paid' ? 'paid' :
-                order.status === 'assigned' ? 'assigned' : 
-                order.status === 'delivered' ? 'delivered' : 'issue',
+        status: (() => {
+          const s = (order.status || '').toLowerCase();
+          if (['pending', 'awaiting_payment', 'verifying'].includes(s)) return 'pending';
+          if (s === 'paid') return 'paid';
+          if (s === 'assigned') return 'assigned';
+          if (s === 'delivered') return 'delivered';
+          if (['refunded', 'canceled', 'undelivered', 'issue'].includes(s)) return 'issue';
+          return 'pending';
+        })(),
         orderNumber: order.order_number || order.short_code,
         product: order.order_items?.[0]?.products?.name || undefined,
       }));

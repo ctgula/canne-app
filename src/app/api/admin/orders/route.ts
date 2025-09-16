@@ -30,6 +30,13 @@ export async function GET(request: NextRequest) {
         delivery_city,
         delivery_state,
         delivery_zip,
+        customer_id,
+        customers (
+          first_name,
+          last_name,
+          phone,
+          email
+        ),
         order_items (
           quantity,
           products (
@@ -40,9 +47,23 @@ export async function GET(request: NextRequest) {
       `)
       .order('created_at', { ascending: false });
 
-    // Filter by status if provided
+    // Filter by status if provided (supports logical groups)
     if (status && status !== 'all') {
-      query = query.eq('status', status);
+      const group = status.toLowerCase();
+      if (group === 'pending') {
+        query = query.in('status', ['awaiting_payment', 'verifying', 'paid']);
+      } else if (group === 'assigned') {
+        query = query.in('status', ['assigned']);
+      } else if (group === 'delivered') {
+        query = query.in('status', ['delivered']);
+      } else if (group === 'issue') {
+        query = query.in('status', ['undelivered', 'refunded', 'canceled']);
+      } else if (group === 'paid') {
+        query = query.eq('status', 'paid');
+      } else {
+        // Fallback: direct match for any other status string
+        query = query.eq('status', status);
+      }
     }
 
     // Search functionality
@@ -59,14 +80,16 @@ export async function GET(request: NextRequest) {
 
     // Transform data to match frontend expectations
     const transformedOrders = (orders || []).map(order => {
-      const nameParts = (order.full_name || '').split(' ');
+      const c = Array.isArray(order.customers) ? order.customers[0] : order.customers;
+      const fullName = order.full_name || `${c?.first_name || ''} ${c?.last_name || ''}`.trim();
+      const nameParts = (fullName || '').split(' ');
       return {
         ...order,
         customers: {
-          first_name: nameParts[0] || '',
-          last_name: nameParts.slice(1).join(' ') || '',
-          phone: order.phone || '',
-          email: '' // Email not stored in orders table
+          first_name: nameParts[0] || c?.first_name || '',
+          last_name: nameParts.slice(1).join(' ') || c?.last_name || '',
+          phone: order.phone || c?.phone || '',
+          email: c?.email || ''
         }
       };
     });
