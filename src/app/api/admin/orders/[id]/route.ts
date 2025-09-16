@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
@@ -8,8 +8,8 @@ const supabase = createClient(
 
 // GET - Get single order with full relations
 export async function GET(
-  _request: NextRequest,
-  { params }: { params: { id: string } }
+  _request: Request,
+  { params }: any
 ) {
   const { id } = params;
   
