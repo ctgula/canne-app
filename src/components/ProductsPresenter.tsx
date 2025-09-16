@@ -62,7 +62,9 @@ export default function ProductsPresenter() {
         if (result.error) {
           setError(result.error);
         } else if (result.data) {
-          setProducts(result.data);
+          // Ensure ascending price order (25, 45, 75, 150)
+          const sorted = [...result.data].sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
+          setProducts(sorted);
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));
@@ -162,15 +164,22 @@ export default function ProductsPresenter() {
                 };
               });
 
-              // Create simplified description
-              const description = `${product.strain} • ${product.thc_min}–${product.thc_max}% THC • Includes Cannè art stickers + ${product.gift_grams} complimentary gift`;
+              const parts: string[] = [];
+              if (product.strain) parts.push(product.strain);
+              if (typeof product.thc_min === 'number' && typeof product.thc_max === 'number') {
+                parts.push(`${product.thc_min}–${product.thc_max}% THC`);
+              }
+              const giftByTier: Record<string, string> = { Starter: '3.5g', Classic: '7g', Black: '14g', Ultra: '28g' };
+              const gift = product.gift_grams || giftByTier[product.tier as keyof typeof giftByTier] || '';
+              if (gift) parts.push(`Includes Cannè art stickers + ${gift} complimentary gift`);
+              const description = parts.join(' • ');
 
               return (
                 <div 
                   key={product.id} 
                   className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200 group flex flex-col"
                 >
-                  {/* Image Section */}
+                  {/* Image */}
                   <div className="relative overflow-hidden rounded-t-xl">
                     <div className="aspect-square bg-gradient-to-br from-pink-100 to-purple-100">
                       <img 
@@ -184,38 +193,45 @@ export default function ProductsPresenter() {
                       />
                     </div>
                   </div>
-                  
-                  {/* Content Section */}
+
+                  {/* Content */}
                   <div className="p-6 flex-1 flex flex-col">
-                    {/* Header with Tier and 21+ */}
                     <div className="flex items-center justify-between mb-3">
                       <h3 className="text-lg font-bold">{product.name}</h3>
-                      <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-semibold">
-                        21+
-                      </span>
+                      <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-semibold">21+</span>
                     </div>
 
-                    {/* Price */}
-                    <div className="text-3xl font-bold text-gray-900 mb-4">
-                      ${product.price}
-                    </div>
-                    
-                    {/* Description */}
-                    <p className="text-gray-600 text-sm mb-4 flex-1">
-                      {description}
-                    </p>
-                    
-                    {/* Effect Chips */}
+                    <div className="text-3xl font-bold text-gray-900 mb-4">${product.price}</div>
+
+                    <p className="text-gray-600 text-sm mb-4 flex-1">{description}</p>
+
                     <div className="flex gap-1 mb-4 flex-wrap">
-                      {effectChips.slice(0, 3).map((chip, index) => (
-                        <span key={index} className={`px-2 py-1 rounded-full text-xs font-medium ${chip.className}`}>
-                          {chip.name}
-                        </span>
+                      {effectChips.slice(0, 3).map((chip, i) => (
+                        <span key={i} className={`px-2 py-1 rounded-full text-xs font-medium ${chip.className}`}>{chip.name}</span>
                       ))}
                     </div>
-                    
-                    {/* Add to Cart Button */}
-                    <button 
+
+                    {/* Strain Selector */}
+                    <div className="mb-4">
+                      <label className="block text-xs font-semibold text-gray-700 mb-1">Strain</label>
+                      <select
+                        value={getSelectedStrain(product.id).name}
+                        onChange={(e) => {
+                          const options: StrainOption[] = [
+                            { name: 'Moroccan Peach', type: 'sativa', thcLow: 18, thcHigh: 22 },
+                            { name: 'Pancake Biscotti', type: 'indica-hybrid', thcLow: 22, thcHigh: 26 },
+                          ];
+                          const found = options.find((s) => s.name === e.target.value);
+                          if (found) updateSelectedStrain(product.id, found);
+                        }}
+                        className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      >
+                        <option>Moroccan Peach</option>
+                        <option>Pancake Biscotti</option>
+                      </select>
+                    </div>
+
+                    <button
                       onClick={() => {
                         const selectedStrain = getSelectedStrain(product.id);
                         addItem(product, selectedStrain);
@@ -223,21 +239,17 @@ export default function ProductsPresenter() {
                       }}
                       disabled={product.stock <= 0}
                       className={`w-full px-4 py-3 rounded-lg font-semibold transition-all text-center ${
-                        product.stock <= 0 
-                          ? 'bg-gray-200 text-gray-500 cursor-not-allowed' 
+                        product.stock <= 0
+                          ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
                           : 'bg-purple-600 text-white hover:bg-purple-700 hover:scale-[1.02] shadow-sm focus:ring-2 focus:ring-purple-500 focus:ring-offset-2'
                       }`}
                     >
                       {product.stock <= 0 ? 'Out of Stock' : 'Add to Cart'}
                     </button>
-                    
-                    {/* Stock Indicator */}
+
                     {product.stock > 0 && (
                       <div className="flex items-center justify-center mt-3 text-sm text-green-600">
-                        <span className="flex items-center gap-1">
-                          <span className="w-2 h-2 rounded-full bg-green-400"></span>
-                          In Stock
-                        </span>
+                        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-400"></span>In Stock</span>
                       </div>
                     )}
                   </div>
@@ -247,18 +259,13 @@ export default function ProductsPresenter() {
           </div>
         )}
       </div>
-      
+
       {/* Art Sample Modal */}
       <ArtSampleModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         tier={selectedTier}
-        tierData={{
-          strainType: selectedTier,
-          effects: ['Focus', 'Creative'],
-          artStyle: 'Cannè Stickers',
-          giftAmount: 'Complimentary gift'
-        }}
+        tierData={{ strainType: selectedTier, effects: ['Focus', 'Creative'], artStyle: 'Cannè Stickers', giftAmount: 'Complimentary gift' }}
       />
     </div>
   );
