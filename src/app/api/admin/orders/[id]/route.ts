@@ -8,33 +8,41 @@ const supabase = createClient(
 
 // GET - Get single order with full relations
 export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  _request: NextRequest,
+  { params }: { params: { id: string } }
 ) {
-  const { id } = await params;
+  const { id } = params;
   
   try {
     const { data: order, error } = await supabase
       .from('orders')
       .select(`
-        *,
-        customers (
-          name,
-          phone,
-          email
-        ),
+        id,
+        order_number,
+        status,
+        total,
+        subtotal,
+        delivery_fee,
+        created_at,
+        updated_at,
+        full_name,
+        phone,
+        delivery_address_line1,
+        delivery_city,
+        delivery_state,
+        delivery_zip,
+        driver_id,
         order_items (
           id,
           quantity,
-          price_cents,
+          unit_price,
           strain,
           thc_low,
           thc_high,
           products (
             id,
             name,
-            description,
-            tier
+            price
           )
         ),
         payouts (
@@ -65,21 +73,19 @@ export async function GET(
     if (order.driver_id) {
       const { data: driverData } = await supabase
         .from('drivers')
-        .select('id, name, phone, email')
+        .select('id, full_name, phone, email')
         .eq('id', order.driver_id)
         .single();
       driver = driverData;
     }
 
     // Transform data to match frontend expectations
-    const customer = Array.isArray(order.customers) ? order.customers[0] : order.customers;
     const transformedOrder = {
       ...order,
-      order_number: order.short_code, // Map short_code to order_number for compatibility
       customers: {
-        name: customer?.name || '',
-        phone: customer?.phone || '',
-        email: customer?.email || ''
+        name: order.full_name || '',
+        phone: order.phone || '',
+        email: ''
       },
       driver
     };
