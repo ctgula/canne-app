@@ -24,3 +24,11 @@ export const metadata = {
     images: ['/images/twitter-image.jpg'],
   },
 };
+
+export default function ShopLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return children;
+}
