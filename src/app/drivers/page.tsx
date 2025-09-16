@@ -476,7 +476,7 @@ export default function DriversPage() {
                     name="availability"
                     control={control}
                     render={({ field }) => (
-                      <div className="space-y-4" role="group" aria-labelledby="availability-legend">
+                      <div className="space-y-3" role="group" aria-labelledby="availability-legend">
                         {[
                           { value: 'lunch', label: 'Lunch (11am - 3pm)' },
                           { value: 'dinner', label: 'Dinner (5pm - 10pm)' },
@@ -498,9 +498,9 @@ export default function DriversPage() {
                             />
                             <label
                               htmlFor={`availability-${option.value}`}
-                              className="flex items-center justify-center w-full p-4 text-lg font-medium text-gray-700 bg-white border-2 border-gray-300 rounded-xl cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:border-gray-400 peer-checked:bg-green-500 peer-checked:text-white peer-checked:border-green-500 peer-focus:ring-4 peer-focus:ring-green-200 peer-focus:outline-none active:scale-[0.98]"
+                              className="flex items-center justify-center w-full min-h-[60px] px-6 py-4 text-lg font-semibold text-gray-800 bg-white border-3 border-gray-300 rounded-2xl cursor-pointer transition-all duration-300 ease-in-out hover:bg-gray-50 hover:border-gray-400 hover:shadow-md peer-checked:bg-green-500 peer-checked:text-white peer-checked:border-green-500 peer-checked:shadow-lg peer-checked:scale-[1.02] peer-focus:ring-4 peer-focus:ring-green-200 peer-focus:outline-none active:scale-[0.98] touch-manipulation select-none"
                             >
-                              <span className="text-center">{option.label}</span>
+                              <span className="text-center leading-tight">{option.label}</span>
                             </label>
                           </div>
                         ))}
