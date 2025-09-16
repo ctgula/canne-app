@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Phone, MapPin, User, MessageSquare } from 'lucide-react';
+import { Phone, MapPin, User, MessageSquare, Info } from 'lucide-react';
 import { StatusChip } from './StatusChip';
 import { formatCurrency, timeSince } from '@/lib/utils';
 
@@ -28,6 +28,7 @@ interface OrderListItemProps {
   onText: () => void;
   onCall: () => void;
   onDirections: () => void;
+  onOpenDetails?: () => void;
 }
 
 export function OrderListItem({ 
@@ -36,7 +37,8 @@ export function OrderListItem({
   onIssue, 
   onText, 
   onCall, 
-  onDirections 
+  onDirections,
+  onOpenDetails
 }: OrderListItemProps) {
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -150,15 +152,26 @@ export function OrderListItem({
         </div>
 
         <div className="p-4 bg-white relative">
-          {/* Top: Customer / Total / Status */}
+          {/* Top: Customer / Total / Status + Info */}
           <div className="flex items-start justify-between mb-2">
             <div className="flex-1 min-w-0">
               <div className="font-semibold text-gray-900 truncate">{order.customer || 'Guest'}</div>
               <div className="text-xs text-gray-500">Placed {age}</div>
             </div>
-            <div className="text-right ml-3">
-              <div className="text-base font-semibold text-gray-900">{formatCurrency(order.amount)}</div>
-              <StatusChip status={order.status} />
+            <div className="text-right ml-3 flex items-start gap-2">
+              <div>
+                <div className="text-base font-semibold text-gray-900">{formatCurrency(order.amount)}</div>
+                <StatusChip status={order.status} />
+              </div>
+              {onOpenDetails && (
+                <button
+                  aria-label="View details"
+                  onClick={(e) => { e.stopPropagation(); onOpenDetails?.(); }}
+                  className="p-2 rounded-lg hover:bg-gray-100 active:bg-gray-200"
+                >
+                  <Info className="w-4 h-4 text-gray-600" />
+                </button>
+              )}
             </div>
           </div>
 

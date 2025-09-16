@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'react-hot-toast';
 import { OrderListItem } from './OrderListItem';
 import { OrderSkeletonList } from './OrderSkeleton';
+import OrderDetailsModal from './OrderDetailsModal';
+import { supabase } from '@/lib/supabase';
 
 type OrderStatus = 'pending' | 'paid' | 'assigned' | 'delivered' | 'issue';
 
@@ -53,6 +55,8 @@ export function InfiniteOrderList({
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [detailsOrderId, setDetailsOrderId] = useState<string | null>(null);
   
   const observerRef = useRef<IntersectionObserver | null>(null);
   const lastOrderRef = useCallback((node: HTMLDivElement) => {
@@ -181,6 +185,21 @@ export function InfiniteOrderList({
     fetchOrders(0, true);
   }, [status, filters]);
 
+  // Supabase realtime: refresh on new/updated orders
+  useEffect(() => {
+    const channel = supabase
+      .channel('orders-admin')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
+        // Light refresh to pick up changes
+        fetchOrders(0, true);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   if (loading && orders.length === 0) {
     return <OrderSkeletonList count={8} />;
   }
@@ -197,7 +216,13 @@ export function InfiniteOrderList({
           >
             Try Again
           </button>
-        </div>
+          {/* Details Modal */}
+      <OrderDetailsModal
+        isOpen={detailsOpen}
+        orderId={detailsOrderId}
+        onClose={() => { setDetailsOpen(false); setDetailsOrderId(null); }}
+      />
+    </div>
       </div>
     );
   }
@@ -235,6 +260,7 @@ export function InfiniteOrderList({
             <div
               key={order.id}
               ref={index === orders.length - 1 ? lastOrderRef : undefined}
+              onClick={() => { setDetailsOrderId(order.id); setDetailsOpen(true); }}
             >
               <OrderListItem
                 order={order}
