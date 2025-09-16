@@ -88,7 +88,22 @@ export function InfiniteOrderList({
       }
 
       const data = await response.json();
-      const newOrders = data.orders || [];
+      const rawOrders = data.orders || [];
+      
+      // Transform API data to match OrderListItem interface
+      const newOrders = rawOrders.map((order: any) => ({
+        id: order.id,
+        customer: `${order.customers?.first_name || ''} ${order.customers?.last_name || ''}`.trim() || 'Unknown Customer',
+        phone: order.customers?.phone || order.phone || 'No phone',
+        address: `${order.delivery_address_line1 || ''} ${order.delivery_city || ''}`.trim() || 'No address',
+        items: order.order_items?.length || 0,
+        amount: order.total || 0,
+        timePref: 'ASAP', // Default since not in current schema
+        createdAt: order.created_at,
+        status: order.status === 'pending' ? 'pending' : 
+                order.status === 'assigned' ? 'assigned' : 
+                order.status === 'delivered' ? 'delivered' : 'issue'
+      }));
 
       if (reset) {
         setOrders(newOrders);
