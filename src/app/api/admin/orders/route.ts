@@ -17,19 +17,19 @@ export async function GET(request: NextRequest) {
       .from('orders')
       .select(`
         id,
-        short_code,
+        order_number,
         status,
         total,
         subtotal,
         delivery_fee,
         created_at,
         updated_at,
-        driver_id,
-        customers (
-          name,
-          phone,
-          email
-        ),
+        full_name,
+        phone,
+        delivery_address_line1,
+        delivery_city,
+        delivery_state,
+        delivery_zip,
         order_items (
           quantity,
           products (
@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
 
     // Search functionality
     if (search) {
-      query = query.or(`short_code.ilike.%${search}%,customers.name.ilike.%${search}%,customers.phone.ilike.%${search}%`);
+      query = query.or(`order_number.ilike.%${search}%,full_name.ilike.%${search}%,phone.ilike.%${search}%`);
     }
 
     const { data: orders, error } = await query;
@@ -59,15 +59,14 @@ export async function GET(request: NextRequest) {
 
     // Transform data to match frontend expectations
     const transformedOrders = (orders || []).map(order => {
-      const customer = Array.isArray(order.customers) ? order.customers[0] : order.customers;
+      const nameParts = (order.full_name || '').split(' ');
       return {
         ...order,
-        order_number: order.short_code, // Map short_code to order_number
         customers: {
-          first_name: customer?.name?.split(' ')[0] || '',
-          last_name: customer?.name?.split(' ').slice(1).join(' ') || '',
-          phone: customer?.phone || '',
-          email: customer?.email || ''
+          first_name: nameParts[0] || '',
+          last_name: nameParts.slice(1).join(' ') || '',
+          phone: order.phone || '',
+          email: '' // Email not stored in orders table
         }
       };
     });
