@@ -4,9 +4,7 @@ import { useState, useEffect } from 'react';
 import { Product } from '@/models/Product';
 import { ProductController } from '@/controllers/ProductController';
 import { useCartStore, StrainOption } from '@/services/CartService';
-import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
-import { Eye } from 'lucide-react';
 import ArtSampleModal from './ArtSampleModal';
 
 /**
@@ -116,13 +114,13 @@ export default function ProductsPresenter() {
   return (
     <div className="py-12">
       <div className="mx-auto max-w-[1280px] px-6">
-        <h1 className="text-3xl font-semibold text-center mb-6">Art Collection</h1>
+        <h1 className="text-3xl font-semibold text-center mb-6">Cannè Art Collection</h1>
         <p className="text-center text-gray-600 mb-8">
-          Original Cannè artwork with complimentary gift. I-71 compliant, DC-only delivery.
+          Choose your tier, all include Cannè art stickers + gifts
         </p>
 
         {loading && (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-6 grid-cols-1 md:grid-cols-2 xl:grid-cols-4">
             {[...Array(4)].map((_, i) => (
               <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 animate-pulse">
                 <div className="aspect-square bg-gray-200 rounded-lg mb-4"></div>
@@ -150,12 +148,7 @@ export default function ProductsPresenter() {
         )}
         
         {!loading && products.length > 0 && (
-          <motion.div 
-            className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-          >
+          <div className="grid gap-6 grid-cols-1 md:grid-cols-2 xl:grid-cols-4">
             {products.map((product) => {
               const effectChips = (product.badges || []).map(effect => {
                 const effectMap: Record<string, string> = {
@@ -169,18 +162,20 @@ export default function ProductsPresenter() {
                 };
               });
 
+              // Create simplified description
+              const description = `${product.strain} • ${product.thc_min}–${product.thc_max}% THC • Includes Cannè art stickers + ${product.gift_grams} complimentary gift`;
+
               return (
-                <motion.div 
+                <div 
                   key={product.id} 
-                  className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200 group min-h-[500px] flex flex-col"
-                  variants={itemVariants}
+                  className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200 group flex flex-col"
                 >
                   {/* Image Section */}
                   <div className="relative overflow-hidden rounded-t-xl">
                     <div className="aspect-square bg-gradient-to-br from-pink-100 to-purple-100">
                       <img 
                         src={product.image_url} 
-                        alt={`Cannè Art — ${product.tier}`}
+                        alt={`Cannè ${product.tier}`}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
@@ -192,90 +187,53 @@ export default function ProductsPresenter() {
                   
                   {/* Content Section */}
                   <div className="p-6 flex-1 flex flex-col">
-                    {/* Header Row with Tier and Effects */}
+                    {/* Header with Tier and 21+ */}
                     <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                          product.tier === 'Starter' ? 'bg-sky-100 text-sky-800' :
-                          product.tier === 'Classic' ? 'bg-purple-100 text-purple-800' :
-                          product.tier === 'Black' ? 'bg-slate-100 text-slate-800' :
-                          'bg-pink-100 text-pink-800'
-                        }`}>
-                          {product.tier}
-                        </span>
-                        <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-semibold">
-                          21+
-                        </span>
-                      </div>
-                      <div className="flex gap-1">
-                        {effectChips.slice(0, 2).map((chip, index) => (
-                          <span key={index} className={`px-2 py-1 rounded-full text-xs font-medium ${chip.className}`}>
-                            {chip.name}
-                          </span>
-                        ))}
-                      </div>
+                      <h3 className="text-lg font-bold">{product.name}</h3>
+                      <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-semibold">
+                        21+
+                      </span>
                     </div>
 
-                    {/* Title */}
-                    <h3 className="text-lg font-bold mb-1">Cannè Art — {product.tier}</h3>
-                    <p className="text-sm text-gray-600 mb-4">Cannè Stickers — complimentary gift included</p>
-                    
-                    {/* Details List */}
-                    <div className="space-y-1 text-sm text-gray-600 mb-4 flex-1">
-                      <div className="flex items-start gap-2">
-                        <span className="text-gray-400 mt-0.5">•</span>
-                        <span>{product.strain} • {product.thc_min}–{product.thc_max}% THC (est.)</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <span className="text-gray-400 mt-0.5">•</span>
-                        <span>Includes {product.gift_grams} complimentary gift</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <span className="text-gray-400 mt-0.5">•</span>
-                        <span className="text-green-600 font-medium cursor-pointer hover:underline">{product.compliance_note}</span>
-                      </div>
+                    {/* Price */}
+                    <div className="text-3xl font-bold text-gray-900 mb-4">
+                      ${product.price}
                     </div>
                     
-                    {/* Price Block */}
-                    <div className="mb-4">
-                      <div className="text-2xl font-bold text-gray-900">${product.price}</div>
-                      <div className="text-sm text-gray-500 border-t border-gray-200 pt-1 mt-1">
-                        + complimentary gift
-                      </div>
+                    {/* Description */}
+                    <p className="text-gray-600 text-sm mb-4 flex-1">
+                      {description}
+                    </p>
+                    
+                    {/* Effect Chips */}
+                    <div className="flex gap-1 mb-4 flex-wrap">
+                      {effectChips.slice(0, 3).map((chip, index) => (
+                        <span key={index} className={`px-2 py-1 rounded-full text-xs font-medium ${chip.className}`}>
+                          {chip.name}
+                        </span>
+                      ))}
                     </div>
                     
-                    {/* CTA Row */}
-                    <div className="space-y-2">
-                      <button 
-                        onClick={() => {
-                          const selectedStrain = getSelectedStrain(product.id);
-                          addItem(product, selectedStrain);
-                          toast.success(`Added Cannè Art — ${product.tier} to cart! 🎨`);
-                        }}
-                        disabled={product.stock <= 0}
-                        className={`w-full px-4 py-3 rounded-lg font-semibold transition-all ${
-                          product.stock <= 0 
-                            ? 'bg-gray-200 text-gray-500 cursor-not-allowed' 
-                            : 'bg-purple-600 text-white hover:bg-purple-700 hover:scale-[1.02] shadow-sm focus:ring-2 focus:ring-purple-500 focus:ring-offset-2'
-                        }`}
-                      >
-                        {product.stock <= 0 ? 'Out of Stock' : `Add to Cart — $${product.price}`}
-                      </button>
-                      
-                      <button 
-                        onClick={() => {
-                          setSelectedTier(product.tier);
-                          setModalOpen(true);
-                        }}
-                        className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
-                      >
-                        View Sample Art
-                      </button>
-                    </div>
+                    {/* Add to Cart Button */}
+                    <button 
+                      onClick={() => {
+                        const selectedStrain = getSelectedStrain(product.id);
+                        addItem(product, selectedStrain);
+                        toast.success(`Added ${product.name} to cart! 🎨`);
+                      }}
+                      disabled={product.stock <= 0}
+                      className={`w-full px-4 py-3 rounded-lg font-semibold transition-all text-center ${
+                        product.stock <= 0 
+                          ? 'bg-gray-200 text-gray-500 cursor-not-allowed' 
+                          : 'bg-purple-600 text-white hover:bg-purple-700 hover:scale-[1.02] shadow-sm focus:ring-2 focus:ring-purple-500 focus:ring-offset-2'
+                      }`}
+                    >
+                      {product.stock <= 0 ? 'Out of Stock' : 'Add to Cart'}
+                    </button>
                     
                     {/* Stock Indicator */}
                     {product.stock > 0 && (
-                      <div className="flex items-center justify-start mt-3 text-sm text-green-600">
+                      <div className="flex items-center justify-center mt-3 text-sm text-green-600">
                         <span className="flex items-center gap-1">
                           <span className="w-2 h-2 rounded-full bg-green-400"></span>
                           In Stock
@@ -283,10 +241,10 @@ export default function ProductsPresenter() {
                       </div>
                     )}
                   </div>
-                </motion.div>
+                </div>
               );
             })}
-          </motion.div>
+          </div>
         )}
       </div>
       
