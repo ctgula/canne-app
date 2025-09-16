@@ -6,15 +6,23 @@ import { supabase } from '@/lib/supabase';
 export interface Product {
   id: string;
   name: string;
-  description: string;
-  price: number;
   tier: 'Starter' | 'Classic' | 'Black' | 'Ultra';
-  weight: string;
-  gift_amount?: string; // Database uses gift_amount for complimentary gift weight
-  color_theme: string;
+  price: number;
+  stock: number;
+  strain?: string;
+  thc_min?: number;
+  thc_max?: number;
+  gift_grams?: string;
+  badges?: string[];
   image_url: string;
-  is_active: boolean;
-  created_at: string;
+  compliance_note?: string;
+  // Legacy fields for backward compatibility
+  description?: string;
+  weight?: string;
+  gift_amount?: string;
+  color_theme?: string;
+  is_active?: boolean;
+  created_at?: string;
 }
 
 /**
@@ -38,8 +46,11 @@ export class ProductModel {
     try {
       const { data, error } = await supabase
         .from('products')
-        .select('*')
-        .eq('is_active', true)
+        .select('id, name, tier, price, stock, strain, thc_min, thc_max, gift_grams, badges, image_url, compliance_note')
+        .eq('active', true)
+        .eq('is_test', false)
+        .gt('stock', 0)
+        .order('tier', { ascending: true })
         .order('price', { ascending: true });
 
       if (error) {

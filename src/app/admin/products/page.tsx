@@ -31,6 +31,7 @@ interface Product {
   strain: string;
   thc_range: string;
   is_active: boolean;
+  is_test: boolean;
   hero_image_url: string;
   created_at: string;
   updated_at: string;
@@ -93,6 +94,24 @@ export default function AdminProductsPage() {
       if (!response.ok) throw new Error('Failed to update product');
       
       toast.success(`Product ${!currentActive ? 'activated' : 'deactivated'}`);
+      fetchProducts();
+    } catch (error) {
+      console.error('Error updating product:', error);
+      toast.error('Failed to update product');
+    }
+  };
+
+  const handleToggleTest = async (productId: string, currentIsTest: boolean) => {
+    try {
+      const response = await fetch(`/api/admin/products/${productId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_test: !currentIsTest })
+      });
+
+      if (!response.ok) throw new Error('Failed to update product');
+      
+      toast.success(`Product marked as ${!currentIsTest ? 'test product' : 'live product'}`);
       fetchProducts();
     } catch (error) {
       console.error('Error updating product:', error);
@@ -365,6 +384,13 @@ export default function AdminProductsPage() {
                         >
                           {product.is_active ? <EyeOff size={14} /> : <Eye size={14} />}
                           {product.is_active ? 'Hide' : 'Show'}
+                        </button>
+                        <button
+                          onClick={() => handleToggleTest(product.id, product.is_test)}
+                          className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full text-left"
+                        >
+                          <AlertTriangle size={14} />
+                          {product.is_test ? 'Mark as Live' : 'Mark as Test'}
                         </button>
                         <button
                           onClick={() => handleDeleteProduct(product.id)}
