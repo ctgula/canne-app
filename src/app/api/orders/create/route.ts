@@ -20,17 +20,23 @@ export async function POST(request: NextRequest) {
     // Generate a short code for the payment
     const shortCode = `PAY-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
 
-    // Create a payment record in the database
+    // Create a payment record in the orders table instead
     const { data: paymentRecord, error } = await supabase
-      .from('cashapp_payments')
+      .from('orders')
       .insert({
-        short_code: shortCode,
-        amount_cents: amount_cents,
-        customer_phone: customer_phone || null,
+        order_number: shortCode,
         status: 'awaiting_payment',
-        expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString() // 15 minutes from now
+        total: amount_cents / 100, // Convert cents to dollars
+        subtotal: amount_cents / 100,
+        delivery_fee: 0,
+        full_name: 'Cash App Customer',
+        phone: customer_phone || '',
+        delivery_address_line1: 'TBD',
+        delivery_city: 'Washington',
+        delivery_state: 'DC',
+        delivery_zip: '20001'
       })
-      .select('short_code')
+      .select('order_number')
       .single();
 
     if (error) {
@@ -42,7 +48,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({
-      short_code: paymentRecord.short_code
+      short_code: paymentRecord.order_number
     });
 
   } catch (error) {
