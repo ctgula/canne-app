@@ -5,7 +5,7 @@ import { Phone, MapPin, User, MessageSquare } from 'lucide-react';
 import { StatusChip } from './StatusChip';
 import { formatCurrency, timeSince } from '@/lib/utils';
 
-type OrderStatus = 'pending' | 'assigned' | 'delivered' | 'issue';
+type OrderStatus = 'pending' | 'paid' | 'assigned' | 'delivered' | 'issue';
 
 interface Order {
   id: string;
@@ -17,6 +17,8 @@ interface Order {
   timePref: string;
   createdAt: string;
   status: OrderStatus;
+  orderNumber?: string;
+  product?: string;
 }
 
 interface OrderListItemProps {
@@ -148,10 +150,11 @@ export function OrderListItem({
         </div>
 
         <div className="p-4 bg-white relative">
-          <div className="flex items-start justify-between mb-3">
+          {/* Top: Customer / Total / Status */}
+          <div className="flex items-start justify-between mb-2">
             <div className="flex-1 min-w-0">
-              <div className="font-semibold text-gray-900 truncate">{order.customer}</div>
-              <div className="text-sm text-gray-600">{order.timePref} · {age}</div>
+              <div className="font-semibold text-gray-900 truncate">{order.customer || 'Guest'}</div>
+              <div className="text-xs text-gray-500">Placed {age}</div>
             </div>
             <div className="text-right ml-3">
               <div className="text-base font-semibold text-gray-900">{formatCurrency(order.amount)}</div>
@@ -159,7 +162,15 @@ export function OrderListItem({
             </div>
           </div>
 
-          {/* Action buttons */}
+          {/* Middle: Product + Time Pref + Order ID */}
+          <div className="mb-3 text-sm text-gray-700">
+            <div className="truncate">{order.product || 'Order'} · {order.timePref || 'ASAP'}</div>
+            {order.orderNumber && (
+              <div className="text-gray-500 text-xs">#{order.orderNumber}</div>
+            )}
+          </div>
+
+          {/* Bottom: Action buttons */}
           <div className="flex items-center justify-between gap-2 text-sm">
             <button
               onClick={onAssign}

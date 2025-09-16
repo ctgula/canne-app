@@ -3,7 +3,7 @@
 import { Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-type OrderStatus = 'pending' | 'assigned' | 'delivered' | 'issue';
+type OrderStatus = 'pending' | 'paid' | 'assigned' | 'delivered' | 'issue';
 
 interface StatusChipProps {
   status: OrderStatus;
@@ -13,13 +13,15 @@ interface StatusChipProps {
 export function StatusChip({ status, className }: StatusChipProps) {
   const variants = {
     pending: "bg-amber-50 text-amber-700 ring-1 ring-amber-200",
+    paid: "bg-green-50 text-green-700 ring-1 ring-green-200",
     assigned: "bg-blue-50 text-blue-700 ring-1 ring-blue-200", 
-    delivered: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
+    delivered: "bg-emerald-100 text-emerald-800 ring-1 ring-emerald-300",
     issue: "bg-rose-50 text-rose-700 ring-1 ring-rose-200",
   } as const;
 
   const labels = {
     pending: 'Pending',
+    paid: 'Paid',
     assigned: 'Assigned',
     delivered: 'Delivered', 
     issue: 'Issue',
@@ -27,7 +29,7 @@ export function StatusChip({ status, className }: StatusChipProps) {
 
   return (
     <span className={cn(
-      "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium",
+      "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold",
       variants[status],
       className
     )}>

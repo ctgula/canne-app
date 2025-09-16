@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { toast } from 'react-hot-toast';
 import { OrderListItem } from './OrderListItem';
 import { OrderSkeletonList } from './OrderSkeleton';
 
-type OrderStatus = 'pending' | 'assigned' | 'delivered' | 'issue';
+type OrderStatus = 'pending' | 'paid' | 'assigned' | 'delivered' | 'issue';
 
 interface Order {
   id: string;
@@ -16,6 +17,8 @@ interface Order {
   timePref: string;
   createdAt: string;
   status: OrderStatus;
+  orderNumber?: string;
+  product?: string;
 }
 
 interface InfiniteOrderListProps {
@@ -91,7 +94,7 @@ export function InfiniteOrderList({
       const rawOrders = data.orders || [];
       
       // Transform API data to match OrderListItem interface
-      const newOrders = rawOrders.map((order: any) => ({
+      const newOrders: Order[] = rawOrders.map((order: any) => ({
         id: order.id,
         customer: `${order.customers?.first_name || ''} ${order.customers?.last_name || ''}`.trim() || 'Unknown Customer',
         phone: order.customers?.phone || order.phone || 'No phone',
@@ -101,12 +104,20 @@ export function InfiniteOrderList({
         timePref: 'ASAP', // Default since not in current schema
         createdAt: order.created_at,
         status: order.status === 'pending' ? 'pending' : 
+                order.status === 'paid' ? 'paid' :
                 order.status === 'assigned' ? 'assigned' : 
-                order.status === 'delivered' ? 'delivered' : 'issue'
+                order.status === 'delivered' ? 'delivered' : 'issue',
+        orderNumber: order.order_number || order.short_code,
+        product: order.order_items?.[0]?.products?.name || undefined,
       }));
 
       if (reset) {
+        // New order detection (toast)
+        const prevFirstId = orders[0]?.id;
         setOrders(newOrders);
+        if (prevFirstId && newOrders[0] && newOrders[0].id !== prevFirstId) {
+          toast.success('New order received');
+        }
       } else {
         setOrders(prev => [...prev, ...newOrders]);
       }

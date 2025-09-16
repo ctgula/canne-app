@@ -8,6 +8,8 @@ import { FilterBar, FilterState } from '@/components/admin/FilterBar';
 import { InfiniteOrderList } from '@/components/admin/InfiniteOrderList';
 import { BottomOpsBar, OpsSettings } from '@/components/admin/BottomOpsBar';
 import { OrderSkeletonList } from '@/components/admin/OrderSkeleton';
+import AssignDriverModal from '@/components/admin/AssignDriverModal';
+import { toast } from 'react-hot-toast';
 
 type TabValue = 'pending' | 'assigned' | 'delivered' | 'issue';
 
@@ -40,6 +42,8 @@ function AdminPageContent() {
   });
   const [asapCount15m, setAsapCount15m] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [assignModalOpen, setAssignModalOpen] = useState(false);
+  const [assignTargetOrderId, setAssignTargetOrderId] = useState<string | null>(null);
 
   // Initialize tab from URL
   useEffect(() => {
@@ -94,16 +98,29 @@ function AdminPageContent() {
   }, []);
 
   // Order action handlers
-  const handleAssign = async (orderId: string) => {
+  const handleAssign = (orderId: string) => {
+    setAssignTargetOrderId(orderId);
+    setAssignModalOpen(true);
+  };
+
+  const handleConfirmAssign = async (driverId: string) => {
+    if (!assignTargetOrderId) return;
     try {
-      const response = await fetch(`/api/admin/orders/${orderId}/assign`, {
+      const res = await fetch(`/api/admin/orders/${assignTargetOrderId}/assign`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ driver_id: driverId })
       });
-      if (response.ok) {
-        fetchKpiData(); // Refresh counts
-      }
-    } catch (error) {
-      console.error('Error assigning order:', error);
+      if (!res.ok) throw new Error('Failed to assign');
+      toast.success('Order assigned');
+      fetchKpiData();
+      // Optionally trigger a list refresh via FilterBar change or URL param change; list will auto-refresh on next poll
+    } catch (e) {
+      console.error(e);
+      toast.error('Failed to assign order');
+    } finally {
+      setAssignModalOpen(false);
+      setAssignTargetOrderId(null);
     }
   };
 
@@ -181,6 +198,13 @@ function AdminPageContent() {
         asapCount15m={asapCount15m}
         asapQuota={20} // Configure as needed
         onSettingsChange={setOpsSettings}
+      />
+
+      {/* Assign Driver Modal */}
+      <AssignDriverModal
+        isOpen={assignModalOpen}
+        onClose={() => { setAssignModalOpen(false); setAssignTargetOrderId(null); }}
+        onAssign={handleConfirmAssign}
       />
     </div>
   );
