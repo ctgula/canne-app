@@ -51,7 +51,7 @@ export function InfiniteOrderList({
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   
-  const observerRef = useRef<IntersectionObserver>();
+  const observerRef = useRef<IntersectionObserver | null>(null);
   const lastOrderRef = useCallback((node: HTMLDivElement) => {
     if (loadingMore) return;
     if (observerRef.current) observerRef.current.disconnect();

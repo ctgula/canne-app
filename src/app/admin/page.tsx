@@ -139,7 +139,7 @@ function AdminPageContent() {
     { value: 'pending' as const, label: 'Pending', count: tabCounts.pending },
     { value: 'assigned' as const, label: 'Assigned', count: tabCounts.assigned },
     { value: 'delivered' as const, label: 'Delivered', count: tabCounts.delivered },
-    { value: 'issues' as const, label: 'Issues', count: tabCounts.issues },
+    { value: 'issue' as const, label: 'Issues', count: tabCounts.issue },
   ];
 
   return (
