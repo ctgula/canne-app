@@ -2,31 +2,39 @@
 const testOrder = {
   items: [
     {
-      id: 'ddc696a0-a537-4d10-b820-584c6c512bff', // Starter Collection
-      name: 'Starter Collection',
-      price: 25,
-      quantity: 2,
-      giftSize: '3.5g'
-    },
-    {
-      id: '4e08d8c4-bc92-451c-b1fb-d2898070462f', // Classic Series
-      name: 'Classic Series',
-      price: 45,
+      product: {
+        id: 'ddc696a0-a537-4d10-b820-584c6c512bff', // Starter Collection
+        name: 'Starter Collection',
+        description: 'Single digital print + complimentary top-shelf gift',
+        price: 25,
+        artworkUrl: '',
+        giftSize: '3.5g',
+        hasDelivery: true
+      },
       quantity: 1,
-      giftSize: '7g'
+      strain: {
+        name: 'Moroccan Peach',
+        type: 'sativa',
+        thcLow: 18,
+        thcHigh: 22
+      }
     }
   ],
   deliveryDetails: {
     name: "Test Customer",
-    phone: "(202) 555-0123",
+    email: "test@example.com",
+    phone: "2025550123",
     address: "1234 Test Street NW",
     city: "Washington",
     zipCode: "20001",
-    preferredTime: "Evening (5 PM - 8 PM)",
-    specialInstructions: "Test order for debugging Discord notifications"
+    timePreference: "ASAP (60–90 min)",
+    specialInstructions: "Test order for debugging",
+    ageVerification: true,
+    termsAccepted: true
   },
-  total: 45,
-  hasDelivery: true
+  total: 35,
+  hasDelivery: false,
+  status: 'pending'
 };
 
 // Test the API endpoint

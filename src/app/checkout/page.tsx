@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { getTierInfo } from '@/lib/gifting';
 import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
@@ -63,7 +63,7 @@ interface OrderCartItem {
 }
 
 export default function CheckoutPage() {
-  const { items, clearCart, getTotal } = useCartStore();
+  const { items, clearCart, getTotal, hydrateCart } = useCartStore();
   const { initiatePayment } = useCashAppPayment();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOrderComplete, setIsOrderComplete] = useState(false);
@@ -89,6 +89,11 @@ export default function CheckoutPage() {
     }>;
   } | null>(null);
   const [phoneError, setPhoneError] = useState<string>('');
+
+  // Hydrate cart from localStorage on component mount
+  useEffect(() => {
+    hydrateCart();
+  }, [hydrateCart]);
 
   // zod schema for required checkboxes
   const schema = z.object({
@@ -175,6 +180,13 @@ export default function CheckoutPage() {
     hasDelivery: hasDelivery,
     deliveryFee: hasDelivery ? 0 : 10,
     finalTotal: finalTotal,
+    itemsCount: items.length,
+    items: items.map(item => ({ 
+      name: item.product.name, 
+      price: item.product.price, 
+      quantity: item.quantity,
+      subtotal: item.product.price * item.quantity 
+    })),
     confirmedOrder: confirmedOrder
   });
 
@@ -322,6 +334,14 @@ export default function CheckoutPage() {
     
     setIsSubmitting(true);
 
+    // Final validation before submission
+    console.log('🚀 Starting order submission with:', {
+      cartTotal,
+      hasDelivery,
+      finalTotal,
+      itemsCount: items.length
+    });
+
     try {
       const orderItems: OrderCartItem[] = items.map(item => ({
         product: {
@@ -428,7 +448,7 @@ export default function CheckoutPage() {
       
       // Better error handling with specific messages
       if (errorMessage.includes('Price calculation mismatch')) {
-        alert(`⚠️ Pricing Error\n\n${errorMessage}\n\nThis usually happens when prices have been updated. Please refresh the page and try again.`);
+        alert(`⚠️ Pricing Error\n\n${errorMessage}\n\nThis usually happens when:\n• Cart was modified during checkout\n• Prices have been updated\n• Browser cache is outdated\n\nPlease refresh the page and try again.`);
       } else if (errorMessage.includes('Out-of-zone address')) {
         alert(`📍 Delivery Area Error\n\nWe currently only deliver to Washington DC (ZIP codes 20000-20199). Please check your ZIP code and try again.`);
       } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
