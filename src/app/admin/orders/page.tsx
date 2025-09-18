@@ -51,11 +51,11 @@ interface Driver {
 }
 
 // Utility functions
-const formatCurrency = (cents: number): string => {
+const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD'
-  }).format(cents / 100);
+  }).format(amount);
 };
 
 const formatDate = (dateString: string): string => {
@@ -290,23 +290,23 @@ export default function AdminOrdersPage() {
           Manage customer orders, track status, and assign drivers
         </p>
         
-        {/* Order Statistics */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-            <div className="text-2xl font-bold text-purple-600">{statusCounts.pending || 0}</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Pending Orders</div>
+        {/* Order Statistics - Simplified */}
+        <div className="grid grid-cols-4 gap-4 mb-6">
+          <div className="text-center">
+            <div className="text-3xl font-bold text-purple-600">{statusCounts.pending || 0}</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">Pending</div>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-            <div className="text-2xl font-bold text-green-600">{statusCounts.delivered || 0}</div>
+          <div className="text-center">
+            <div className="text-3xl font-bold text-green-600">{statusCounts.delivered || 0}</div>
             <div className="text-sm text-gray-600 dark:text-gray-400">Delivered</div>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-            <div className="text-2xl font-bold text-blue-600">{statusCounts.paid || 0}</div>
+          <div className="text-center">
+            <div className="text-3xl font-bold text-blue-600">{statusCounts.paid || 0}</div>
             <div className="text-sm text-gray-600 dark:text-gray-400">Paid</div>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-            <div className="text-2xl font-bold text-gray-900 dark:text-white">{orders.length}</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Total Orders</div>
+          <div className="text-center">
+            <div className="text-3xl font-bold text-gray-900 dark:text-white">{orders.length}</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">Total</div>
           </div>
         </div>
       </div>
@@ -343,76 +343,43 @@ export default function AdminOrdersPage() {
                     >
                       {order.order_number}
                     </button>
-                    {/* Priority Indicators */}
+                    {/* Priority Indicators - Simplified */}
                     {order.total >= 100 && (
-                      <span className="px-1.5 py-0.5 text-xs bg-amber-100 text-amber-800 rounded font-medium" title="High Value Order">
-                        💰
-                      </span>
+                      <span className="text-amber-500" title="High Value Order">💰</span>
                     )}
-                    {(() => {
-                      const hoursOld = Math.floor((new Date().getTime() - new Date(order.created_at).getTime()) / (1000 * 60 * 60));
-                      return hoursOld > 24 && (
-                        <span className="px-1.5 py-0.5 text-xs bg-red-100 text-red-800 rounded font-medium" title={`${hoursOld}h old`}>
-                          ⏰
-                        </span>
-                      );
-                    })()}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      order.status === 'pending' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300' :
-                      order.status === 'delivered' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' :
-                      order.status === 'paid' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300' :
-                      order.status === 'assigned' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' :
-                      order.status === 'awaiting_payment' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300' :
-                      order.status === 'verifying' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300' :
-                      order.status === 'undelivered' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' :
-                      order.status === 'refunded' ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300' :
-                      order.status === 'canceled' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' :
-                      'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
-                    }`}>
-                      {order.status.replace('_', ' ').toUpperCase()}
-                    </span>
-                    <button
-                      onClick={() => openOrderDetails(order.id)}
-                      className="p-1 text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
-                      title="View order details"
-                    >
-                      <Eye className="w-4 h-4" />
-                    </button>
-                  </div>
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    order.status === 'pending' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300' :
+                    order.status === 'delivered' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' :
+                    order.status === 'paid' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300' :
+                    order.status === 'assigned' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' :
+                    order.status === 'awaiting_payment' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300' :
+                    order.status === 'verifying' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300' :
+                    order.status === 'undelivered' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' :
+                    order.status === 'refunded' ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300' :
+                    order.status === 'canceled' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' :
+                    'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                  }`}>
+                    {order.status.replace('_', ' ').toUpperCase()}
+                  </span>
                 </div>
 
-                <div className="space-y-3 mb-4">
+                <div className="space-y-2 mb-4">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                      <User size={14} className="mr-2" />
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">
                       {`${order.customers.first_name} ${order.customers.last_name}`}
                     </div>
-                    <div className="text-lg font-bold text-gray-900 dark:text-white">
+                    <div className="text-xl font-bold text-gray-900 dark:text-white">
                       {formatCurrency(order.total)}
                     </div>
                   </div>
                   
-                  <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                    <Phone size={14} className="mr-2" />
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
                     {order.customers.phone}
                   </div>
                   
-                  {order.order_items && order.order_items.length > 0 && (
-                    <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                      <Package size={14} className="mr-2" />
-                      {order.order_items[0].products.name}
-                      {order.order_items.length > 1 && ` +${order.order_items.length - 1} more`}
-                    </div>
-                  )}
-                  
-                  <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                    <div className="flex items-center">
-                      <Clock size={12} className="mr-1" />
-                      {getTimeAgo(order.created_at)}
-                    </div>
-                    <div>{formatDate(order.created_at)}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    {getTimeAgo(order.created_at)}
                   </div>
                 </div>
 
