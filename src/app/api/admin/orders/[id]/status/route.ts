@@ -7,8 +7,7 @@ const supabase = createClient(
 );
 
 const VALID_STATUSES = [
-  'awaiting_payment', 'verifying', 'paid', 'assigned', 
-  'delivered', 'undelivered', 'refunded', 'canceled'
+  'pending', 'delivered', 'cancelled'
 ];
 
 // PATCH - Update order status with transactional side effects
@@ -83,16 +82,21 @@ export async function PATCH(
     // Handle inventory and payout side effects (skip for now to avoid inventory table issues)
     // await handleStatusTransition(currentOrder, oldStatus, newStatus);
 
-    // Log status change
-    await supabase
-      .from('order_status_events')
-      .insert({
-        order_id: id,
-        old_status: oldStatus,
-        new_status: newStatus,
-        reason,
-        admin_user
-      });
+    // Log status change (skip if table doesn't exist)
+    try {
+      await supabase
+        .from('order_status_events')
+        .insert({
+          order_id: id,
+          old_status: oldStatus,
+          new_status: newStatus,
+          reason,
+          admin_user
+        });
+    } catch (logError) {
+      console.warn('Could not log status change (table may not exist):', logError);
+      // Continue with status update even if logging fails
+    }
 
     // Update order status
     const { data: updatedOrder, error: updateError } = await supabase

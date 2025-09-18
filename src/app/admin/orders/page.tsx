@@ -21,7 +21,7 @@ import toast from 'react-hot-toast';
 interface Order {
   id: string;
   order_number: string;
-  status: 'pending' | 'awaiting_payment' | 'verifying' | 'paid' | 'assigned' | 'delivered' | 'undelivered' | 'refunded' | 'canceled';
+  status: 'pending' | 'delivered' | 'cancelled';
   total: number;
   subtotal: number;
   delivery_fee: number;
@@ -106,15 +106,9 @@ export default function AdminOrdersPage() {
 
   const getValidTransitions = (currentStatus: string): string[] => {
     const transitions: Record<string, string[]> = {
-      'pending': ['awaiting_payment', 'paid', 'assigned', 'canceled'],
-      'awaiting_payment': ['verifying', 'paid', 'canceled'],
-      'verifying': ['awaiting_payment', 'paid', 'refunded', 'canceled'],
-      'paid': ['verifying', 'assigned', 'refunded', 'canceled'],
-      'assigned': ['paid', 'delivered', 'undelivered', 'canceled'],
-      'delivered': ['assigned'],
-      'undelivered': ['assigned', 'delivered', 'refunded'],
-      'refunded': ['verifying', 'paid'],
-      'canceled': ['awaiting_payment', 'verifying']
+      'pending': ['delivered', 'cancelled'],
+      'delivered': [],
+      'cancelled': []
     };
     return transitions[currentStatus] || [];
   };
@@ -264,14 +258,8 @@ export default function AdminOrdersPage() {
   const statusOptions = [
     { value: 'all', label: 'All Orders', count: orders.length },
     { value: 'pending', label: 'Pending', count: statusCounts.pending || 0 },
-    { value: 'awaiting_payment', label: 'Awaiting Payment', count: statusCounts.awaiting_payment || 0 },
-    { value: 'verifying', label: 'Verifying', count: statusCounts.verifying || 0 },
-    { value: 'paid', label: 'Paid', count: statusCounts.paid || 0 },
-    { value: 'assigned', label: 'Assigned', count: statusCounts.assigned || 0 },
     { value: 'delivered', label: 'Delivered', count: statusCounts.delivered || 0 },
-    { value: 'undelivered', label: 'Undelivered', count: statusCounts.undelivered || 0 },
-    { value: 'refunded', label: 'Refunded', count: statusCounts.refunded || 0 },
-    { value: 'canceled', label: 'Canceled', count: statusCounts.canceled || 0 }
+    { value: 'cancelled', label: 'Cancelled', count: statusCounts.cancelled || 0 }
   ];
 
   return (
@@ -301,8 +289,8 @@ export default function AdminOrdersPage() {
             <div className="text-sm text-gray-600 dark:text-gray-400">Delivered</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-blue-600">{statusCounts.paid || 0}</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Paid</div>
+            <div className="text-3xl font-bold text-red-600">{statusCounts.cancelled || 0}</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">Cancelled</div>
           </div>
           <div className="text-center">
             <div className="text-3xl font-bold text-gray-900 dark:text-white">{orders.length}</div>
@@ -351,13 +339,7 @@ export default function AdminOrdersPage() {
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                     order.status === 'pending' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300' :
                     order.status === 'delivered' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' :
-                    order.status === 'paid' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300' :
-                    order.status === 'assigned' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' :
-                    order.status === 'awaiting_payment' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300' :
-                    order.status === 'verifying' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300' :
-                    order.status === 'undelivered' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' :
-                    order.status === 'refunded' ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300' :
-                    order.status === 'canceled' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' :
+                    order.status === 'cancelled' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' :
                     'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
                   }`}>
                     {order.status.replace('_', ' ').toUpperCase()}
@@ -387,22 +369,16 @@ export default function AdminOrdersPage() {
                 {order.status === 'pending' && (
                   <div className="flex space-x-2 mb-2">
                     <button
-                      onClick={() => handleStatusChange(order.id, order.status, 'paid')}
+                      onClick={() => handleStatusChange(order.id, order.status, 'delivered')}
                       className="flex-1 px-2 py-1 text-xs bg-green-100 text-green-800 rounded hover:bg-green-200 transition-colors font-medium"
                     >
-                      Mark Paid
+                      ✅ Deliver
                     </button>
                     <button
-                      onClick={() => handleStatusChange(order.id, order.status, 'assigned')}
-                      className="flex-1 px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded hover:bg-yellow-200 transition-colors font-medium"
-                    >
-                      Assign
-                    </button>
-                    <button
-                      onClick={() => handleStatusChange(order.id, order.status, 'canceled')}
+                      onClick={() => handleStatusChange(order.id, order.status, 'cancelled')}
                       className="flex-1 px-2 py-1 text-xs bg-red-100 text-red-800 rounded hover:bg-red-200 transition-colors font-medium"
                     >
-                      Cancel
+                      ❌ Cancel
                     </button>
                   </div>
                 )}
