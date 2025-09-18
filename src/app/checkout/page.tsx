@@ -63,7 +63,7 @@ interface OrderCartItem {
 }
 
 export default function CheckoutPage() {
-  const { items, clearCart, getTotal, hydrateCart } = useCartStore();
+  const { items, clearCart, getTotal, hydrateCart, validateAndCleanCart } = useCartStore();
   const { initiatePayment } = useCashAppPayment();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOrderComplete, setIsOrderComplete] = useState(false);
@@ -90,10 +90,18 @@ export default function CheckoutPage() {
   } | null>(null);
   const [phoneError, setPhoneError] = useState<string>('');
 
-  // Hydrate cart from localStorage on component mount
+  // Hydrate cart from localStorage on component mount and validate it
   useEffect(() => {
     hydrateCart();
-  }, [hydrateCart]);
+    
+    // Clean up any invalid items after hydration
+    setTimeout(() => {
+      const removedCount = validateAndCleanCart();
+      if (removedCount > 0) {
+        console.log(`🧹 Removed ${removedCount} invalid items from cart on checkout page load`);
+      }
+    }, 100);
+  }, [hydrateCart, validateAndCleanCart]);
 
   // zod schema for required checkboxes
   const schema = z.object({
@@ -327,6 +335,17 @@ export default function CheckoutPage() {
       validationErrors.push('Your cart is empty. Please add items before checking out.');
     }
     
+    // Validate product IDs are valid UUIDs
+    const invalidItems = items.filter(item => 
+      !item.product?.id || 
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(item.product.id)
+    );
+    
+    if (invalidItems.length > 0) {
+      console.error('❌ Invalid product IDs found:', invalidItems);
+      validationErrors.push(`Invalid products in cart. Please refresh the page and add items again. (${invalidItems.length} invalid items)`);
+    }
+    
     if (validationErrors.length > 0) {
       alert(`Please fix the following issues:\n\n• ${validationErrors.join('\n• ')}`);
       return;
@@ -341,6 +360,17 @@ export default function CheckoutPage() {
       finalTotal,
       itemsCount: items.length
     });
+
+    // Debug cart items structure
+    console.log('🔍 Cart items being submitted:', items.map((item, index) => ({
+      index,
+      productId: item.product?.id,
+      productName: item.product?.name,
+      price: item.product?.price,
+      quantity: item.quantity,
+      strain: item.strain?.name,
+      isValidUUID: item.product?.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(item.product.id)
+    })));
 
     try {
       const orderItems: OrderCartItem[] = items.map(item => ({
@@ -451,6 +481,8 @@ export default function CheckoutPage() {
         alert(`⚠️ Pricing Error\n\n${errorMessage}\n\nThis usually happens when:\n• Cart was modified during checkout\n• Prices have been updated\n• Browser cache is outdated\n\nPlease refresh the page and try again.`);
       } else if (errorMessage.includes('Out-of-zone address')) {
         alert(`📍 Delivery Area Error\n\nWe currently only deliver to Washington DC (ZIP codes 20000-20199). Please check your ZIP code and try again.`);
+      } else if (errorMessage.includes('invalid input syntax for type uuid') || errorMessage.includes('Failed to create order items')) {
+        alert(`🛒 Cart Error\n\nThere's an issue with the products in your cart. This usually happens when:\n• Products were updated while you were shopping\n• Your cart data is corrupted\n\nPlease refresh the page and add items to your cart again.`);
       } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
         alert(`🌐 Connection Error\n\nPlease check your internet connection and try again. If the problem persists, contact support at support@canne.art`);
       } else {

@@ -35,6 +35,7 @@ interface CartStore {
   getTotal: () => number;
   getItemCount: () => number;
   hydrateCart: () => void;
+  validateAndCleanCart: () => number;
 }
 
 // LocalStorage key for cart data
@@ -180,5 +181,40 @@ export const useCartStore = create<CartStore>((set, get) => ({
       (count, item) => count + (item.quantity || 1),
       0
     );
+  },
+  
+  // Validate and clean cart items, removing any with invalid product IDs
+  validateAndCleanCart: () => {
+    const items = get().items || [];
+    if (!Array.isArray(items)) {
+      set({ items: [] });
+      saveCartToStorage([]);
+      return 0;
+    }
+    
+    const validItems = items.filter(item => {
+      // Check if product exists and has valid UUID
+      const hasValidProduct = item.product && 
+        item.product.id && 
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(item.product.id);
+      
+      // Check if strain exists
+      const hasValidStrain = item.strain && item.strain.name;
+      
+      // Check if quantity is valid
+      const hasValidQuantity = item.quantity && item.quantity > 0;
+      
+      return hasValidProduct && hasValidStrain && hasValidQuantity;
+    });
+    
+    const removedCount = items.length - validItems.length;
+    
+    if (removedCount > 0) {
+      console.log(`🧹 Cleaned cart: removed ${removedCount} invalid items`);
+      set({ items: validItems });
+      saveCartToStorage(validItems);
+    }
+    
+    return removedCount;
   }
 }));
