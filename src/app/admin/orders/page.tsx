@@ -21,7 +21,7 @@ import toast from 'react-hot-toast';
 interface Order {
   id: string;
   order_number: string;
-  status: 'awaiting_payment' | 'verifying' | 'paid' | 'assigned' | 'delivered' | 'undelivered' | 'refunded' | 'canceled';
+  status: 'pending' | 'awaiting_payment' | 'verifying' | 'paid' | 'assigned' | 'delivered' | 'undelivered' | 'refunded' | 'canceled';
   total: number;
   subtotal: number;
   delivery_fee: number;
@@ -106,12 +106,13 @@ export default function AdminOrdersPage() {
 
   const getValidTransitions = (currentStatus: string): string[] => {
     const transitions: Record<string, string[]> = {
+      'pending': ['awaiting_payment', 'paid', 'assigned', 'canceled'],
       'awaiting_payment': ['verifying', 'paid', 'canceled'],
       'verifying': ['awaiting_payment', 'paid', 'refunded', 'canceled'],
       'paid': ['verifying', 'assigned', 'refunded', 'canceled'],
-      'assigned': ['paid', 'delivered', 'undelivered', 'refunded', 'canceled'],
-      'delivered': ['assigned', 'refunded'],
-      'undelivered': ['assigned', 'delivered', 'refunded', 'canceled'],
+      'assigned': ['paid', 'delivered', 'undelivered', 'canceled'],
+      'delivered': ['assigned'],
+      'undelivered': ['assigned', 'delivered', 'refunded'],
       'refunded': ['verifying', 'paid'],
       'canceled': ['awaiting_payment', 'verifying']
     };
@@ -262,6 +263,7 @@ export default function AdminOrdersPage() {
 
   const statusOptions = [
     { value: 'all', label: 'All Orders', count: orders.length },
+    { value: 'pending', label: 'Pending', count: statusCounts.pending || 0 },
     { value: 'awaiting_payment', label: 'Awaiting Payment', count: statusCounts.awaiting_payment || 0 },
     { value: 'verifying', label: 'Verifying', count: statusCounts.verifying || 0 },
     { value: 'paid', label: 'Paid', count: statusCounts.paid || 0 },
