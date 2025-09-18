@@ -217,17 +217,16 @@ export default function ProductsPresenter() {
                       <select
                         value={getSelectedStrain(product.id).name}
                         onChange={(e) => {
-                          const options: StrainOption[] = [
-                            { name: 'Moroccan Peach', type: 'sativa', thcLow: 18, thcHigh: 22 },
-                            { name: 'Pancake Biscotti', type: 'indica-hybrid', thcLow: 22, thcHigh: 26 },
-                          ];
-                          const found = options.find((s) => s.name === e.target.value);
+                          const found = strainOptions.find((s) => s.name === e.target.value);
                           if (found) updateSelectedStrain(product.id, found);
                         }}
                         className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                       >
-                        <option>Moroccan Peach</option>
-                        <option>Pancake Biscotti</option>
+                        {strainOptions.map((strain) => (
+                          <option key={strain.name} value={strain.name}>
+                            {strain.name} • {strain.type} • {strain.thcLow}–{strain.thcHigh}% THC
+                          </option>
+                        ))}
                       </select>
                     </div>
 
