@@ -99,6 +99,7 @@ export default function CheckoutPage() {
       const removedCount = validateAndCleanCart();
       if (removedCount > 0) {
         console.log(`🧹 Removed ${removedCount} invalid items from cart on checkout page load`);
+        alert(`🛒 Cart Cleaned\n\nRemoved ${removedCount} invalid item(s) from your cart.\n\nThis happens when products are updated while shopping. Your cart is now ready for checkout!`);
       }
     }, 100);
   }, [hydrateCart, validateAndCleanCart]);
@@ -145,8 +146,21 @@ export default function CheckoutPage() {
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900 mb-4">No items to checkout</h1>
-            <p className="text-gray-600 mb-8">
+            <p className="text-gray-600 mb-4">
               Add some beautiful artwork to your cart before proceeding to checkout.
+            </p>
+            <p className="text-sm text-gray-500 mb-8">
+              If you're seeing this after having items in your cart, they may have been removed due to invalid data. 
+              <button 
+                onClick={() => {
+                  clearCart();
+                  validateAndCleanCart();
+                  alert('✅ Cart cleared! You can now add fresh products.');
+                }}
+                className="text-purple-600 hover:text-purple-700 underline ml-1"
+              >
+                Clear cart data
+              </button> and try adding products again.
             </p>
             <Link href="/shop" className="inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-medium rounded-xl text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors duration-200 min-w-[200px]">
               Browse Products
