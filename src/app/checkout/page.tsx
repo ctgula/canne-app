@@ -246,7 +246,10 @@ export default function CheckoutPage() {
           
           {/* Order Form */}
           <div className="bg-white rounded-lg shadow-sm p-6">
-            <h1 className="text-2xl font-bold text-gray-900 mb-6">Checkout</h1>
+            <h1 className="text-2xl font-bold text-gray-900 mb-6">Checkout - New System</h1>
+            <div className="mb-4 p-2 bg-green-100 border border-green-300 rounded text-sm text-green-800">
+              ✅ New Checkout System Active - v2.0 (Sept 19, 2025)
+            </div>
             
             {error && (
               <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
