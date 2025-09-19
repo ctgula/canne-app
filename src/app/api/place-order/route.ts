@@ -2,6 +2,44 @@ import { NextRequest, NextResponse } from 'next/server';
 export const runtime = 'nodejs';
 import { createClient } from '@supabase/supabase-js';
 
+// Type definitions
+interface OrderItem {
+  product: {
+    id: string;
+    name: string;
+    price: number;
+    tier?: string;
+    weight?: string;
+    color_theme?: string;
+  };
+  strain?: {
+    name: string;
+    type: string;
+    thcLow: number;
+    thcHigh: number;
+  };
+  quantity: number;
+}
+
+interface DeliveryDetails {
+  name: string;
+  phone: string;
+  email: string;
+  address: string;
+  city: string;
+  zipCode: string;
+  timePreference: string;
+  specialInstructions?: string;
+}
+
+interface OrderData {
+  items: OrderItem[];
+  deliveryDetails: DeliveryDetails;
+  total: number;
+  hasDelivery: boolean;
+  status: string;
+}
+
 // Simple, reliable Supabase client
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -74,7 +112,7 @@ export async function POST(request: NextRequest) {
     console.log('✅ Customer created/found:', customer.id);
 
     // Calculate totals
-    const subtotal = orderData.items.reduce((sum: number, item: any) => {
+    const subtotal = orderData.items.reduce((sum: number, item: OrderItem) => {
       return sum + (item.product.price * item.quantity);
     }, 0);
 
@@ -129,7 +167,7 @@ export async function POST(request: NextRequest) {
     console.log('✅ Order created:', order.id);
 
     // Create order items
-    const orderItems = orderData.items.map((item: any) => ({
+    const orderItems = orderData.items.map((item: OrderItem) => ({
       order_id: order.id,
       product_id: item.product.id,
       quantity: item.quantity,

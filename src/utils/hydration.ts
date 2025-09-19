@@ -13,7 +13,7 @@ export const suppressHydrationWarning = () => {
     const originalError = console.error;
     
     // Override console.error to filter out known hydration warnings
-    console.error = (...args: any[]) => {
+    console.error = (...args: unknown[]) => {
       const message = args[0]?.toString() || '';
       
       // Filter out Windsurf-specific hydration warnings
