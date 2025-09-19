@@ -94,17 +94,35 @@ export default function CheckoutPage() {
   useEffect(() => {
     hydrateCart();
     
-    // AGGRESSIVE cart cleanup - force clear if ANY issues detected
-    setTimeout(() => {
+    // PRODUCTION FIX: Immediate cart validation and cleanup
+    const validateCart = () => {
       const currentItems = items;
+      console.log('🔍 PRODUCTION CART VALIDATION:', { itemCount: currentItems.length, items: currentItems });
+      
+      // KNOWN VALID PRODUCT IDs from database
+      const validProductIds = [
+        'ddc696a0-a537-4d10-b820-584c6c512bff', // Starter
+        '4e08d8c4-bc92-451c-b1fb-d2898070462f', // Classic  
+        '9643176b-8940-4635-988f-d14274aad826', // Black
+        '2bedb33f-6587-4337-8b18-c943d4b48067'  // Ultra
+      ];
+      
       let hasInvalidItems = false;
       
       // Check each item for validity
       currentItems.forEach((item, index) => {
         const productId = item.product?.id;
         const isValidUUID = productId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(productId);
+        const isKnownProduct = productId && validProductIds.includes(productId);
         
-        if (!isValidUUID) {
+        console.log(`🔍 Item ${index}:`, {
+          productId,
+          isValidUUID,
+          isKnownProduct,
+          productName: item.product?.name
+        });
+        
+        if (!isValidUUID || !isKnownProduct) {
           console.error(`❌ INVALID ITEM ${index}:`, {
             productId,
             productName: item.product?.name,
@@ -115,10 +133,11 @@ export default function CheckoutPage() {
         }
       });
       
-      if (hasInvalidItems || currentItems.length === 0) {
-        console.log('🚨 FORCING CART CLEAR DUE TO INVALID DATA');
+      if (hasInvalidItems) {
+        console.log('🚨 PRODUCTION: FORCING CART CLEAR DUE TO INVALID DATA');
         clearCart();
-        alert('🚨 Cart Reset Required\n\nYour cart contained invalid data that was preventing checkout.\n\nPlease go back to the shop and add products again. This will fix the checkout issue.');
+        localStorage.removeItem('canne-cart');
+        alert('🚨 Production Cart Fix Applied\n\nYour cart contained invalid product data that was preventing checkout.\n\nThis has been automatically fixed. Please go back to the shop and add products again.');
         window.location.href = '/shop';
         return;
       }
@@ -127,9 +146,11 @@ export default function CheckoutPage() {
       const removedCount = validateAndCleanCart();
       if (removedCount > 0) {
         console.log(`🧹 Removed ${removedCount} invalid items from cart on checkout page load`);
-        alert(`🛒 Cart Cleaned\n\nRemoved ${removedCount} invalid item(s) from your cart.\n\nThis happens when products are updated while shopping. Your cart is now ready for checkout!`);
       }
-    }, 100);
+    };
+    
+    // Run validation after a short delay to ensure cart is hydrated
+    setTimeout(validateCart, 200);
   }, [hydrateCart, validateAndCleanCart, items, clearCart]);
 
   // zod schema for required checkboxes
