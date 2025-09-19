@@ -94,15 +94,43 @@ export default function CheckoutPage() {
   useEffect(() => {
     hydrateCart();
     
-    // Clean up any invalid items after hydration
+    // AGGRESSIVE cart cleanup - force clear if ANY issues detected
     setTimeout(() => {
+      const currentItems = items;
+      let hasInvalidItems = false;
+      
+      // Check each item for validity
+      currentItems.forEach((item, index) => {
+        const productId = item.product?.id;
+        const isValidUUID = productId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(productId);
+        
+        if (!isValidUUID) {
+          console.error(`❌ INVALID ITEM ${index}:`, {
+            productId,
+            productName: item.product?.name,
+            hasProduct: !!item.product,
+            itemKeys: Object.keys(item)
+          });
+          hasInvalidItems = true;
+        }
+      });
+      
+      if (hasInvalidItems || currentItems.length === 0) {
+        console.log('🚨 FORCING CART CLEAR DUE TO INVALID DATA');
+        clearCart();
+        alert('🚨 Cart Reset Required\n\nYour cart contained invalid data that was preventing checkout.\n\nPlease go back to the shop and add products again. This will fix the checkout issue.');
+        window.location.href = '/shop';
+        return;
+      }
+      
+      // If we get here, try normal cleanup
       const removedCount = validateAndCleanCart();
       if (removedCount > 0) {
         console.log(`🧹 Removed ${removedCount} invalid items from cart on checkout page load`);
         alert(`🛒 Cart Cleaned\n\nRemoved ${removedCount} invalid item(s) from your cart.\n\nThis happens when products are updated while shopping. Your cart is now ready for checkout!`);
       }
     }, 100);
-  }, [hydrateCart, validateAndCleanCart]);
+  }, [hydrateCart, validateAndCleanCart, items, clearCart]);
 
   // zod schema for required checkboxes
   const schema = z.object({
@@ -149,19 +177,32 @@ export default function CheckoutPage() {
             <p className="text-gray-600 mb-4">
               Add some beautiful artwork to your cart before proceeding to checkout.
             </p>
-            <p className="text-sm text-gray-500 mb-8">
-              If you're seeing this after having items in your cart, they may have been removed due to invalid data. 
+            <p className="text-sm text-gray-500 mb-4">
+              If you're seeing this after having items in your cart, they may have been removed due to invalid data.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 items-center justify-center mb-8">
               <button 
                 onClick={() => {
                   clearCart();
                   validateAndCleanCart();
-                  alert('✅ Cart cleared! You can now add fresh products.');
+                  localStorage.removeItem('canne-cart');
+                  alert('✅ Cart and all data cleared! You can now add fresh products.');
+                  window.location.reload();
                 }}
-                className="text-purple-600 hover:text-purple-700 underline ml-1"
+                className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
               >
-                Clear cart data
-              </button> and try adding products again.
-            </p>
+                🗑️ Emergency Cart Reset
+              </button>
+              <span className="text-gray-400">or</span>
+              <button 
+                onClick={() => {
+                  window.location.href = '/shop';
+                }}
+                className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
+              >
+                🛍️ Go Shopping
+              </button>
+            </div>
             <Link href="/shop" className="inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-medium rounded-xl text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors duration-200 min-w-[200px]">
               Browse Products
             </Link>

@@ -22,6 +22,7 @@ interface Order {
   id: string;
   order_number: string;
   status: 'pending' | 'delivered' | 'cancelled';
+  payment_status?: 'unpaid' | 'paid'; // Optional until we add the column
   total: number;
   subtotal: number;
   delivery_fee: number;
@@ -113,6 +114,14 @@ export default function AdminOrdersPage() {
     return transitions[currentStatus] || [];
   };
 
+  const getValidPaymentTransitions = (currentPaymentStatus: string): string[] => {
+    const transitions: Record<string, string[]> = {
+      'unpaid': ['paid'],
+      'paid': ['unpaid'] // Allow reverting if needed
+    };
+    return transitions[currentPaymentStatus] || [];
+  };
+
   const fetchOrders = async () => {
     try {
       const response = await fetch('/api/admin/orders');
@@ -139,24 +148,57 @@ export default function AdminOrdersPage() {
     }
   };
 
-  const handleStatusChange = async (orderId: string, currentStatus: string, newStatus: string, reason?: string) => {
+  const handleStatusChange = async (orderId: string, currentStatus: string, newStatus: string) => {
     try {
       const response = await fetch(`/api/admin/orders/${orderId}/status`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus, reason })
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          status: newStatus,
+          reason: `Status changed from ${currentStatus} to ${newStatus}`,
+          admin_user: 'admin'
+        }),
       });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to update status');
+      if (response.ok) {
+        showSuccessToast(`Order status updated to ${newStatus}`);
+        fetchOrders(); // Refresh the orders list
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update status');
       }
-
-      showSuccessToast(`Order status updated to ${newStatus.replace('_', ' ')}`);
-      fetchOrders(); // Refresh orders
     } catch (error) {
       console.error('Error updating status:', error);
-      showErrorToast(error instanceof Error ? error.message : 'Failed to update status');
+      showErrorToast(error instanceof Error ? error.message : 'Failed to update order status');
+    }
+  };
+
+  const handlePaymentStatusChange = async (orderId: string, currentPaymentStatus: string, newPaymentStatus: string) => {
+    try {
+      const response = await fetch(`/api/admin/orders/${orderId}/payment-status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          payment_status: newPaymentStatus,
+          reason: `Payment status changed from ${currentPaymentStatus} to ${newPaymentStatus}`,
+          admin_user: 'admin'
+        }),
+      });
+
+      if (response.ok) {
+        showSuccessToast(`Payment status updated to ${newPaymentStatus}`);
+        fetchOrders(); // Refresh the orders list
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update payment status');
+      }
+    } catch (error) {
+      console.error('Error updating payment status:', error);
+      showErrorToast(error instanceof Error ? error.message : 'Failed to update payment status');
     }
   };
 
@@ -255,6 +297,12 @@ export default function AdminOrdersPage() {
     return acc;
   }, {} as Record<string, number>);
 
+  const paymentCounts = orders.reduce((acc, order) => {
+    const paymentStatus = order.payment_status || 'unpaid';
+    acc[paymentStatus] = (acc[paymentStatus] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
   const statusOptions = [
     { value: 'all', label: 'All Orders', count: orders.length },
     { value: 'pending', label: 'Pending', count: statusCounts.pending || 0 },
@@ -278,8 +326,8 @@ export default function AdminOrdersPage() {
           Manage customer orders, track status, and assign drivers
         </p>
         
-        {/* Order Statistics - Simplified */}
-        <div className="grid grid-cols-4 gap-4 mb-6">
+        {/* Order Statistics - With Payment Status */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <div className="text-center">
             <div className="text-3xl font-bold text-purple-600">{statusCounts.pending || 0}</div>
             <div className="text-sm text-gray-600 dark:text-gray-400">Pending</div>
@@ -289,12 +337,12 @@ export default function AdminOrdersPage() {
             <div className="text-sm text-gray-600 dark:text-gray-400">Delivered</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-red-600">{statusCounts.cancelled || 0}</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Cancelled</div>
+            <div className="text-3xl font-bold text-emerald-600">{paymentCounts.paid || 0}</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">💰 Paid</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-gray-900 dark:text-white">{orders.length}</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Total</div>
+            <div className="text-3xl font-bold text-orange-600">{paymentCounts.unpaid || 0}</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">💳 Unpaid</div>
           </div>
         </div>
       </div>
@@ -336,14 +384,22 @@ export default function AdminOrdersPage() {
                       <span className="text-amber-500" title="High Value Order">💰</span>
                     )}
                   </div>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    order.status === 'pending' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300' :
-                    order.status === 'delivered' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' :
-                    order.status === 'cancelled' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' :
-                    'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
-                  }`}>
-                    {order.status.replace('_', ' ').toUpperCase()}
-                  </span>
+                  <div className="flex gap-1">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      order.status === 'pending' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300' :
+                      order.status === 'delivered' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' :
+                      order.status === 'cancelled' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' :
+                      'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                    }`}>
+                      {order.status.replace('_', ' ').toUpperCase()}
+                    </span>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      (order.payment_status || 'unpaid') === 'paid' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300' :
+                      'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300'
+                    }`}>
+                      {(order.payment_status || 'unpaid') === 'paid' ? '💰 PAID' : '💳 UNPAID'}
+                    </span>
+                  </div>
                 </div>
 
                 <div className="space-y-2 mb-4">
@@ -365,23 +421,45 @@ export default function AdminOrdersPage() {
                   </div>
                 </div>
 
-                {/* Quick Actions for Pending Orders */}
-                {order.status === 'pending' && (
-                  <div className="flex space-x-2 mb-2">
-                    <button
-                      onClick={() => handleStatusChange(order.id, order.status, 'delivered')}
-                      className="flex-1 px-2 py-1 text-xs bg-green-100 text-green-800 rounded hover:bg-green-200 transition-colors font-medium"
-                    >
-                      ✅ Deliver
-                    </button>
-                    <button
-                      onClick={() => handleStatusChange(order.id, order.status, 'cancelled')}
-                      className="flex-1 px-2 py-1 text-xs bg-red-100 text-red-800 rounded hover:bg-red-200 transition-colors font-medium"
-                    >
-                      ❌ Cancel
-                    </button>
+                {/* Quick Actions for Orders */}
+                <div className="space-y-2 mb-2">
+                  {/* Payment Status Actions */}
+                  <div className="flex space-x-2">
+                    {(order.payment_status || 'unpaid') === 'unpaid' ? (
+                      <button
+                        onClick={() => handlePaymentStatusChange(order.id, order.payment_status || 'unpaid', 'paid')}
+                        className="flex-1 px-2 py-1 text-xs bg-emerald-100 text-emerald-800 rounded hover:bg-emerald-200 transition-colors font-medium"
+                      >
+                        💰 Mark Paid
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handlePaymentStatusChange(order.id, order.payment_status || 'paid', 'unpaid')}
+                        className="flex-1 px-2 py-1 text-xs bg-orange-100 text-orange-800 rounded hover:bg-orange-200 transition-colors font-medium"
+                      >
+                        💳 Mark Unpaid
+                      </button>
+                    )}
                   </div>
-                )}
+                  
+                  {/* Order Status Actions */}
+                  {order.status === 'pending' && (
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => handleStatusChange(order.id, order.status, 'delivered')}
+                        className="flex-1 px-2 py-1 text-xs bg-green-100 text-green-800 rounded hover:bg-green-200 transition-colors font-medium"
+                      >
+                        ✅ Deliver
+                      </button>
+                      <button
+                        onClick={() => handleStatusChange(order.id, order.status, 'cancelled')}
+                        className="flex-1 px-2 py-1 text-xs bg-red-100 text-red-800 rounded hover:bg-red-200 transition-colors font-medium"
+                      >
+                        ❌ Cancel
+                      </button>
+                    </div>
+                  )}
+                </div>
 
                 <div className="flex space-x-2">
                   <button
