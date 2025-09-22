@@ -11,24 +11,25 @@
   --text-dark: #f9fafb;
 }
 
-/* Prevent the flash before any JS loads */
+/* FORCE LIGHT MODE - Prevent any dark mode */
 html {
-  background-color: var(--bg-light);
-  color: var(--text-light);
+  background-color: var(--bg-light) !important;
+  color: var(--text-light) !important;
+  color-scheme: light !important;
 }
 
+/* Disable dark mode completely */
 html.dark {
-  background-color: var(--bg-dark) !important;
-  color: var(--text-dark) !important;
-  color-scheme: dark;
+  background-color: var(--bg-light) !important;
+  color: var(--text-light) !important;
+  color-scheme: light !important;
 }
 
-/* Ensure body inherits the HTML background */
+/* Ensure body always uses light theme */
 body {
-  background-color: inherit;
-  color: inherit;
+  background-color: var(--bg-light) !important;
+  color: var(--text-light) !important;
   min-height: 100%;
-  /* Only apply transitions AFTER initial load */
   transition: none;
 }
 
@@ -37,12 +38,12 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Apply dark theme immediately - prevents flash during load */
+/* OVERRIDE system dark mode preference - FORCE LIGHT */
 @media (prefers-color-scheme: dark) {
-  html:not(.light) {
-    background-color: var(--bg-dark) !important;
-    color: var(--text-dark) !important;
-    color-scheme: dark;
+  html {
+    background-color: var(--bg-light) !important;
+    color: var(--text-light) !important;
+    color-scheme: light !important;
   }
 }
 

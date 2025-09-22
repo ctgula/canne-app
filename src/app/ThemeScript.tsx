@@ -10,19 +10,12 @@ const ThemeScript = () => {
       return;
     }
     
-    // Check for stored theme or system preference
-    const storedTheme = localStorage.getItem('theme');
-    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const shouldUseDark = storedTheme === 'dark' || (!storedTheme && systemPrefersDark);
+    // FORCE LIGHT MODE - Override any preferences
+    document.documentElement.classList.add('light');
+    document.documentElement.classList.remove('dark');
     
-    // Apply theme immediately to prevent flash
-    if (shouldUseDark) {
-      document.documentElement.classList.add('dark');
-      document.documentElement.classList.remove('light');
-    } else {
-      document.documentElement.classList.add('light');
-      document.documentElement.classList.remove('dark');
-    }
+    // Force light theme in localStorage
+    localStorage.setItem('theme', 'light');
     
     // Mark as initialized
     document.documentElement.classList.add('theme-initialized');

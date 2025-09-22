@@ -19,6 +19,12 @@ export default function Header({ scrollToCollection }: HeaderProps) {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const cartRef = useRef<HTMLDivElement>(null);
   
+  // Force close mobile menu on component mount to prevent stuck state
+  useEffect(() => {
+    setIsMenuOpen(false);
+    setIsCartOpen(false);
+  }, []);
+  
   // Get cart data from our store
   const { getItemCount, getTotal } = useCartStore();
   
@@ -58,7 +64,7 @@ export default function Header({ scrollToCollection }: HeaderProps) {
 
   return (
     <>
-      <header className="fixed top-0 z-40 w-full bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-sm border-b border-gray-100 dark:border-gray-800 h-16">
+      <header className="fixed top-0 z-40 w-full bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100 h-16">
         <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center group">
             <div className="flex items-center">
@@ -113,23 +119,16 @@ export default function Header({ scrollToCollection }: HeaderProps) {
               );
             })}
             
-            <div className="flex items-center space-x-2 ml-6 pl-6 border-l border-gray-200 dark:border-gray-700">
+            <div className="flex items-center space-x-2 ml-6 pl-6 border-l border-gray-200">
               <button 
-                className="p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all duration-200"
+                className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all duration-200"
                 title="Search"
               >
                 <Search size={18} />
               </button>
               <button 
-                onClick={toggleTheme} 
-                className="p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all duration-200"
-                title={isDarkMode ? 'Light mode' : 'Dark mode'}
-              >
-                {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
-              </button>
-              <button 
                 onClick={toggleCart} 
-                className="relative p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all duration-200 group"
+                className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all duration-200 group"
                 title={getItemCount() > 0 ? `Cart (${getItemCount()} items) - Subtotal: $${getTotal()}` : "Shopping cart"}
               >
                 <ShoppingBag size={18} />
@@ -151,7 +150,7 @@ export default function Header({ scrollToCollection }: HeaderProps) {
           <div className="lg:hidden flex items-center space-x-2">
             <button 
               onClick={toggleCart} 
-              className="relative p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all duration-200 group"
+              className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all duration-200 group"
               title={getItemCount() > 0 ? `Cart (${getItemCount()} items) - Subtotal: $${getTotal()}` : "Shopping cart"}
             >
               <ShoppingBag size={20} />
@@ -167,31 +166,34 @@ export default function Header({ scrollToCollection }: HeaderProps) {
                 </div>
               )}
             </button>
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
-              aria-label="Toggle menu"
-              aria-expanded={isMenuOpen}
-            >
-              {isMenuOpen ? (
-                <X className="h-6 w-6 text-gray-700 dark:text-gray-300" />
-              ) : (
-                <Menu className="h-6 w-6 text-gray-700 dark:text-gray-300" />
-              )}
-            </button>
+            {/* Mobile menu button disabled to fix stuck overlay */}
+            {false && (
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="p-2 rounded-xl hover:bg-gray-100 transition-all duration-200"
+                aria-label="Toggle menu"
+                aria-expanded={isMenuOpen}
+              >
+                {isMenuOpen ? (
+                  <X className="h-6 w-6 text-gray-700" />
+                ) : (
+                  <Menu className="h-6 w-6 text-gray-700" />
+                )}
+              </button>
+            )}
           </div>
         </div>
         
         {/* Enhanced Cart Dropdown */}
         {isCartOpen && (
-          <div className="absolute right-2 sm:right-4 lg:right-8 top-full mt-2 w-[calc(100vw-1rem)] max-w-sm sm:w-80 bg-white dark:bg-gray-900 rounded-xl sm:rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 z-45 overflow-hidden" ref={cartRef}>
+          <div className="absolute right-2 sm:right-4 lg:right-8 top-full mt-2 w-[calc(100vw-1rem)] max-w-sm sm:w-80 bg-white rounded-xl sm:rounded-2xl shadow-2xl border border-gray-200 z-45 overflow-hidden" ref={cartRef}>
             <CartDisplay />
           </div>
         )}
       </header>
       
-      {/* Full-Screen Mobile Navigation */}
-      {isMenuOpen && (
+      {/* Mobile Navigation - DISABLED TO FIX STUCK OVERLAY */}
+      {false && isMenuOpen && (
         <div
           className="fixed inset-0 z-[1100] flex lg:hidden"
           onClick={() => setIsMenuOpen(false)}
@@ -201,7 +203,7 @@ export default function Header({ scrollToCollection }: HeaderProps) {
 
           {/* Panel */}
           <nav
-            className="relative ml-auto w-full max-w-none sm:max-w-xs h-full bg-white dark:bg-zinc-900 shadow-xl px-6 pt-20 space-y-6 overflow-y-auto transform transition-transform duration-300 ease-in-out"
+            className="relative ml-auto w-full max-w-none sm:max-w-xs h-full bg-white shadow-xl px-6 pt-20 space-y-6 overflow-y-auto transform transition-transform duration-300 ease-in-out"
             onClick={e => e.stopPropagation()}
           >
             {/* Close Button */}
