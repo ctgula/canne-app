@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCartStore } from '@/services/CartService';
 import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 import Link from 'next/link';
-import { CheckCircle, ShoppingCart, AlertCircle, Loader2 } from 'lucide-react';
+import { CheckCircle, ShoppingCart, AlertCircle, Loader2, CreditCard } from 'lucide-react';
 
 // Simple delivery info interface
 interface DeliveryInfo {
@@ -69,21 +70,24 @@ export default function CheckoutPage() {
   // Redirect if cart is empty
   if (items.length === 0 && !isOrderComplete) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
         <Header />
-        <div className="max-w-2xl mx-auto px-4 py-12">
-          <div className="text-center">
-            <ShoppingCart className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">Your cart is empty</h1>
-            <p className="text-gray-600 mb-8">Add some products to your cart before checking out.</p>
-            <Link 
-              href="/shop" 
-              className="inline-flex items-center px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-            >
-              Browse Products
-            </Link>
+        <main className="flex-1 pt-20 sm:pt-24">
+          <div className="mx-auto max-w-[1280px] px-6">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
+              <ShoppingCart className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <h1 className="text-2xl font-semibold text-gray-900 mb-4">Your cart is empty</h1>
+              <p className="text-gray-600 mb-8">Add some products to your cart before checking out.</p>
+              <Link 
+                href="/shop" 
+                className="inline-flex items-center px-6 py-3 bg-[#C084FC] text-white rounded-lg hover:bg-purple-600 transition-colors font-medium"
+              >
+                Browse Products
+              </Link>
+            </div>
           </div>
-        </div>
+        </main>
+        <Footer />
       </div>
     );
   }
@@ -193,72 +197,90 @@ export default function CheckoutPage() {
   // Order success screen
   if (isOrderComplete) {
     return (
-      <div className="min-h-screen bg-green-50">
+      <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
         <Header />
-        <div className="max-w-2xl mx-auto px-4 py-12">
-          <div className="text-center">
-            <CheckCircle className="h-16 w-16 text-green-600 mx-auto mb-4" />
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">Order Confirmed!</h1>
-            <p className="text-lg text-gray-600 mb-6">
-              Thank you, {deliveryInfo.name}! Your order has been placed successfully.
-            </p>
-            
-            <div className="bg-white rounded-lg p-6 shadow-sm border mb-8">
-              <h2 className="text-lg font-semibold text-gray-900 mb-2">Order Details</h2>
-              <p className="text-gray-600">Order ID: <span className="font-mono text-sm">{orderId}</span></p>
-              <p className="text-gray-600">Total: <span className="font-semibold">${finalTotal.toFixed(2)}</span></p>
-              <p className="text-gray-600">Delivery: {hasDelivery ? 'FREE' : `$${deliveryFee}`}</p>
-            </div>
-
-            <div className="space-y-4">
-              <p className="text-gray-600">
-                We'll send you updates via text and email. Expected delivery time: {deliveryInfo.timePreference}
+        <main className="flex-1 pt-20 sm:pt-24">
+          <div className="mx-auto max-w-[1280px] px-6">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
+              <CheckCircle className="h-16 w-16 text-green-600 mx-auto mb-6" />
+              <h1 className="text-3xl font-semibold text-gray-900 mb-4">Order Confirmed!</h1>
+              <p className="text-lg text-gray-600 mb-8">
+                Thank you, {deliveryInfo.name}! Your order has been placed successfully.
               </p>
               
-              <div className="flex gap-4 justify-center">
-                <Link 
-                  href="/shop" 
-                  className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-                >
-                  Continue Shopping
-                </Link>
-                <Link 
-                  href="/" 
-                  className="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
-                >
-                  Back to Home
-                </Link>
+              <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200 mb-8">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Order Details</h2>
+                <div className="space-y-2 text-left max-w-sm mx-auto">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Order ID:</span>
+                    <span className="font-mono text-sm text-gray-900">{orderId?.slice(-8)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Total:</span>
+                    <span className="font-semibold text-gray-900">${finalTotal.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Delivery:</span>
+                    <span className="text-gray-900">{hasDelivery ? 'FREE' : `$${deliveryFee}`}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Expected:</span>
+                    <span className="text-gray-900">{deliveryInfo.timePreference}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <p className="text-gray-600 max-w-md mx-auto">
+                  We'll send you updates via text and email. Your Cannè art collection is on its way!
+                </p>
+                
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Link 
+                    href="/shop" 
+                    className="px-6 py-3 bg-[#C084FC] text-white rounded-lg hover:bg-purple-600 transition-colors font-medium"
+                  >
+                    Continue Shopping
+                  </Link>
+                  <Link 
+                    href="/" 
+                    className="px-6 py-3 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                  >
+                    Back to Home
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </main>
+        <Footer />
       </div>
     );
   }
 
   // Main checkout form
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
       <Header />
-      
-      {/* CLEAR VISUAL INDICATOR THIS IS THE NEW SYSTEM */}
-      <div className="bg-green-600 text-white text-center py-2">
-        <p className="font-semibold">✅ NEW CHECKOUT SYSTEM ACTIVE - Beautiful & Working!</p>
-      </div>
-      
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <main className="flex-1 pt-20 sm:pt-24">
+        <div className="mx-auto max-w-[1280px] px-6">
           
-          {/* Order Form */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h1 className="text-2xl font-bold text-gray-900 mb-6">Complete Your Order</h1>
+          {/* Page Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-semibold text-gray-900 mb-2">Complete Your Order</h1>
+            <p className="text-gray-600">Secure checkout for your Cannè art collection</p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             
-            {error && (
-              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
-                <AlertCircle className="h-5 w-5 text-red-600" />
-                <p className="text-red-800">{error}</p>
-              </div>
-            )}
+            {/* Order Form */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+              {error && (
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
+                  <AlertCircle className="h-5 w-5 text-red-600" />
+                  <p className="text-red-800">{error}</p>
+                </div>
+              )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
               
@@ -429,7 +451,7 @@ export default function CheckoutPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-lg font-semibold"
+                className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-[#C084FC] text-white rounded-lg hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-lg font-semibold shadow-sm"
               >
                 {isSubmitting ? (
                   <>
@@ -446,26 +468,40 @@ export default function CheckoutPage() {
           </div>
 
           {/* Order Summary */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
             <h2 className="text-xl font-semibold text-gray-900 mb-6">Order Summary</h2>
             
             {/* Cart Items */}
             <div className="space-y-4 mb-6">
-              {items.map((item, index) => (
-                <div key={index} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
-                  <div className="flex-1">
-                    <h3 className="font-medium text-gray-900">{item.product.name}</h3>
-                    <p className="text-sm text-gray-600">
-                      {item.strain?.name || 'Moroccan Peach'} • Qty: {item.quantity}
-                    </p>
+              {items.map((item, index) => {
+                // Get tier color for visual consistency
+                const getTierColor = (tier: string) => {
+                  switch (tier?.toLowerCase()) {
+                    case 'starter': return 'bg-[#38BDF8]';
+                    case 'classic': return 'bg-[#C084FC]';
+                    case 'black': return 'bg-[#64748B]';
+                    case 'ultra': return 'bg-[#F472B6]';
+                    default: return 'bg-gray-500';
+                  }
+                };
+                
+                return (
+                  <div key={index} className="flex items-center gap-4 p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200">
+                    <div className={`w-3 h-3 rounded-full ${getTierColor(item.product.tier || 'starter')}`}></div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-900">{item.product.name}</h3>
+                      <p className="text-sm text-gray-600">
+                        {item.strain?.name || 'Moroccan Peach'} • Qty: {item.quantity}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-gray-900">
+                        ${(item.product.price * item.quantity).toFixed(2)}
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-medium text-gray-900">
-                      ${(item.product.price * item.quantity).toFixed(2)}
-                    </p>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Totals */}
@@ -493,15 +529,20 @@ export default function CheckoutPage() {
             </div>
 
             {/* Payment Info */}
-            <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-              <h3 className="font-medium text-blue-900 mb-2">Payment Method</h3>
+            <div className="mt-6 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
+              <div className="flex items-center gap-2 mb-2">
+                <CreditCard className="h-5 w-5 text-blue-600" />
+                <h3 className="font-semibold text-blue-900">Payment Method</h3>
+              </div>
               <p className="text-sm text-blue-800">
                 💳 Cash App Payment - Pay instantly with Cash App after order confirmation
               </p>
             </div>
           </div>
+          </div>
         </div>
+        </main>
+        <Footer />
       </div>
-    </div>
   );
 }
