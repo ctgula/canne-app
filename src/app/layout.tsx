@@ -153,7 +153,7 @@ export default function RootLayout({
       </head>
       
       <body 
-        className="antialiased font-inter bg-gray-50 dark:bg-gray-900 dark:text-white transition-colors duration-300 safe-top safe-bottom overflow-x-hidden" 
+        className="antialiased font-inter bg-gray-50 text-gray-900 transition-colors duration-300 safe-top safe-bottom overflow-x-hidden" 
         suppressHydrationWarning={true}
       >
         {/* Client-side theme script that runs immediately after hydration */}

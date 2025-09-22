@@ -16,20 +16,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>('light');
   const [mounted, setMounted] = useState(false);
   
-  // Initialize theme on client side only
+  // Initialize theme on client side only - FORCE LIGHT MODE
   useEffect(() => {
     setMounted(true);
     
-    // Check localStorage first
-    const storedTheme = localStorage.getItem('theme') as Theme | null;
-    if (storedTheme === 'light' || storedTheme === 'dark') {
-      setTheme(storedTheme);
-      return;
-    }
-    
-    // Fall back to system preference
-    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    setTheme(systemPrefersDark ? 'dark' : 'light');
+    // FORCE LIGHT MODE - Override any stored preferences
+    setTheme('light');
+    localStorage.setItem('theme', 'light');
   }, []);
 
   // Update document when theme changes (only after mounted)

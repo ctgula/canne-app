@@ -70,7 +70,7 @@ export default function CheckoutPage() {
   // Redirect if cart is empty
   if (items.length === 0 && !isOrderComplete) {
     return (
-      <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen flex flex-col bg-gray-50">
         <Header />
         <main className="flex-1 pt-20 sm:pt-24">
           <div className="mx-auto max-w-[1280px] px-6">
@@ -197,7 +197,7 @@ export default function CheckoutPage() {
   // Order success screen
   if (isOrderComplete) {
     return (
-      <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen flex flex-col bg-gray-50">
         <Header />
         <main className="flex-1 pt-20 sm:pt-24">
           <div className="mx-auto max-w-[1280px] px-6">
@@ -260,7 +260,7 @@ export default function CheckoutPage() {
 
   // Main checkout form
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       <Header />
       <main className="flex-1 pt-20 sm:pt-24">
         <div className="mx-auto max-w-[1280px] px-6">
