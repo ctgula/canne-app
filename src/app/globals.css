@@ -52,8 +52,8 @@ body {
   mask-image: linear-gradient(to right, transparent, black 20%, black 80%, transparent);
 }
 
-/* Mobile menu handling */
-body.menu-open main {
+/* Mobile menu handling - DISABLED TO FIX STUCK OVERLAY */
+/* body.menu-open main {
   filter: blur(5px);
   transition: filter 0.3s ease;
   pointer-events: none;
@@ -61,7 +61,7 @@ body.menu-open main {
 
 body.menu-open header {
   z-index: 60;
-}
+} */
 
 @layer base {
   :root {

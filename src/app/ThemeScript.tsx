@@ -17,6 +17,11 @@ const ThemeScript = () => {
     // Force light theme in localStorage
     localStorage.setItem('theme', 'light');
     
+    // FORCE REMOVE ANY STUCK MENU STATES
+    document.body.classList.remove('menu-open');
+    document.body.style.overflow = '';
+    document.body.style.touchAction = '';
+    
     // Mark as initialized
     document.documentElement.classList.add('theme-initialized');
     
