@@ -64,7 +64,7 @@ export default function Header({ scrollToCollection }: HeaderProps) {
 
   return (
     <>
-      <header className="fixed top-0 z-40 w-full bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100 h-16">
+      <header className="fixed top-0 z-40 w-full bg-white/90 backdrop-blur-xl shadow-lg border-b border-gray-200/50 h-16">
         <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center group">
             <div className="flex items-center">
@@ -159,28 +159,19 @@ export default function Header({ scrollToCollection }: HeaderProps) {
                   {getItemCount()}
                 </span>
               )}
-              {/* Mobile Tooltip */}
-              {getItemCount() > 0 && (
-                <div className="absolute bottom-full right-0 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
-                  Subtotal: ${getTotal()}
-                </div>
+            </button>
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="p-2 rounded-xl hover:bg-gray-100 transition-all duration-200"
+              aria-label="Toggle menu"
+              aria-expanded={isMenuOpen}
+            >
+              {isMenuOpen ? (
+                <X className="h-6 w-6 text-gray-700" />
+              ) : (
+                <Menu className="h-6 w-6 text-gray-700" />
               )}
             </button>
-            {/* Mobile menu button disabled to fix stuck overlay */}
-            {false && (
-              <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="p-2 rounded-xl hover:bg-gray-100 transition-all duration-200"
-                aria-label="Toggle menu"
-                aria-expanded={isMenuOpen}
-              >
-                {isMenuOpen ? (
-                  <X className="h-6 w-6 text-gray-700" />
-                ) : (
-                  <Menu className="h-6 w-6 text-gray-700" />
-                )}
-              </button>
-            )}
           </div>
         </div>
         
@@ -192,8 +183,8 @@ export default function Header({ scrollToCollection }: HeaderProps) {
         )}
       </header>
       
-      {/* Mobile Navigation - DISABLED TO FIX STUCK OVERLAY */}
-      {false && isMenuOpen && (
+      {/* Mobile Navigation */}
+      {isMenuOpen && (
         <div
           className="fixed inset-0 z-[1100] flex lg:hidden"
           onClick={() => setIsMenuOpen(false)}

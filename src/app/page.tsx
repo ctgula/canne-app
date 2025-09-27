@@ -362,7 +362,7 @@ export default function Home() {
         </section>
 
         {/* Products Collection Section */}
-        <section id="collection" className="py-20 md:py-28 bg-gradient-to-b from-gray-50/50 to-white dark:from-gray-800/50 dark:to-gray-900">
+        <section id="collection" className="py-20 md:py-28 bg-gradient-to-b from-white to-gray-50/30">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div 
               className="text-center mb-16 md:mb-20"
