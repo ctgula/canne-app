@@ -94,7 +94,7 @@ export default function Home() {
               
               {/* Enhanced Typography */}
               <motion.h1 
-                className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-bold mb-3 sm:mb-4 md:mb-6 lg:mb-8"
+                className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-3 sm:mb-4 md:mb-6"
                 variants={itemVariants}
               >
                 <span className="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-600 text-transparent bg-clip-text leading-tight block">
@@ -106,36 +106,36 @@ export default function Home() {
               </motion.h1>
               
               <motion.p 
-                className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl text-gray-600 dark:text-gray-300 mb-2 lg:mb-4 font-medium px-2"
+                className="text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-2 font-medium px-2"
                 variants={itemVariants}
               >
                 Premium Digital Art with Complimentary Gifts
               </motion.p>
               
               <motion.p 
-                className="text-xs sm:text-sm lg:text-base text-gray-500 dark:text-gray-400 mb-6 sm:mb-8 lg:mb-12 max-w-3xl px-2"
+                className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-6 sm:mb-8 max-w-2xl px-2"
                 variants={itemVariants}
               >
                 I-71 compliant • 21+ only • DC delivery available
               </motion.p>
               
-              {/* Desktop-Optimized CTA Section */}
+              {/* Mobile-Optimized CTA Section */}
               <motion.div 
-                className="flex flex-col sm:flex-row gap-4 lg:gap-6 w-full justify-center items-center mb-8 lg:mb-12"
+                className="flex flex-col sm:flex-row gap-4 w-full justify-center items-center mb-8"
                 variants={itemVariants}
               >
                 <Link href="/shop" className="flex-1 sm:flex-none">
-                  <button className="w-full sm:w-auto px-8 lg:px-12 py-4 lg:py-5 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-2xl shadow-lg font-semibold text-lg lg:text-xl hover:shadow-xl transition-all duration-200 active:scale-95 min-h-[56px] lg:min-h-[64px] touch-manipulation">
-                    <span className="flex items-center justify-center gap-2 lg:gap-3">
-                      <Sparkles className="w-5 h-5 lg:w-6 lg:h-6" />
+                  <button className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-2xl shadow-lg font-semibold text-lg hover:shadow-xl transition-all duration-200 active:scale-95 min-h-[56px] touch-manipulation">
+                    <span className="flex items-center justify-center gap-2">
+                      <Sparkles className="w-5 h-5" />
                       <span>Explore Collection</span>
                     </span>
                   </button>
                 </Link>
                 <Link href="/shop" className="flex-1 sm:flex-none">
-                  <button className="w-full sm:w-auto px-8 lg:px-12 py-4 lg:py-5 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-600 rounded-2xl shadow-lg hover:shadow-xl font-semibold text-lg lg:text-xl text-gray-700 dark:text-gray-200 transition-all duration-200 active:scale-95 min-h-[56px] lg:min-h-[64px] touch-manipulation">
-                    <span className="flex items-center justify-center gap-2 lg:gap-3">
-                      <Shield className="w-5 h-5 lg:w-6 lg:h-6" />
+                  <button className="w-full sm:w-auto px-8 py-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-600 rounded-2xl shadow-lg hover:shadow-xl font-semibold text-lg text-gray-700 dark:text-gray-200 transition-all duration-200 active:scale-95 min-h-[56px] touch-manipulation">
+                    <span className="flex items-center justify-center gap-2">
+                      <Shield className="w-5 h-5" />
                       <span>I-71 Compliant</span>
                     </span>
                   </button>
@@ -163,7 +163,7 @@ export default function Home() {
         </section>
 
         {/* How It Works Section - Enhanced */}
-        <section className="py-20 md:py-28 lg:py-32 xl:py-40 bg-gradient-to-b from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50">
+        <section className="py-20 md:py-28 bg-gradient-to-b from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div 
               className="text-center mb-16 md:mb-20"
@@ -182,10 +182,10 @@ export default function Home() {
                 <Zap className="w-4 h-4" />
                 Simple Process
               </motion.div>
-              <h2 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-600 text-transparent bg-clip-text mb-6 lg:mb-8">
+              <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-600 text-transparent bg-clip-text mb-6">
                 How It Works
               </h2>
-              <p className="text-xl md:text-2xl lg:text-3xl xl:text-4xl text-gray-600 dark:text-gray-300 max-w-4xl mx-auto leading-relaxed">
+              <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
                 Simple, seamless, and I-71 compliant — art purchases with complimentary gifts
               </p>
             </motion.div>
@@ -362,7 +362,7 @@ export default function Home() {
         </section>
 
         {/* Products Collection Section */}
-        <section id="collection" className="py-20 md:py-28 bg-gradient-to-b from-white to-gray-50/30">
+        <section id="collection" className="py-20 md:py-28 bg-gradient-to-b from-gray-50/50 to-white dark:from-gray-800/50 dark:to-gray-900">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div 
               className="text-center mb-16 md:mb-20"
