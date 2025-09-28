@@ -115,13 +115,15 @@ export default function ProductsPresenter() {
   };
 
   return (
-    <div className="py-12">
-      <div className="mx-auto max-w-[1280px] px-6">
-        <h1 className="text-3xl font-semibold text-center mb-6">Cannè Art Collection</h1>
-        <p className="text-center text-gray-600 mb-8">
-          Choose your tier, all include Cannè art stickers + gifts
+    <div>
+      <div className="text-center mb-12">
+        <h1 className="text-3xl font-bold text-gray-900 mb-4">Cannè Art Collection</h1>
+        <p className="text-lg text-gray-600">
+          Choose your tier — each includes exclusive digital art with complimentary cannabis gifts
         </p>
+      </div>
 
+      <div>
         {loading && (
           <div className="grid gap-6 grid-cols-1 md:grid-cols-2 xl:grid-cols-4">
             {[...Array(4)].map((_, i) => (
@@ -258,15 +260,15 @@ export default function ProductsPresenter() {
             })}
           </div>
         )}
-      </div>
 
-      {/* Art Sample Modal */}
-      <ArtSampleModal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        tier={selectedTier}
-        tierData={{ strainType: selectedTier, effects: ['Focus', 'Creative'], artStyle: 'Cannè Stickers', giftAmount: 'Complimentary gift' }}
-      />
+        {/* Art Sample Modal */}
+        <ArtSampleModal
+          isOpen={modalOpen}
+          onClose={() => setModalOpen(false)}
+          tier={selectedTier}
+          tierData={{ strainType: selectedTier, effects: ['Focus', 'Creative'], artStyle: 'Cannè Stickers', giftAmount: 'Complimentary gift' }}
+        />
+      </div>
     </div>
   );
 }

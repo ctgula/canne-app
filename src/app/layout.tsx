@@ -7,6 +7,7 @@ import Toaster from '@/components/Toaster';
 import CartHydration from '@/components/CartHydration';
 import ThemeScript from './ThemeScript';
 import HydrationHandler from '@/components/HydrationHandler';
+import { Header } from '@/components/site/Header';
 import React from 'react';
 
 const inter = Inter({
@@ -153,7 +154,7 @@ export default function RootLayout({
       </head>
       
       <body 
-        className="antialiased font-inter bg-gray-50 text-gray-900 transition-colors duration-300 safe-top safe-bottom overflow-x-hidden" 
+        className="min-h-screen bg-white text-gray-900 antialiased font-inter" 
         suppressHydrationWarning={true}
       >
         {/* Client-side theme script that runs immediately after hydration */}
@@ -162,9 +163,10 @@ export default function RootLayout({
         <ThemeProvider>
           <Toaster />
           <CartHydration />
-          <div className="min-h-screen will-change-transform">
+          <Header />
+          <main className="mx-auto max-w-7xl px-4 md:px-6 lg:px-8 py-6">
             {children}
-          </div>
+          </main>
         </ThemeProvider>
         
         {/* Service Worker Registration */}
