@@ -115,23 +115,23 @@ export default function ProductsPresenter() {
   };
 
   return (
-    <div className="py-16 bg-gradient-to-b from-gray-50/50 to-white">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 rounded-full text-purple-600 text-sm font-medium mb-6">
-            <Sparkles className="w-4 h-4" />
+    <div className="py-16 lg:py-24 xl:py-32 bg-gradient-to-b from-gray-50/50 to-white">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 xl:px-12">
+        <div className="text-center mb-16 lg:mb-20 xl:mb-24">
+          <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-purple-100 rounded-full text-purple-600 text-sm lg:text-base font-medium mb-6 lg:mb-8">
+            <Sparkles className="w-4 h-4 lg:w-5 lg:h-5" />
             Premium Collection
           </div>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-purple-600 via-pink-500 to-indigo-600 text-transparent bg-clip-text mb-6">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-bold bg-gradient-to-r from-purple-600 via-pink-500 to-indigo-600 text-transparent bg-clip-text mb-6 lg:mb-8">
             Cannè Art Collection
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-xl lg:text-2xl xl:text-3xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
             Choose your tier — each includes exclusive digital art with complimentary cannabis gifts
           </p>
         </div>
 
         {loading && (
-          <div className="grid gap-6 sm:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-6 sm:gap-8 lg:gap-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
             {[...Array(4)].map((_, i) => (
               <div key={i} className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden animate-pulse">
                 {/* Image skeleton */}
@@ -192,7 +192,7 @@ export default function ProductsPresenter() {
         )}
         
         {!loading && products.length > 0 && (
-          <div className="grid gap-6 sm:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-6 sm:gap-8 lg:gap-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
             {products.map((product) => {
               const effectChips = (product.badges || []).map(effect => {
                 const effectMap: Record<string, string> = {
@@ -261,7 +261,7 @@ export default function ProductsPresenter() {
 
                   {/* Image Section */}
                   <div className="relative overflow-hidden">
-                    <div className={`aspect-[4/3] ${tierStyle.bg} p-6`}>
+                    <div className={`aspect-[4/3] lg:aspect-[3/2] xl:aspect-[4/3] ${tierStyle.bg} p-4 lg:p-6 xl:p-8`}>
                       <div className="relative w-full h-full rounded-xl overflow-hidden bg-white/50 backdrop-blur-sm">
                         <img 
                           src={product.image_url} 
@@ -284,24 +284,24 @@ export default function ProductsPresenter() {
                   </div>
 
                   {/* Content Section */}
-                  <div className="p-6 space-y-4">
+                  <div className="p-6 lg:p-8 xl:p-10 space-y-4 lg:space-y-6">
                     {/* Header */}
                     <div className="flex items-start justify-between">
                       <div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-1">{product.name}</h3>
-                        <p className="text-sm text-gray-600">Digital Art + Complimentary Gift</p>
+                        <h3 className="text-xl lg:text-2xl xl:text-3xl font-bold text-gray-900 mb-1 lg:mb-2">{product.name}</h3>
+                        <p className="text-sm lg:text-base text-gray-600">Digital Art + Complimentary Gift</p>
                       </div>
-                      <span className="px-2 py-1 bg-red-50 text-red-700 border border-red-200 rounded-full text-xs font-bold">
+                      <span className="px-2 py-1 lg:px-3 lg:py-1.5 bg-red-50 text-red-700 border border-red-200 rounded-full text-xs lg:text-sm font-bold">
                         21+
                       </span>
                     </div>
 
                     {/* Price */}
-                    <div className="flex items-baseline gap-2">
-                      <span className={`text-3xl font-bold bg-gradient-to-r ${tierStyle.gradient} text-transparent bg-clip-text`}>
+                    <div className="flex items-baseline gap-2 lg:gap-3">
+                      <span className={`text-3xl lg:text-4xl xl:text-5xl font-bold bg-gradient-to-r ${tierStyle.gradient} text-transparent bg-clip-text`}>
                         ${product.price}
                       </span>
-                      <span className="text-sm text-gray-500">+ delivery</span>
+                      <span className="text-sm lg:text-base text-gray-500">+ delivery</span>
                     </div>
 
                     {/* Gift Info */}
@@ -325,14 +325,14 @@ export default function ProductsPresenter() {
 
                     {/* Strain Selector */}
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Choose Strain</label>
+                      <label className="block text-sm lg:text-base font-semibold text-gray-700 mb-2 lg:mb-3">Choose Strain</label>
                       <select
                         value={getSelectedStrain(product.id).name}
                         onChange={(e) => {
                           const found = strainOptions.find((s) => s.name === e.target.value);
                           if (found) updateSelectedStrain(product.id, found);
                         }}
-                        className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-sm font-medium focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all touch-manipulation min-h-[48px]"
+                        className="w-full px-4 lg:px-6 py-3 lg:py-4 bg-white border border-gray-300 rounded-xl text-sm lg:text-base font-medium focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all touch-manipulation min-h-[48px] lg:min-h-[56px]"
                       >
                         {strainOptions.map((strain) => (
                           <option key={strain.name} value={strain.name}>
@@ -350,7 +350,7 @@ export default function ProductsPresenter() {
                         toast.success(`Added ${product.name} to cart! 🎨`);
                       }}
                       disabled={product.stock <= 0}
-                      className={`w-full px-6 py-4 rounded-xl font-bold text-lg transition-all duration-200 touch-manipulation min-h-[56px] ${
+                      className={`w-full px-6 lg:px-8 py-4 lg:py-5 rounded-xl font-bold text-lg lg:text-xl transition-all duration-200 touch-manipulation min-h-[56px] lg:min-h-[64px] ${
                         product.stock <= 0
                           ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                           : `bg-gradient-to-r ${tierStyle.gradient} text-white hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] shadow-md`
