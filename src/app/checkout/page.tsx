@@ -12,6 +12,7 @@ import { Truck, MapPin, Clock, CreditCard, ArrowLeft, CheckCircle, Shield, Lock,
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCashAppPayment } from '@/lib/cashapp-payment';
+import ApplePayButton from '@/components/ApplePayButton';
 
 import CheckoutFAQ from './components/CheckoutFAQ';
 
@@ -68,7 +69,7 @@ export default function CheckoutPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOrderComplete, setIsOrderComplete] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<'regular' | 'cashapp'>('cashapp');
+  const [paymentMethod, setPaymentMethod] = useState<'regular' | 'cashapp' | 'applepay'>('cashapp');
   const [confirmedOrder, setConfirmedOrder] = useState<{
     subtotal: number;
     delivery_fee: number;
@@ -279,6 +280,39 @@ export default function CheckoutPage() {
     if (!success) {
       alert('Failed to create Cash App payment. Please try again.');
     }
+  };
+
+  const handleApplePaySuccess = async (paymentData: any) => {
+    console.log('🍎 Apple Pay payment successful:', paymentData);
+    setIsOrderComplete(true);
+    setOrderId(paymentData.orderNumber);
+    clearCart();
+    
+    // Set confirmed order data
+    setConfirmedOrder({
+      subtotal: finalTotal - (hasDelivery ? 0 : 10),
+      delivery_fee: hasDelivery ? 0 : 10,
+      total: finalTotal,
+      order_number: paymentData.orderNumber,
+      items: items.map(item => ({
+        product_id: item.product.id,
+        quantity: item.quantity,
+        unit_price: item.product.price,
+        strain: item.strain.name,
+        thc_low: item.strain.thcLow,
+        thc_high: item.strain.thcHigh,
+        products: {
+          tier: item.product.tier,
+          weight: item.product.weight,
+          color_theme: item.product.color_theme
+        }
+      }))
+    });
+  };
+
+  const handleApplePayError = (error: string) => {
+    console.error('🍎 Apple Pay error:', error);
+    alert(`Apple Pay failed: ${error}`);
   };
 
   const submitHandler = async (data: CheckboxForm) => {
@@ -994,17 +1028,40 @@ export default function CheckoutPage() {
 
             <CheckoutFAQ className="lg:sticky top-24" />
 
-            {/* Payment Method Selection - Only Cash App */}
+            {/* Payment Method Selection */}
             <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Payment Method</h3>
               <div className="space-y-3">
+                {/* Apple Pay Option */}
                 <label className="flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all hover:bg-gray-50 dark:hover:bg-gray-700"
-                       style={{ borderColor: '#8B5CF6' }}>
+                       style={{ borderColor: paymentMethod === 'applepay' ? '#007AFF' : '#E5E7EB' }}>
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="applepay"
+                    checked={paymentMethod === 'applepay'}
+                    onChange={() => setPaymentMethod('applepay')}
+                    className="w-4 h-4 text-blue-600"
+                  />
+                  <div className="flex items-center gap-2">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="text-gray-900 dark:text-white">
+                      <path d="M12.5 2.5c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-1 4c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-3 4c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-3 4c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                    </svg>
+                    <span className="font-medium text-gray-900 dark:text-white">Apple Pay</span>
+                  </div>
+                  <div className="ml-auto">
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Touch ID • Face ID • Instant</div>
+                  </div>
+                </label>
+
+                {/* Cash App Option */}
+                <label className="flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all hover:bg-gray-50 dark:hover:bg-gray-700"
+                       style={{ borderColor: paymentMethod === 'cashapp' ? '#8B5CF6' : '#E5E7EB' }}>
                   <input
                     type="radio"
                     name="paymentMethod"
                     value="cashapp"
-                    checked={true}
+                    checked={paymentMethod === 'cashapp'}
                     onChange={() => setPaymentMethod('cashapp')}
                     className="w-4 h-4 text-purple-600"
                   />
@@ -1017,26 +1074,40 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            <motion.button
-              onClick={() => onSubmit()}
-              aria-disabled={!form.formState.isValid || isSubmitting}
-              disabled={!form.formState.isValid || isSubmitting}
-              whileHover={{ scale: form.formState.isValid && !isSubmitting ? 1.02 : 1 }}
-              whileTap={{ scale: form.formState.isValid && !isSubmitting ? 0.98 : 1 }}
-              className="w-full font-semibold py-5 px-8 rounded-2xl shadow-lg hover:shadow-xl disabled:shadow-none transition-all duration-300 disabled:cursor-not-allowed text-lg flex items-center justify-center gap-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-500 text-white"
-            >
-              {isSubmitting ? (
-                <>
-                  <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent"></div>
-                  <span>Processing...</span>
-                </>
-              ) : (
-                <>
-                  <Smartphone className="h-5 w-5" />
-                  <span>Pay with Cash App - ${finalTotal.toFixed(2)}</span>
-                </>
+            {/* Payment Buttons */}
+            <div className="space-y-4">
+              {paymentMethod === 'applepay' && (
+                <ApplePayButton
+                  total={finalTotal}
+                  onPaymentSuccess={handleApplePaySuccess}
+                  onPaymentError={handleApplePayError}
+                  disabled={!form.formState.isValid || isSubmitting}
+                />
               )}
-            </motion.button>
+              
+              {paymentMethod === 'cashapp' && (
+                <motion.button
+                  onClick={() => onSubmit()}
+                  aria-disabled={!form.formState.isValid || isSubmitting}
+                  disabled={!form.formState.isValid || isSubmitting}
+                  whileHover={{ scale: form.formState.isValid && !isSubmitting ? 1.02 : 1 }}
+                  whileTap={{ scale: form.formState.isValid && !isSubmitting ? 0.98 : 1 }}
+                  className="w-full font-semibold py-5 px-8 rounded-2xl shadow-lg hover:shadow-xl disabled:shadow-none transition-all duration-300 disabled:cursor-not-allowed text-lg flex items-center justify-center gap-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-500 text-white"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent"></div>
+                      <span>Processing...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Smartphone className="h-5 w-5" />
+                      <span>Pay with Cash App - ${finalTotal.toFixed(2)}</span>
+                    </>
+                  )}
+                </motion.button>
+              )}
+            </div>
           </aside>
         </div>
       </div>
