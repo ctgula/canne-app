@@ -19,10 +19,20 @@ export default function Header({ scrollToCollection }: HeaderProps) {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const cartRef = useRef<HTMLDivElement>(null);
   
-  // Force close mobile menu on component mount to prevent stuck state
+  // Force close mobile menu on component mount and on any route change
   useEffect(() => {
     setIsMenuOpen(false);
     setIsCartOpen(false);
+    
+    // Also close menu when window is resized to desktop size
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) { // lg breakpoint
+        setIsMenuOpen(false);
+      }
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
   
   // Get cart data from our store
@@ -64,7 +74,7 @@ export default function Header({ scrollToCollection }: HeaderProps) {
 
   return (
     <>
-      <header className="fixed top-0 z-40 w-full bg-white/90 backdrop-blur-xl shadow-lg border-b border-gray-200/50 h-16">
+      <header className="fixed top-0 z-40 w-full bg-white/90 backdrop-blur-xl shadow-lg border-b border-gray-200/50 h-16 lg:z-50">
         <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center group">
             <div className="flex items-center">
@@ -186,7 +196,7 @@ export default function Header({ scrollToCollection }: HeaderProps) {
       {/* Mobile Navigation */}
       {isMenuOpen && (
         <div
-          className="fixed inset-0 z-[1100] flex lg:hidden"
+          className="fixed inset-0 z-50 flex lg:hidden"
           onClick={() => setIsMenuOpen(false)}
         >
           {/* Backdrop */}
