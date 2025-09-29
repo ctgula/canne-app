@@ -1,0 +1,6 @@
+Build steps for Vercel:
+1. Install dependencies: npm install
+2. Build with Tailwind: npm run build
+3. Tailwind config is at: ./tailwind.config.js
+4. PostCSS config is at: ./postcss.config.mjs
+5. Global CSS is at: ./src/app/globals.css
