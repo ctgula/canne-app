@@ -4,3 +4,4 @@ Build steps for Vercel:
 3. Tailwind config is at: ./tailwind.config.js
 4. PostCSS config is at: ./postcss.config.mjs
 5. Global CSS is at: ./src/app/globals.css
+# Force Vercel rebuild - Mon Sep 29 17:50:53 EDT 2025
