@@ -77,17 +77,16 @@ export default function Home() {
             >
               {/* Logo - Simplified for Performance */}
               <motion.div
-                className="relative mb-6 sm:mb-8"
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.6, ease: "easeOut" }}
               >
                 <Image 
-                  src="/images/canne_logo_web.svg" 
+                  src="/images/canne_logo_web.svg"
                   alt="Cannè Logo" 
-                  width={200} 
-                  height={200} 
-                  className="relative w-32 h-32 md:w-40 md:h-40 drop-shadow-2xl mx-auto" 
+                  width={240} 
+                  height={240} 
+                  className="relative w-44 h-44 md:w-52 md:h-52 lg:w-60 lg:h-60 drop-shadow-2xl mx-auto"
                   priority
                 />
               </motion.div>
