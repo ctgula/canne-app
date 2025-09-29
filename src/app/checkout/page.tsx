@@ -1,548 +1,1116 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useCartStore } from '@/services/CartService';
+import React, { useState, useEffect } from 'react';
+import { getTierInfo } from '@/lib/gifting';
+import { useForm, Controller } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Checkbox } from '@/components/ui/checkbox';
 import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+import { useCartStore } from '@/services/CartService';
+import { Truck, MapPin, Clock, CreditCard, ArrowLeft, CheckCircle, Shield, Lock, Smartphone } from 'lucide-react';
 import Link from 'next/link';
-import { CheckCircle, ShoppingCart, AlertCircle, Loader2, CreditCard } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useCashAppPayment } from '@/lib/cashapp-payment';
+import ApplePayButton from '@/components/ApplePayButton';
 
-// Simple delivery info interface
-interface DeliveryInfo {
+import CheckoutFAQ from './components/CheckoutFAQ';
+
+// Types for checkout
+interface DeliveryDetails {
   name: string;
-  phone: string;
   email: string;
+  phone: string;
   address: string;
+  apartment?: string;
   city: string;
   zipCode: string;
   timePreference: string;
-  specialInstructions?: string;
+  specialInstructions: string;
+  ageVerification?: boolean;
+  termsAccepted?: boolean;
+  preferredTime?: string;
+  emailUpdates?: boolean;
+}
+
+interface Order {
+  id?: string;
+  items: OrderCartItem[];
+  deliveryDetails: DeliveryDetails;
+  total: number;
+  hasDelivery: boolean;
+  status: 'pending' | 'processing' | 'delivered' | 'cancelled';
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+interface OrderCartItem {
+  product: {
+    id: string;
+    name: string;
+    description: string;
+    price: number;
+    artworkUrl: string;
+    giftSize: string;
+    hasDelivery: boolean;
+  };
+  quantity: number;
+  strain: {
+    name: string;
+    type: string;
+    thcLow: number;
+    thcHigh: number;
+  };
 }
 
 export default function CheckoutPage() {
-  const router = useRouter();
-  const { items, clearCart, getTotal } = useCartStore();
-  
-  // State management
+  const { items, clearCart, getTotal, hydrateCart } = useCartStore();
+  const { initiatePayment } = useCashAppPayment();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOrderComplete, setIsOrderComplete] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  
-  // Form state
-  const [deliveryInfo, setDeliveryInfo] = useState<DeliveryInfo>({
-    name: '',
-    phone: '',
-    email: '',
-    address: '',
-    city: 'Washington',
-    zipCode: '',
-    timePreference: 'ASAP (60-90 min)',
-    specialInstructions: ''
-  });
-  
-  const [ageVerified, setAgeVerified] = useState(false);
-  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'regular' | 'cashapp' | 'applepay'>('cashapp');
+  const [confirmedOrder, setConfirmedOrder] = useState<{
+    subtotal: number;
+    delivery_fee: number;
+    total: number;
+    order_number: string;
+    items: Array<{
+      product_id: string;
+      quantity: number;
+      unit_price: number;
+      strain: string;
+      thc_low: number;
+      thc_high: number;
+      products: {
+        tier: string;
+        weight: string;
+        color_theme: string;
+      };
+    }>;
+  } | null>(null);
+  const [phoneError, setPhoneError] = useState<string>('');
 
-  // Load cart on mount
+  // Hydrate cart from localStorage on component mount
   useEffect(() => {
-    // Simple cart validation - remove any items with invalid product IDs
-    const validProductIds = [
-      'ddc696a0-a537-4d10-b820-584c6c512bff', // Starter
-      '4e08d8c4-bc92-451c-b1fb-d2898070462f', // Classic  
-      '9643176b-8940-4635-988f-d14274aad826', // Black
-      '2bedb33f-6587-4337-8b18-c943d4b48067'  // Ultra
-    ];
-    
-    const invalidItems = items.filter(item => 
-      !item.product?.id || !validProductIds.includes(item.product.id)
-    );
-    
-    if (invalidItems.length > 0) {
-      console.log('🧹 Clearing invalid cart items');
-      clearCart();
-      alert('Your cart contained invalid items and has been cleared. Please add products again from the shop.');
-      router.push('/shop');
-    }
-  }, [items, clearCart, router]);
+    hydrateCart();
+  }, [hydrateCart]);
+
+  // zod schema for required checkboxes
+  const schema = z.object({
+    ageVerified: z.boolean().refine((v) => v === true, {
+      message: 'You must confirm you are 21+ and in DC to order.',
+    }),
+    acceptTerms: z.boolean().refine((v) => v === true, {
+      message: 'You must accept the Terms & Privacy Policy.',
+    }),
+    emailOptIn: z.boolean(),
+  });
+
+  type CheckboxForm = z.infer<typeof schema>;
+
+  const form = useForm<CheckboxForm>({
+    resolver: zodResolver(schema),
+    mode: 'onChange',
+    defaultValues: { ageVerified: false, acceptTerms: false, emailOptIn: false },
+  });
+
+  const [deliveryDetails, setDeliveryDetails] = useState<DeliveryDetails>({
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    city: '',
+    zipCode: '',
+    timePreference: 'ASAP (60–90 min)',
+    specialInstructions: '',
+    ageVerification: false,
+    termsAccepted: false,
+    preferredTime: '',
+    emailUpdates: false
+  });
 
   // Redirect if cart is empty
   if (items.length === 0 && !isOrderComplete) {
     return (
-      <div className="min-h-screen flex flex-col bg-gray-50">
+      <div className="min-h-screen">
         <Header />
-        <main className="flex-1 pt-20 sm:pt-24">
-          <div className="mx-auto max-w-[1280px] px-6">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
-              <ShoppingCart className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h1 className="text-2xl font-semibold text-gray-900 mb-4">Your cart is empty</h1>
-              <p className="text-gray-600 mb-8">Add some products to your cart before checking out.</p>
-              <Link 
-                href="/shop" 
-                className="inline-flex items-center px-6 py-3 bg-[#C084FC] text-white rounded-lg hover:bg-purple-600 transition-colors font-medium"
-              >
-                Browse Products
-              </Link>
-            </div>
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">No items to checkout</h1>
+            <p className="text-gray-600 mb-8">
+              Add some beautiful artwork to your cart before proceeding to checkout.
+            </p>
+            <Link href="/shop" className="inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-medium rounded-xl text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors duration-200 min-w-[200px]">
+              Browse Products
+            </Link>
           </div>
-        </main>
-        <Footer />
+        </div>
       </div>
     );
   }
 
-  // Calculate totals
   const cartTotal = getTotal();
+  
+  // Prevent checkout with empty cart or zero total
+  if (cartTotal <= 0 && !isOrderComplete) {
+    return (
+      <div className="min-h-screen">
+        <Header />
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">Cart is empty</h1>
+            <p className="text-gray-600 mb-8">
+              Add some items to your cart before proceeding to checkout.
+            </p>
+            <Link href="/shop" className="inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-medium rounded-xl text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors duration-200 min-w-[200px]">
+              Browse Products
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
   const hasDelivery = cartTotal >= 35;
-  const deliveryFee = hasDelivery ? 0 : 10;
-  const finalTotal = cartTotal + deliveryFee;
+  const finalTotal = hasDelivery ? cartTotal : cartTotal + 10;
+  
+  // Debug pricing calculations
+  console.log('💰 Checkout Pricing Debug:', {
+    cartTotal: cartTotal,
+    hasDelivery: hasDelivery,
+    deliveryFee: hasDelivery ? 0 : 10,
+    finalTotal: finalTotal,
+    itemsCount: items.length,
+    items: items.map(item => ({ 
+      name: item.product.name, 
+      price: item.product.price, 
+      quantity: item.quantity,
+      subtotal: item.product.price * item.quantity 
+    })),
+    confirmedOrder: confirmedOrder
+  });
 
-  // Handle form input changes
-  const handleInputChange = (field: keyof DeliveryInfo, value: string) => {
-    setDeliveryInfo(prev => ({ ...prev, [field]: value }));
-    setError(null);
+  // Phone validation functions
+  const formatPhoneNumber = (value: string) => {
+    const phoneNumber = value.replace(/\D/g, '');
+    if (phoneNumber.length >= 6) {
+      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
+    } else if (phoneNumber.length >= 3) {
+      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
+    } else {
+      return phoneNumber;
+    }
   };
 
-  // Validate form
-  const validateForm = (): string | null => {
-    if (!deliveryInfo.name.trim()) return 'Name is required';
-    if (!deliveryInfo.phone.trim()) return 'Phone number is required';
-    if (!deliveryInfo.email.trim()) return 'Email is required';
-    if (!deliveryInfo.address.trim()) return 'Address is required';
-    if (!deliveryInfo.zipCode.trim()) return 'ZIP code is required';
-    if (!/^20[0-1]\d{2}$/.test(deliveryInfo.zipCode)) return 'Please enter a valid DC ZIP code (20000-20199)';
-    if (!ageVerified) return 'You must confirm you are 21+ and in DC';
-    if (!termsAccepted) return 'You must accept the Terms & Privacy Policy';
-    return null;
+  const validatePhoneNumber = (phone: string) => {
+    const digits = phone.replace(/\D/g, '');
+    if (digits.length === 0) {
+      return 'Phone number is required';
+    } else if (digits.length < 10) {
+      return 'Phone number must be at least 10 digits';
+    } else if (digits.length > 11) {
+      return 'Phone number is too long';
+    } else if (digits.length === 11 && !digits.startsWith('1')) {
+      return 'Invalid phone number format';
+    }
+    return '';
   };
 
-  // Submit order
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
     
-    const validationError = validateForm();
-    if (validationError) {
-      setError(validationError);
+    if (name === 'phone') {
+      const formattedPhone = formatPhoneNumber(value);
+      const error = validatePhoneNumber(formattedPhone);
+      setPhoneError(error);
+      setDeliveryDetails(prev => ({
+        ...prev,
+        [name]: formattedPhone
+      }));
+    } else if (type === 'checkbox') {
+      setDeliveryDetails(prev => ({
+        ...prev,
+        [name]: checked
+      }));
+    } else {
+      setDeliveryDetails(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
+  };
+
+  const handleFieldFocus = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    try {
+      setTimeout(() => {
+        e.target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      }, 50);
+    } catch {}
+  };
+
+  const handleCashAppPayment = async (data: CheckboxForm) => {
+    // Validate form first
+    const validationErrors = [];
+    
+    if (!deliveryDetails.name.trim()) {
+      validationErrors.push('Full name is required');
+    }
+    
+    if (!deliveryDetails.email?.trim()) {
+      validationErrors.push('Email address is required');
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(deliveryDetails.email)) {
+      validationErrors.push('Please enter a valid email address');
+    }
+    
+    const phoneValidationError = validatePhoneNumber(deliveryDetails.phone);
+    if (phoneValidationError) {
+      validationErrors.push(phoneValidationError);
+      setPhoneError(phoneValidationError);
+    }
+    
+    if (validationErrors.length > 0) {
+      alert(`Please complete your information first:\n\n• ${validationErrors.join('\n• ')}`);
       return;
     }
 
+    // Initiate Cash App payment
+    const success = await initiatePayment(finalTotal, deliveryDetails.phone.replace(/\D/g, ''));
+    if (!success) {
+      alert('Failed to create Cash App payment. Please try again.');
+    }
+  };
+
+  const handleApplePaySuccess = async (paymentData: any) => {
+    console.log('🍎 Apple Pay payment successful:', paymentData);
+    setIsOrderComplete(true);
+    setOrderId(paymentData.orderNumber);
+    clearCart();
+    
+    // Set confirmed order data
+    setConfirmedOrder({
+      subtotal: finalTotal - (hasDelivery ? 0 : 10),
+      delivery_fee: hasDelivery ? 0 : 10,
+      total: finalTotal,
+      order_number: paymentData.orderNumber,
+      items: items.map(item => ({
+        product_id: item.product.id,
+        quantity: item.quantity,
+        unit_price: item.product.price,
+        strain: item.strain.name,
+        thc_low: item.strain.thcLow,
+        thc_high: item.strain.thcHigh,
+        products: {
+          tier: item.product.tier,
+          weight: item.product.weight,
+          color_theme: item.product.color_theme
+        }
+      }))
+    });
+  };
+
+  const handleApplePayError = (error: string) => {
+    console.error('🍎 Apple Pay error:', error);
+    alert(`Apple Pay failed: ${error}`);
+  };
+
+  const submitHandler = async (data: CheckboxForm) => {
+    if (isSubmitting) return;
+    
+    // Handle Cash App payment separately
+    if (paymentMethod === 'cashapp') {
+      await handleCashAppPayment(data);
+      return;
+    }
+    
+    // Comprehensive form validation with better UX
+    const validationErrors = [];
+    
+    if (!deliveryDetails.name.trim()) {
+      validationErrors.push('Full name is required');
+    }
+    
+    if (!deliveryDetails.email?.trim()) {
+      validationErrors.push('Email address is required');
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(deliveryDetails.email)) {
+      validationErrors.push('Please enter a valid email address');
+    }
+    
+    const phoneValidationError = validatePhoneNumber(deliveryDetails.phone);
+    if (phoneValidationError) {
+      validationErrors.push(phoneValidationError);
+      setPhoneError(phoneValidationError);
+    }
+    
+    if (!deliveryDetails.address.trim()) {
+      validationErrors.push('Street address is required');
+    }
+    
+    if (!deliveryDetails.city.trim()) {
+      validationErrors.push('City is required');
+    }
+    
+    if (!deliveryDetails.zipCode.trim()) {
+      validationErrors.push('ZIP code is required');
+    } else if (!/^20[0-1]\d{2}$/.test(deliveryDetails.zipCode)) {
+      validationErrors.push('Please enter a valid DC ZIP code (20000-20199)');
+    }
+    
+    if (items.length === 0) {
+      validationErrors.push('Your cart is empty. Please add items before checking out.');
+    }
+    
+    if (validationErrors.length > 0) {
+      alert(`Please fix the following issues:\n\n• ${validationErrors.join('\n• ')}`);
+      return;
+    }
+    
     setIsSubmitting(true);
-    setError(null);
+
+    // Final validation before submission
+    console.log('🚀 Starting order submission with:', {
+      cartTotal,
+      hasDelivery,
+      finalTotal,
+      itemsCount: items.length
+    });
 
     try {
-      // Prepare order data
-      const orderData = {
-        items: items.map(item => ({
-          product: {
-            id: item.product.id,
-            name: item.product.name,
-            price: item.product.price,
-            tier: item.product.tier || 'starter',
-            weight: item.product.weight || '3.5g',
-            color_theme: item.product.color_theme || 'pink'
-          },
-          strain: {
-            name: item.strain?.name || 'Moroccan Peach',
-            type: item.strain?.type || 'Indica',
-            thcLow: item.strain?.thcLow || 18,
-            thcHigh: item.strain?.thcHigh || 22
-          },
-          quantity: item.quantity
-        })),
+      const orderItems: OrderCartItem[] = items.map(item => ({
+        product: {
+          id: item.product.id,
+          name: item.product.name,
+          description: (((item.product as any).display_tier) || item.product.tier || item.product.description || ''),
+          price: item.product.price,
+          artworkUrl: item.product.image_url || '',
+          giftSize: item.product.weight || `${((item.product as any).display_tier || item.product.tier)} tier`,
+          hasDelivery: hasDelivery
+        },
+        quantity: item.quantity,
+        strain: {
+          name: item.strain.name,
+          type: item.strain.type,
+          thcLow: item.strain.thcLow,
+          thcHigh: item.strain.thcHigh
+        }
+      }));
+      
+      const order: Omit<Order, 'id' | 'createdAt' | 'updatedAt'> = {
+        items: orderItems,
         deliveryDetails: {
-          name: deliveryInfo.name,
-          phone: deliveryInfo.phone,
-          email: deliveryInfo.email,
-          address: deliveryInfo.address,
-          city: deliveryInfo.city,
-          zipCode: deliveryInfo.zipCode,
-          timePreference: deliveryInfo.timePreference,
-          specialInstructions: deliveryInfo.specialInstructions
+          ...deliveryDetails,
+          ageVerification: data.ageVerified,
+          termsAccepted: data.acceptTerms,
+          emailUpdates: !!data.emailOptIn,
+          phone: deliveryDetails.phone.replace(/\D/g, ''),
         },
         total: finalTotal,
         hasDelivery: hasDelivery,
-        status: 'pending'
+        status: 'pending',
       };
 
-      console.log('🚀 Submitting order:', orderData);
-
-      // Submit to API
       const response = await fetch('/api/place-order', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(orderData),
+        body: JSON.stringify(order),
       });
 
-      const result = await response.json();
-      console.log('📦 Order response:', result);
+      const responseData = await response.json();
 
-      if (response.ok && result.success) {
-        setOrderId(result.orderId);
+      if (response.ok && responseData.success) {
+        const { orderId: newOrderId } = responseData;
+        setOrderId(newOrderId);
+        
+        // Wait a moment for order to be fully inserted, then fetch the actual order data
+        setTimeout(async () => {
+          try {
+            console.log('Fetching order data for ID:', newOrderId);
+            const orderResponse = await fetch(`/api/orders/${newOrderId}`);
+            console.log('Order response status:', orderResponse.status);
+            
+            if (orderResponse.ok) {
+              const orderData = await orderResponse.json();
+              console.log('Order data received:', orderData);
+              setConfirmedOrder({
+                subtotal: orderData.subtotal,
+                delivery_fee: orderData.delivery_fee,
+                total: orderData.total,
+                order_number: orderData.order_number,
+                items: orderData.items || []
+              });
+            } else {
+              console.error('Order API response not OK:', await orderResponse.text());
+              throw new Error('Failed to fetch order');
+            }
+          } catch (error) {
+            console.error('Failed to fetch order details:', error);
+            // Fallback to calculated values if API fails
+            setConfirmedOrder({
+              subtotal: cartTotal,
+              delivery_fee: hasDelivery ? 0 : 10,
+              total: finalTotal,
+              order_number: newOrderId,
+              items: items.map(item => ({
+                product_id: item.product.id,
+                quantity: item.quantity,
+                unit_price: item.product.price,
+                strain: item.strain.name,
+                thc_low: item.strain.thcLow,
+                thc_high: item.strain.thcHigh,
+                products: {
+                  tier: item.product.tier,
+                  weight: item.product.weight,
+                  color_theme: item.product.color_theme
+                }
+              }))
+            });
+          }
+        }, 1000);
+        
         setIsOrderComplete(true);
         clearCart();
       } else {
-        throw new Error(result.error || 'Failed to submit order');
+        const errorMessage = responseData.error || 'Failed to submit order';
+        throw new Error(errorMessage);
       }
     } catch (error) {
-      console.error('❌ Order submission failed:', error);
-      setError(error instanceof Error ? error.message : 'Failed to submit order. Please try again.');
+      console.error('Error submitting order:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      
+      // Better error handling with specific messages
+      if (errorMessage.includes('Price calculation mismatch')) {
+        alert(`⚠️ Pricing Error\n\n${errorMessage}\n\nThis usually happens when:\n• Cart was modified during checkout\n• Prices have been updated\n• Browser cache is outdated\n\nPlease refresh the page and try again.`);
+      } else if (errorMessage.includes('Out-of-zone address')) {
+        alert(`📍 Delivery Area Error\n\nWe currently only deliver to Washington DC (ZIP codes 20000-20199). Please check your ZIP code and try again.`);
+      } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
+        alert(`🌐 Connection Error\n\nPlease check your internet connection and try again. If the problem persists, contact support at support@canne.art`);
+      } else {
+        alert(`❌ Order Submission Failed\n\n${errorMessage}\n\nPlease try again or contact support at support@canne.art if the issue continues.`);
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Order success screen
+  const onSubmit = form.handleSubmit(submitHandler);
+
+  // Order confirmation screen
   if (isOrderComplete) {
     return (
-      <div className="min-h-screen flex flex-col bg-gray-50">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20">
         <Header />
-        <main className="flex-1 pt-20 sm:pt-24">
-          <div className="mx-auto max-w-[1280px] px-6">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
-              <CheckCircle className="h-16 w-16 text-green-600 mx-auto mb-6" />
-              <h1 className="text-3xl font-semibold text-gray-900 mb-4">Order Confirmed!</h1>
-              <p className="text-lg text-gray-600 mb-8">
-                Thank you, {deliveryInfo.name}! Your order has been placed successfully.
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle className="h-8 w-8 text-green-600" />
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Order Confirmed!</h1>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">
+              Thank you, {deliveryDetails.name}!
+            </p>
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border border-gray-100 dark:border-gray-700 inline-block">
+              <p className="font-semibold text-gray-900 dark:text-white">
+                Order #{orderId}
               </p>
-              
-              <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200 mb-8">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Order Details</h2>
-                <div className="space-y-2 text-left max-w-sm mx-auto">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Order ID:</span>
-                    <span className="font-mono text-sm text-gray-900">{orderId?.slice(-8)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Total:</span>
-                    <span className="font-semibold text-gray-900">${finalTotal.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Delivery:</span>
-                    <span className="text-gray-900">{hasDelivery ? 'FREE' : `$${deliveryFee}`}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Expected:</span>
-                    <span className="text-gray-900">{deliveryInfo.timePreference}</span>
-                  </div>
-                </div>
-              </div>
+              <p className="text-sm text-gray-500 dark:text-gray-500">
+                {new Date().toLocaleDateString('en-US', { 
+                  month: 'short', 
+                  day: 'numeric',
+                  hour: 'numeric',
+                  minute: '2-digit'
+                })}
+              </p>
+            </div>
+          </div>
 
-              <div className="space-y-6">
-                <p className="text-gray-600 max-w-md mx-auto">
-                  We'll send you updates via text and email. Your Cannè art collection is on its way!
-                </p>
-                
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Link 
-                    href="/shop" 
-                    className="px-6 py-3 bg-[#C084FC] text-white rounded-lg hover:bg-purple-600 transition-colors font-medium"
-                  >
-                    Continue Shopping
-                  </Link>
-                  <Link 
-                    href="/" 
-                    className="px-6 py-3 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 transition-colors font-medium"
-                  >
-                    Back to Home
-                  </Link>
+          {/* Single Order Summary Card */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 mb-8">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Order Summary</h2>
+            
+            <div className="space-y-3 mb-4">
+              {confirmedOrder?.items.map((item, index) => (
+                <div key={`${item.product_id}-${index}`} className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <p className="font-medium text-gray-900 dark:text-white text-sm">
+                      {item.products?.tier || 'Classic'} Tier
+                    </p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">
+                      <span className="font-medium">{item.strain}</span> • {item.thc_low}–{item.thc_high}% THC
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-500">
+                      {item.products?.weight || '3.5g'} • Qty: {item.quantity}
+                    </p>
+                  </div>
+                  <span className="font-medium text-gray-900 dark:text-white text-sm">
+                    ${(item.unit_price * item.quantity).toFixed(2)}
+                  </span>
                 </div>
+              )) || (
+                <div className="text-center py-4">
+                  <p className="text-gray-500 dark:text-gray-400">Loading order details...</p>
+                </div>
+              )}
+            </div>
+
+            <div className="border-t border-gray-200 dark:border-gray-600 pt-4 space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>Subtotal</span>
+                <span className="text-right">
+                  {confirmedOrder ? `$${confirmedOrder.subtotal.toFixed(2)}` : 'Loading...'}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>Delivery</span>
+                <span className="text-right">
+                  {confirmedOrder ? 
+                    (confirmedOrder.delivery_fee === 0 ? 'FREE' : `$${confirmedOrder.delivery_fee.toFixed(2)}`) :
+                    'Loading...'
+                  }
+                </span>
+              </div>
+              <div className="flex justify-between text-lg font-semibold text-gray-900 dark:text-white border-t border-gray-200 dark:border-gray-600 pt-2">
+                <span>Total</span>
+                <span className="text-right">
+                  {confirmedOrder ? `$${confirmedOrder.total.toFixed(2)}` : 'Loading...'}
+                </span>
               </div>
             </div>
           </div>
-        </main>
-        <Footer />
+
+          {/* Delivery Info */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 mb-8">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Delivery Details</h2>
+            <div className="space-y-2 text-sm">
+              <p className="text-gray-600 dark:text-gray-400">
+                {deliveryDetails.address}, {deliveryDetails.city}, DC {deliveryDetails.zipCode}
+              </p>
+              <p className="text-gray-600 dark:text-gray-400">
+                Expected: {deliveryDetails.timePreference}
+              </p>
+            </div>
+          </div>
+
+          {/* Simple Next Steps */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 mb-8">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">What's Next?</h2>
+            <div className="space-y-3 text-sm">
+              <div className="flex items-center gap-3">
+                <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                </div>
+                <span className="text-gray-600 dark:text-gray-400">Order confirmed - we're preparing your items</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+                  <Clock className="h-4 w-4 text-blue-600" />
+                </div>
+                <span className="text-gray-600 dark:text-gray-400">Expected delivery: {deliveryDetails.timePreference}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-6 h-6 bg-amber-100 rounded-full flex items-center justify-center">
+                  <span className="text-amber-600 text-xs font-bold">ID</span>
+                </div>
+                <span className="text-gray-600 dark:text-gray-400">Have your ID ready (21+ required)</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="text-center space-y-4">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/shop" className="btn-primary">
+                Continue Shopping
+              </Link>
+            </div>
+            <p className="text-sm text-gray-500 dark:text-gray-500">
+              Questions? Contact us at support@canne.art
+            </p>
+          </div>
+        </div>
       </div>
     );
   }
 
-  // Main checkout form
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+      className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-purple-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-purple-900/10"
+    >
       <Header />
-      <main className="flex-1 pt-20 sm:pt-24">
-        <div className="mx-auto max-w-[1280px] px-6">
-          
-          {/* Page Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-semibold text-gray-900 mb-2">Complete Your Order</h1>
-            <p className="text-gray-600">Secure checkout for your Cannè art collection</p>
+      
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Link 
+          href="/cart" 
+          className="inline-flex items-center text-gray-600 hover:text-purple-600 mb-8 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] group"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2 transition-transform group-hover:-translate-x-1" />
+          Back to Cart
+        </Link>
+
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-8">
+          <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0">
+            <Lock className="h-6 w-6 text-white" />
           </div>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white leading-tight">Secure Checkout</h1>
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">Your information is protected with 256-bit SSL encryption</p>
+          </div>
+        </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            
-            {/* Order Form */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-              {error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
-                  <AlertCircle className="h-5 w-5 text-red-600" />
-                  <p className="text-red-800">{error}</p>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="space-y-6">
+            <form onSubmit={onSubmit} noValidate className="space-y-6">
+              {/* Contact Information */}
+              <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center">
+                    <CreditCard className="h-5 w-5 text-white" />
+                  </div>
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Contact Information</h2>
                 </div>
-              )}
-
-            <form onSubmit={handleSubmit} className="space-y-6">
-              
-              {/* Personal Information */}
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Personal Information</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Full Name *
                     </label>
                     <input
                       type="text"
-                      value={deliveryInfo.name}
-                      onChange={(e) => handleInputChange('name', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      name="name"
+                      required
+                      value={deliveryDetails.name}
+                      onChange={handleInputChange}
+                      onFocus={handleFieldFocus}
+                      className="w-full px-4 py-4 border border-gray-200 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-base bg-gray-50 dark:bg-gray-700 dark:text-white hover:bg-white dark:hover:bg-gray-600 focus:bg-white dark:focus:bg-gray-600 shadow-sm focus:shadow-md"
                       placeholder="John Doe"
+                      autoComplete="name"
                     />
                   </div>
                   
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Phone Number *
-                    </label>
-                    <input
-                      type="tel"
-                      value={deliveryInfo.phone}
-                      onChange={(e) => handleInputChange('phone', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      placeholder="(202) 555-0123"
-                    />
-                  </div>
-                  
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Email Address *
-                    </label>
-                    <input
-                      type="email"
-                      value={deliveryInfo.email}
-                      onChange={(e) => handleInputChange('email', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      placeholder="john@example.com"
-                    />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Email Address *
+                      </label>
+                      <input
+                        type="email"
+                        name="email"
+                        required
+                        value={deliveryDetails.email || ''}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-4 border border-gray-200 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-base bg-gray-50 dark:bg-gray-700 dark:text-white hover:bg-white dark:hover:bg-gray-600 focus:bg-white dark:focus:bg-gray-600 shadow-sm focus:shadow-md"
+                        placeholder="john@example.com"
+                        autoComplete="email"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Phone Number *
+                      </label>
+                      <input
+                        type="tel"
+                        name="phone"
+                        required
+                        value={deliveryDetails.phone}
+                        onChange={handleInputChange}
+                        className={`w-full px-4 py-4 border rounded-2xl focus:ring-2 focus:border-transparent transition-all duration-200 text-base shadow-sm focus:shadow-md ${
+                          phoneError 
+                            ? 'border-red-300 focus:ring-red-500 bg-red-50 dark:bg-red-900/20 dark:border-red-500' 
+                            : 'border-gray-200 dark:border-gray-600 focus:ring-purple-500 bg-gray-50 dark:bg-gray-700 dark:text-white hover:bg-white dark:hover:bg-gray-600 focus:bg-white dark:focus:bg-gray-600'
+                        }`}
+                        placeholder="(202) 555-0123"
+                        maxLength={14}
+                        autoComplete="tel"
+                      />
+                      {phoneError && (
+                        <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                          <span className="text-red-500">⚠️</span>
+                          {phoneError}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Delivery Address */}
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Delivery Address</h2>
+              <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-teal-500 rounded-xl flex items-center justify-center">
+                    <MapPin className="h-5 w-5 text-white" />
+                  </div>
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Delivery Address</h2>
+                </div>
+                
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Street Address *
                     </label>
                     <input
                       type="text"
-                      value={deliveryInfo.address}
-                      onChange={(e) => handleInputChange('address', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      placeholder="123 Main St NW"
+                      name="address"
+                      required
+                      value={deliveryDetails.address}
+                      onChange={handleInputChange}
+                      onFocus={handleFieldFocus}
+                      className="w-full px-4 py-4 border border-gray-200 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-base bg-gray-50 dark:bg-gray-700 dark:text-white hover:bg-white dark:hover:bg-gray-600 focus:bg-white dark:focus:bg-gray-600 shadow-sm focus:shadow-md"
+                      placeholder="123 Main Street"
+                      autoComplete="street-address"
                     />
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Apartment, Suite, etc. (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      name="apartment"
+                      value={deliveryDetails.apartment || ''}
+                      onChange={handleInputChange}
+                      onFocus={handleFieldFocus}
+                      className="w-full px-4 py-4 border border-gray-200 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-base bg-gray-50 dark:bg-gray-700 dark:text-white hover:bg-white dark:hover:bg-gray-600 focus:bg-white dark:focus:bg-gray-600 shadow-sm focus:shadow-md"
+                      placeholder="Apt 4B, Suite 200, etc."
+                      autoComplete="address-line2"
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         City *
                       </label>
                       <input
                         type="text"
-                        value={deliveryInfo.city}
-                        onChange={(e) => handleInputChange('city', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        name="city"
+                        required
+                        value={deliveryDetails.city}
+                        onChange={handleInputChange}
+                        onFocus={handleFieldFocus}
+                        className="w-full px-4 py-4 border border-gray-200 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-base bg-gray-50 dark:bg-gray-700 dark:text-white hover:bg-white dark:hover:bg-gray-600 focus:bg-white dark:focus:bg-gray-600 shadow-sm focus:shadow-md"
                         placeholder="Washington"
+                        autoComplete="address-level2"
                       />
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         ZIP Code *
                       </label>
                       <input
                         type="text"
-                        value={deliveryInfo.zipCode}
-                        onChange={(e) => handleInputChange('zipCode', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        name="zipCode"
+                        required
+                        value={deliveryDetails.zipCode}
+                        onChange={handleInputChange}
+                        onFocus={handleFieldFocus}
+                        className="w-full px-4 py-4 border border-gray-200 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-base bg-gray-50 dark:bg-gray-700 dark:text-white hover:bg-white dark:hover:bg-gray-600 focus:bg-white dark:focus:bg-gray-600 shadow-sm focus:shadow-md"
                         placeholder="20001"
+                        autoComplete="postal-code"
                         maxLength={5}
+                        pattern="[0-9]{5}"
                       />
                     </div>
                   </div>
-                </div>
-              </div>
-
-              {/* Delivery Preferences */}
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Delivery Preferences</h2>
-                <div className="space-y-4">
+                  
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Preferred Delivery Time
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Delivery Time Preference
                     </label>
                     <select
-                      value={deliveryInfo.timePreference}
-                      onChange={(e) => handleInputChange('timePreference', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      name="timePreference"
+                      value={deliveryDetails.timePreference}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-4 border border-gray-200 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-base bg-gray-50 dark:bg-gray-700 dark:text-white hover:bg-white dark:hover:bg-gray-600 focus:bg-white dark:focus:bg-gray-600 shadow-sm focus:shadow-md"
                     >
-                      <option value="ASAP (60-90 min)">ASAP (60-90 min)</option>
-                      <option value="Evening (6-9 PM)">Evening (6-9 PM)</option>
-                      <option value="Weekend">Weekend</option>
+                      <option value="ASAP (60–90 min)">ASAP (60–90 min)</option>
+                      <option value="Morning (9 AM - 12 PM)">Morning (9 AM - 12 PM)</option>
+                      <option value="Afternoon (12 PM - 5 PM)">Afternoon (12 PM - 5 PM)</option>
+                      <option value="Evening (5 PM - 8 PM)">Evening (5 PM - 8 PM)</option>
                     </select>
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Special Instructions (Optional)
                     </label>
                     <textarea
-                      value={deliveryInfo.specialInstructions}
-                      onChange={(e) => handleInputChange('specialInstructions', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      name="specialInstructions"
+                      value={deliveryDetails.specialInstructions}
+                      onChange={handleInputChange}
+                      onFocus={handleFieldFocus}
                       rows={3}
+                      className="w-full px-4 py-4 border border-gray-200 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-base bg-gray-50 dark:bg-gray-700 dark:text-white hover:bg-white dark:hover:bg-gray-600 focus:bg-white dark:focus:bg-gray-600 shadow-sm focus:shadow-md resize-none"
                       placeholder="Buzzer code, gate instructions, etc."
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Verification */}
-              <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <input
-                    type="checkbox"
-                    id="age-verification"
-                    checked={ageVerified}
-                    onChange={(e) => setAgeVerified(e.target.checked)}
-                    className="mt-1 h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
-                  />
-                  <label htmlFor="age-verification" className="text-sm text-gray-700">
-                    I certify that I am 21+ years old and located in Washington, DC to place this order.
-                  </label>
-                </div>
-                
-                <div className="flex items-start gap-3">
-                  <input
-                    type="checkbox"
-                    id="terms-agreement"
-                    checked={termsAccepted}
-                    onChange={(e) => setTermsAccepted(e.target.checked)}
-                    className="mt-1 h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
-                  />
-                  <label htmlFor="terms-agreement" className="text-sm text-gray-700">
-                    I agree to the{' '}
-                    <Link href="/terms" className="text-purple-600 hover:text-purple-700 underline">
-                      Terms of Service
-                    </Link>{' '}
-                    and{' '}
-                    <Link href="/privacy" className="text-purple-600 hover:text-purple-700 underline">
-                      Privacy Policy
-                    </Link>
-                  </label>
-                </div>
-              </div>
-
-              {/* Submit Button */}
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-[#C084FC] text-white rounded-lg hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-lg font-semibold shadow-sm"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                    Processing Order...
-                  </>
-                ) : (
-                  <>
-                    Complete Order - ${finalTotal.toFixed(2)}
-                  </>
-                )}
-              </button>
-            </form>
-          </div>
-
-          {/* Order Summary */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">Order Summary</h2>
-            
-            {/* Cart Items */}
-            <div className="space-y-4 mb-6">
-              {items.map((item, index) => {
-                // Get tier color for visual consistency
-                const getTierColor = (tier: string) => {
-                  switch (tier?.toLowerCase()) {
-                    case 'starter': return 'bg-[#38BDF8]';
-                    case 'classic': return 'bg-[#C084FC]';
-                    case 'black': return 'bg-[#64748B]';
-                    case 'ultra': return 'bg-[#F472B6]';
-                    default: return 'bg-gray-500';
-                  }
-                };
-                
-                return (
-                  <div key={index} className="flex items-center gap-4 p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200">
-                    <div className={`w-3 h-3 rounded-full ${getTierColor(item.product.tier || 'starter')}`}></div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900">{item.product.name}</h3>
-                      <p className="text-sm text-gray-600">
-                        {item.strain?.name || 'Moroccan Peach'} • Qty: {item.quantity}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-gray-900">
-                        ${(item.product.price * item.quantity).toFixed(2)}
+              {/* Age Verification */}
+              <div className="space-y-3">
+                <label htmlFor="ageVerified" className="block cursor-pointer">
+                  <div className={`flex items-start gap-4 p-6 rounded-2xl border-2 transition-all duration-200 shadow-sm hover:shadow-md ${
+                    form.formState.errors.ageVerified
+                      ? 'border-red-300 bg-red-50 dark:bg-red-900/20 dark:border-red-500'
+                      : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 hover:border-purple-300 dark:hover:border-purple-500'
+                  }`}>
+                    <Controller
+                      control={form.control}
+                      name="ageVerified"
+                      render={({ field }) => (
+                        <Checkbox
+                          id="ageVerified"
+                          name={field.name}
+                          checked={!!field.value}
+                          onCheckedChange={(v) => {
+                            field.onChange(v);
+                            setDeliveryDetails((prev) => ({ ...prev, ageVerification: !!v }));
+                          }}
+                          onBlur={field.onBlur}
+                          ref={field.ref}
+                        />
+                      )}
+                    />
+                    <div className="text-sm text-gray-800 dark:text-gray-100">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-2xl">🔞</span>
+                        <span className="font-semibold text-base">21+ Age Verification *</span>
+                      </div>
+                      <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                        I certify that I am 21+ years old and located in Washington, DC to place this order.
                       </p>
                     </div>
                   </div>
-                );
-              })}
+                </label>
+                <AnimatePresence>
+                  {form.formState.errors.ageVerified && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-4 py-3 rounded-xl border border-red-200 dark:border-red-800"
+                    >
+                      <span className="text-red-500">⚠️</span>
+                      {form.formState.errors.ageVerified.message as string}
+                    </motion.p>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Terms and Privacy */}
+              <div className="space-y-3">
+                <label htmlFor="acceptTerms" className="block cursor-pointer">
+                  <div className={`flex items-start gap-4 p-6 rounded-2xl border-2 transition-all duration-200 shadow-sm hover:shadow-md ${
+                    form.formState.errors.acceptTerms
+                      ? 'border-red-300 bg-red-50 dark:bg-red-900/20 dark:border-red-500'
+                      : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 hover:border-purple-300 dark:hover:border-purple-500'
+                  }`}>
+                    <Controller
+                      control={form.control}
+                      name="acceptTerms"
+                      render={({ field }) => (
+                        <Checkbox
+                          id="acceptTerms"
+                          name={field.name}
+                          checked={!!field.value}
+                          onCheckedChange={(v) => {
+                            field.onChange(v);
+                            setDeliveryDetails((prev) => ({ ...prev, termsAccepted: !!v }));
+                          }}
+                          onBlur={field.onBlur}
+                          ref={field.ref}
+                        />
+                      )}
+                    />
+                    <div className="text-sm text-gray-800 dark:text-gray-100">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-2xl">📋</span>
+                        <span className="font-semibold text-base">Terms & Privacy Agreement *</span>
+                      </div>
+                      <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                        I agree to the{' '}
+                        <a href="/terms" className="text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 underline font-medium transition-colors" target="_blank" rel="noreferrer">
+                          Terms of Service
+                        </a>{' '}
+                        and{' '}
+                        <a href="/privacy" className="text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 underline font-medium transition-colors" target="_blank" rel="noreferrer">
+                          Privacy Policy
+                        </a>
+                      </p>
+                    </div>
+                  </div>
+                </label>
+                <AnimatePresence>
+                  {form.formState.errors.acceptTerms && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-4 py-3 rounded-xl border border-red-200 dark:border-red-800"
+                    >
+                      <span className="text-red-500">⚠️</span>
+                      {form.formState.errors.acceptTerms.message as string}
+                    </motion.p>
+                  )}
+                </AnimatePresence>
+              </div>
+
+            </form>
+          </div>
+
+          {/* Order Summary and Actions */}
+          <aside className="w-full lg:w-96 lg:pl-8 lg:sticky lg:top-8 h-fit space-y-6">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Order Summary</h2>
+              
+              <div className="space-y-4">
+                {items.map((item) => (
+                  <div key={`${item.product.id}-${item.strain.name}`} className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <h3 className="font-medium text-gray-900 dark:text-white">{item.product.name}</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {item.strain.name} • {item.strain.type} • {item.strain.thcLow}–{item.strain.thcHigh}% THC
+                      </p>
+                      <p className="text-sm text-gray-500 dark:text-gray-500">Qty: {item.quantity}</p>
+                      {/* What's included (collapsible) */}
+                      {(() => {
+                        const tierLabel = (((item.product as any).display_tier) || item.product.description || '').toString();
+                        const info = getTierInfo(tierLabel);
+                        if (!info) return null;
+                        return (
+                          <details className="mt-1 group">
+                            <summary className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer list-none select-none flex items-center">
+                              <span className="underline decoration-dotted underline-offset-2">What's included</span>
+                              <span className="ml-1 text-gray-400 group-open:rotate-180 transition-transform">▾</span>
+                            </summary>
+                            <div className="mt-1 text-sm text-gray-700 dark:text-gray-300">
+                              <div className="mb-1">{info.oneLiner}</div>
+                              <ul className="list-disc pl-5 space-y-0.5">
+                                {info.items.map((x) => (
+                                  <li key={x}>{x}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          </details>
+                        );
+                      })()}
+                    </div>
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      ${(item.product.price * item.quantity).toFixed(2)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="border-t border-gray-200 dark:border-gray-600 mt-6 pt-6 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Subtotal</span>
+                  <span className="text-right">${cartTotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>Delivery</span>
+                  <span className="text-right">{hasDelivery ? 'FREE' : '$10.00'}</span>
+                </div>
+                <div className="flex justify-between text-lg font-semibold text-gray-900 dark:text-white border-t border-gray-200 dark:border-gray-600 pt-2">
+                  <span>Total</span>
+                  <span className="text-right">${finalTotal.toFixed(2)}</span>
+                </div>
+              </div>
             </div>
 
-            {/* Totals */}
-            <div className="border-t pt-4 space-y-2">
-              <div className="flex justify-between text-gray-600">
-                <span>Subtotal</span>
-                <span>${cartTotal.toFixed(2)}</span>
+            <CheckoutFAQ className="lg:sticky top-24" />
+
+            {/* Payment Method Selection */}
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Payment Method</h3>
+              <div className="space-y-3">
+                {/* Apple Pay Option */}
+                <label className="flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all hover:bg-gray-50 dark:hover:bg-gray-700"
+                       style={{ borderColor: paymentMethod === 'applepay' ? '#007AFF' : '#E5E7EB' }}>
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="applepay"
+                    checked={paymentMethod === 'applepay'}
+                    onChange={() => setPaymentMethod('applepay')}
+                    className="w-4 h-4 text-blue-600"
+                  />
+                  <div className="flex items-center gap-2">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="text-gray-900 dark:text-white">
+                      <path d="M12.5 2.5c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-1 4c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-3 4c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-3 4c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                    </svg>
+                    <span className="font-medium text-gray-900 dark:text-white">Apple Pay</span>
+                  </div>
+                  <div className="ml-auto">
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Touch ID • Face ID • Instant</div>
+                  </div>
+                </label>
+
+                {/* Cash App Option */}
+                <label className="flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all hover:bg-gray-50 dark:hover:bg-gray-700"
+                       style={{ borderColor: paymentMethod === 'cashapp' ? '#8B5CF6' : '#E5E7EB' }}>
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="cashapp"
+                    checked={paymentMethod === 'cashapp'}
+                    onChange={() => setPaymentMethod('cashapp')}
+                    className="w-4 h-4 text-purple-600"
+                  />
+                  <Smartphone className="h-5 w-5 text-green-600" />
+                  <div>
+                    <div className="font-medium text-gray-900 dark:text-white">Cash App Payment</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Pay instantly with Cash App</div>
+                  </div>
+                </label>
               </div>
-              
-              <div className="flex justify-between text-gray-600">
-                <span>Delivery</span>
-                <span>{hasDelivery ? 'FREE' : `$${deliveryFee.toFixed(2)}`}</span>
-              </div>
-              
-              {hasDelivery && (
-                <div className="text-sm text-green-600">
-                  🎉 Free delivery on orders $35+
-                </div>
+            </div>
+
+            {/* Payment Buttons */}
+            <div className="space-y-4">
+              {paymentMethod === 'applepay' && (
+                <ApplePayButton
+                  total={finalTotal}
+                  onPaymentSuccess={handleApplePaySuccess}
+                  onPaymentError={handleApplePayError}
+                  disabled={!form.formState.isValid || isSubmitting}
+                />
               )}
               
-              <div className="flex justify-between text-lg font-semibold text-gray-900 pt-2 border-t">
-                <span>Total</span>
-                <span>${finalTotal.toFixed(2)}</span>
-              </div>
+              {paymentMethod === 'cashapp' && (
+                <motion.button
+                  onClick={() => onSubmit()}
+                  aria-disabled={!form.formState.isValid || isSubmitting}
+                  disabled={!form.formState.isValid || isSubmitting}
+                  whileHover={{ scale: form.formState.isValid && !isSubmitting ? 1.02 : 1 }}
+                  whileTap={{ scale: form.formState.isValid && !isSubmitting ? 0.98 : 1 }}
+                  className="w-full font-semibold py-5 px-8 rounded-2xl shadow-lg hover:shadow-xl disabled:shadow-none transition-all duration-300 disabled:cursor-not-allowed text-lg flex items-center justify-center gap-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-500 text-white"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent"></div>
+                      <span>Processing...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Smartphone className="h-5 w-5" />
+                      <span>Pay with Cash App - ${finalTotal.toFixed(2)}</span>
+                    </>
+                  )}
+                </motion.button>
+              )}
             </div>
-
-            {/* Payment Info */}
-            <div className="mt-6 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
-              <div className="flex items-center gap-2 mb-2">
-                <CreditCard className="h-5 w-5 text-blue-600" />
-                <h3 className="font-semibold text-blue-900">Payment Method</h3>
-              </div>
-              <p className="text-sm text-blue-800">
-                💳 Cash App Payment - Pay instantly with Cash App after order confirmation
-              </p>
-            </div>
-          </div>
-          </div>
+          </aside>
         </div>
-        </main>
-        <Footer />
       </div>
+    </motion.div>
   );
 }
