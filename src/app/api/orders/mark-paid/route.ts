@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     
     // First, get the order details for notification
     const { data: orderData, error: fetchError } = await supabase
-      .from('cashapp_orders')
+      .from('cashapp_payments')
       .select('*')
       .eq('short_code', short_code)
       .single();
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
 
     // Update the order status to 'paid'
     const { error } = await supabase
-      .from('cashapp_orders')
+      .from('cashapp_payments')
       .update({ 
         status: 'paid',
         updated_at: new Date().toISOString()

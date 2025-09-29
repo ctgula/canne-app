@@ -159,7 +159,7 @@ export async function POST(request: Request) {
     
     // Get current order details
     const { data: orderData, error: fetchError } = await supabase
-      .from('cashapp_orders')
+      .from('cashapp_payments')
       .select('*')
       .eq('short_code', short_code)
       .single();
@@ -207,7 +207,7 @@ export async function POST(request: Request) {
 
     // Update the order status
     const { error: updateError } = await supabase
-      .from('cashapp_orders')
+      .from('cashapp_payments')
       .update({ 
         status: new_status,
         updated_at: new Date().toISOString(),

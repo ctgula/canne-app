@@ -14,11 +14,11 @@ export async function POST(req: Request) {
     const { short_code, cashapp_handle, screenshot_url } = await req.json();
 
     const { error } = await supabase
-      .from("cashapp_orders")
+      .from("cashapp_payments")
       .update({
         status: "verifying",
-        cashapp_handle,
-        payment_screenshot_url: screenshot_url
+        cashtag: cashapp_handle,
+        payment_note: screenshot_url
       })
       .eq("short_code", short_code);
 

@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     
     // Get order and driver details for notifications
     const { data: orderData, error: orderError } = await supabase
-      .from('cashapp_orders')
+      .from('cashapp_payments')
       .select('*')
       .eq('short_code', short_code)
       .single();
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
     
     // Update the order with driver assignment
     const { error: updateError } = await supabase
-      .from('cashapp_orders')
+      .from('cashapp_payments')
       .update({ 
         status: 'assigned',
         driver_id: driver_id,

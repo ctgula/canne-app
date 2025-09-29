@@ -16,7 +16,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ shortCod
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const { data, error } = await supabase
-      .from("cashapp_orders")
+      .from("cashapp_payments")
       .select("*")
       .eq("short_code", shortCode)
       .single();

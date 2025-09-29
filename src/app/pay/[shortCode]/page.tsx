@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, use } from "react";
 import QRCode from "qrcode";
 import { Copy, Check } from "lucide-react";
 import CopyChip from "@/components/CopyChip";
@@ -11,8 +11,9 @@ import { motion } from "framer-motion";
 const CASHTAG = process.env.NEXT_PUBLIC_CASHTAG || "cjdj1";
 
 
-export default async function PayPage({ params }: { params: Promise<{ shortCode: string }> }) {
-  const resolvedParams = await params;
+export default function PayPage({ params }: { params: Promise<{ shortCode: string }> }) {
+  // Use React's `use` hook to unwrap the Promise in a client component
+  const resolvedParams = use(params);
   const shortCode = decodeURIComponent(resolvedParams.shortCode); // e.g. ORD-9A32
   
   return <PayPageClient shortCode={shortCode} />;

@@ -12,7 +12,7 @@ export async function POST() {
     const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
     
     const { data: stuckOrders, error: fetchError } = await supabase
-      .from('cashapp_orders')
+      .from('cashapp_payments')
       .select('*')
       .eq('status', 'awaiting_payment')
       .lt('created_at', fifteenMinutesAgo);
@@ -31,7 +31,7 @@ export async function POST() {
     // Cancel each stuck order
     for (const order of stuckOrders) {
       const { error: updateError } = await supabase
-        .from('cashapp_orders')
+        .from('cashapp_payments')
         .update({ 
           status: 'refunded',
           updated_at: new Date().toISOString()

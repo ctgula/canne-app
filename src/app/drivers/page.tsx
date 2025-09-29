@@ -95,7 +95,7 @@ export default function DriversPage() {
     try {
       // Fetch assigned orders
       const { data: orders, error: ordersError } = await supabase
-        .from("cashapp_orders")
+        .from("cashapp_payments")
         .select("*")
         .eq("driver_id", id)
         .in("status", ["assigned", "delivered"]);

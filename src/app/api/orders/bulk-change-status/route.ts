@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     
     // Get all orders to validate transitions
     const { data: orders, error: fetchError } = await supabase
-      .from('cashapp_orders')
+      .from('cashapp_payments')
       .select('*')
       .in('id', order_ids);
 
@@ -70,7 +70,7 @@ export async function POST(request: Request) {
 
         // Update the order status
         const { error: updateError } = await supabase
-          .from('cashapp_orders')
+          .from('cashapp_payments')
           .update({ 
             status: new_status,
             updated_at: new Date().toISOString(),

@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     
     // Get order details for notification
     const { data: orderData, error: fetchError } = await supabase
-      .from('cashapp_orders')
+      .from('cashapp_payments')
       .select('*')
       .eq('short_code', short_code)
       .single();
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     
     // Update the order status to 'refunded'
     const { error } = await supabase
-      .from('cashapp_orders')
+      .from('cashapp_payments')
       .update({ 
         status: 'refunded',
         updated_at: new Date().toISOString()

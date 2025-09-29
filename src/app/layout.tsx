@@ -6,9 +6,6 @@ import { ThemeProvider } from '@/contexts/ThemeContext';
 import Toaster from '@/components/Toaster';
 import CartHydration from '@/components/CartHydration';
 import ThemeScript from './ThemeScript';
-import HydrationHandler from '@/components/HydrationHandler';
-import { Header } from '@/components/site/Header';
-import React from 'react';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -159,14 +156,10 @@ export default function RootLayout({
       >
         {/* Client-side theme script that runs immediately after hydration */}
         <ThemeScript />
-        <HydrationHandler />
         <ThemeProvider>
           <Toaster />
           <CartHydration />
-          <Header />
-          <main className="mx-auto max-w-7xl px-4 md:px-6 lg:px-8 py-6">
-            {children}
-          </main>
+          {children}
         </ThemeProvider>
         
         {/* Service Worker Registration */}

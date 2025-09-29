@@ -13,7 +13,7 @@ export async function GET() {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const { data: orders, error } = await supabase
-      .from("cashapp_orders")
+      .from("cashapp_payments")
       .select("*")
       .order("created_at", { ascending: false });
 
