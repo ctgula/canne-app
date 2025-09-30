@@ -55,9 +55,9 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-pink-50/10 to-purple-50/20 dark:from-gray-900 dark:via-purple-900/10 dark:to-indigo-900/20">
       <Header scrollToCollection={scrollToCollection} />
-      <main className="overflow-x-hidden">
+      <main className="overflow-x-hidden pt-16">
         {/* Hero Section - Mobile Optimized */}
-        <section className="relative min-h-[100dvh] flex items-center justify-center pt-16 px-4">
+        <section className="relative min-h-[calc(100dvh-4rem)] flex items-center justify-center px-4">
           {/* Lightweight Background - Static for Performance */}
           <div className="absolute inset-0 bg-gradient-to-br from-pink-50/30 via-purple-50/20 to-transparent dark:from-pink-900/20 dark:via-purple-900/15" />
           

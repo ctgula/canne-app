@@ -74,7 +74,7 @@ export default function Header({ scrollToCollection }: HeaderProps) {
 
   return (
     <>
-      <header className="fixed top-0 z-40 w-full bg-white/90 backdrop-blur-xl shadow-lg border-b border-gray-200/50 h-16 lg:z-50">
+      <header className="fixed top-0 z-50 w-full bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl shadow-lg border-b border-gray-200/50 dark:border-gray-700/50 h-16">
         <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center group">
             <div className="flex items-center">
@@ -187,7 +187,7 @@ export default function Header({ scrollToCollection }: HeaderProps) {
         
         {/* Enhanced Cart Dropdown */}
         {isCartOpen && (
-          <div className="absolute right-2 sm:right-4 lg:right-8 top-full mt-2 w-[calc(100vw-1rem)] max-w-sm sm:w-80 bg-white rounded-xl sm:rounded-2xl shadow-2xl border border-gray-200 z-45 overflow-hidden" ref={cartRef}>
+          <div className="absolute right-2 sm:right-4 lg:right-8 top-full mt-2 w-[calc(100vw-1rem)] max-w-sm sm:w-80 bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 z-[55] overflow-hidden" ref={cartRef}>
             <CartDisplay />
           </div>
         )}
@@ -196,7 +196,7 @@ export default function Header({ scrollToCollection }: HeaderProps) {
       {/* Mobile Navigation */}
       {isMenuOpen && (
         <div
-          className="fixed inset-0 z-50 flex lg:hidden"
+          className="fixed inset-0 z-[60] flex lg:hidden"
           onClick={() => setIsMenuOpen(false)}
         >
           {/* Backdrop */}
@@ -204,7 +204,7 @@ export default function Header({ scrollToCollection }: HeaderProps) {
 
           {/* Panel */}
           <nav
-            className="relative ml-auto w-full max-w-none sm:max-w-xs h-full bg-white shadow-xl px-6 pt-20 space-y-6 overflow-y-auto transform transition-transform duration-300 ease-in-out"
+            className="relative ml-auto w-full max-w-none sm:max-w-xs h-full bg-white dark:bg-gray-900 shadow-xl px-6 pt-20 space-y-6 overflow-y-auto transform transition-transform duration-300 ease-in-out"
             onClick={e => e.stopPropagation()}
           >
             {/* Close Button */}

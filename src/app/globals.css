@@ -2,49 +2,32 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Anti-flash styling - much more aggressive approach */
-/* First, set up base variables that will be used */
+/* Theme variables */
 :root {
-  --bg-light: #f9fafb;
+  --bg-light: #ffffff;
   --text-light: #111827;
   --bg-dark: #111827;
   --text-dark: #f9fafb;
 }
 
-/* FORCE LIGHT MODE - Prevent any dark mode */
+/* Base styling with smooth theme support */
 html {
-  background-color: var(--bg-light) !important;
-  color: var(--text-light) !important;
-  color-scheme: light !important;
+  background-color: var(--bg-light);
+  color: var(--text-light);
+  min-height: 100vh;
 }
 
-/* Disable dark mode completely */
+/* Dark mode support */
 html.dark {
-  background-color: var(--bg-light) !important;
-  color: var(--text-light) !important;
-  color-scheme: light !important;
+  background-color: var(--bg-dark);
+  color: var(--text-dark);
 }
 
-/* Ensure body always uses light theme */
 body {
-  background-color: var(--bg-light) !important;
-  color: var(--text-light) !important;
+  background-color: inherit;
+  color: inherit;
   min-height: 100%;
-  transition: none;
-}
-
-/* Once page is loaded, enable transitions */
-.loaded body {
   transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-/* OVERRIDE system dark mode preference - FORCE LIGHT */
-@media (prefers-color-scheme: dark) {
-  html {
-    background-color: var(--bg-light) !important;
-    color: var(--text-light) !important;
-    color-scheme: light !important;
-  }
 }
 
 .marquee-mask {
@@ -634,17 +617,6 @@ body.menu-open header {
 
 /* Mobile layout improvements */
 @media (max-width: 1024px) {
-  /* Ensure main content doesn't overlap with header */
-  main {
-    padding-top: 0;
-  }
-  
-  /* Better mobile spacing */
-  .hero-section {
-    min-height: calc(100vh - 4rem);
-    padding-top: 4rem;
-  }
-  
   /* Mobile-specific button sizing */
   .mobile-cta {
     min-height: 44px;
@@ -653,12 +625,6 @@ body.menu-open header {
 }
 
 @media (max-width: 640px) {
-  /* Extra small mobile adjustments */
-  .hero-section {
-    min-height: calc(100vh - 3rem);
-    padding-top: 3rem;
-  }
-  
   /* Ensure text is readable on mobile */
   .mobile-text {
     font-size: clamp(0.875rem, 2.5vw, 1rem);
