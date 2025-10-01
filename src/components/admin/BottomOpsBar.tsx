@@ -53,16 +53,19 @@ export function BottomOpsBar({ asapCount15m, asapQuota, onSettingsChange }: Bott
   const isOverQuota = asapCount15m > asapQuota;
 
   return (
-    <div className="sticky bottom-0 z-30 bg-white border-t border-gray-200 shadow-lg">
-      <div className="px-4 py-3">
+    <div className="sticky bottom-0 z-30 bg-gradient-to-r from-white to-gray-50 border-t-2 border-purple-200 shadow-2xl">
+      <div className="px-4 py-4">
         {/* ASAP Counter */}
         <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-gray-600">ASAP (15m)</span>
+          <div className="flex items-center gap-3">
+            <div className="flex flex-col">
+              <span className="text-xs font-semibold text-gray-700">ASAP Orders (15 min)</span>
+              <span className="text-[10px] text-gray-500">Current capacity usage</span>
+            </div>
             <div className={cn(
-              "px-2 py-1 rounded-full text-xs font-bold",
+              "px-3 py-1.5 rounded-full text-xs font-bold shadow-sm",
               isOverQuota 
-                ? "bg-red-100 text-red-700" 
+                ? "bg-red-100 text-red-700 ring-2 ring-red-300" 
                 : asapPercentage > 80 
                 ? "bg-amber-100 text-amber-700"
                 : "bg-green-100 text-green-700"
@@ -88,71 +91,79 @@ export function BottomOpsBar({ asapCount15m, asapQuota, onSettingsChange }: Bott
         </div>
 
         {/* Toggle Controls */}
-        <div className="flex items-center justify-between gap-3">
+        <div className="grid grid-cols-3 gap-3">
           {/* Hide ASAP Toggle */}
           <button
             onClick={() => updateSetting('hideAsap', !settings.hideAsap)}
             className={cn(
-              "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all min-h-[44px]",
+              "flex flex-col items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-medium transition-all min-h-[60px] shadow-sm hover:shadow-md",
               settings.hideAsap
-                ? "bg-gray-100 text-gray-700"
-                : "bg-gray-50 text-gray-600 hover:bg-gray-100"
+                ? "bg-gray-200 text-gray-800 ring-2 ring-gray-400"
+                : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200"
             )}
+            title="Hide ASAP orders from the list to focus on scheduled deliveries"
           >
-            {settings.hideAsap ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            <span>Hide ASAP</span>
+            {settings.hideAsap ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+            <span className="font-semibold">Hide ASAP</span>
+            <span className="text-[10px] text-gray-500">Filter view</span>
           </button>
 
           {/* Event Mode Toggle */}
           <button
             onClick={() => updateSetting('eventMode', !settings.eventMode)}
             className={cn(
-              "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all min-h-[44px]",
+              "flex flex-col items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-medium transition-all min-h-[60px] shadow-sm hover:shadow-md",
               settings.eventMode
-                ? "bg-purple-100 text-purple-700"
-                : "bg-gray-50 text-gray-600 hover:bg-gray-100"
+                ? "bg-purple-500 text-white ring-2 ring-purple-600"
+                : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200"
             )}
+            title="High volume mode: optimized for events and peak times"
           >
-            <Zap className="w-4 h-4" />
-            <span>Event Mode</span>
+            <Zap className="w-5 h-5" />
+            <span className="font-semibold">Event Mode</span>
+            <span className="text-[10px] opacity-80">Peak hours</span>
           </button>
 
           {/* Surge Toggle */}
           <button
             onClick={() => updateSetting('surgeActive', !settings.surgeActive)}
             className={cn(
-              "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all min-h-[44px]",
+              "flex flex-col items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-medium transition-all min-h-[60px] shadow-sm hover:shadow-md",
               settings.surgeActive
-                ? "bg-green-100 text-green-700"
-                : "bg-gray-50 text-gray-600 hover:bg-gray-100"
+                ? "bg-green-500 text-white ring-2 ring-green-600"
+                : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200"
             )}
+            title="Add $2 surge pricing to all new orders during high demand"
           >
-            <TrendingUp className="w-4 h-4" />
-            <span>Surge +$2</span>
+            <TrendingUp className="w-5 h-5" />
+            <span className="font-semibold">Surge +$2</span>
+            <span className="text-[10px] opacity-80">High demand</span>
           </button>
         </div>
 
-        {/* Status indicators */}
-        <div className="flex items-center justify-center gap-4 mt-2 text-xs text-gray-500">
-          {settings.hideAsap && (
-            <span className="flex items-center gap-1">
-              <div className="w-2 h-2 bg-gray-400 rounded-full" />
-              ASAP Hidden
-            </span>
-          )}
-          {settings.eventMode && (
-            <span className="flex items-center gap-1">
-              <div className="w-2 h-2 bg-purple-400 rounded-full" />
-              Event Active
-            </span>
-          )}
-          {settings.surgeActive && (
-            <span className="flex items-center gap-1">
-              <div className="w-2 h-2 bg-green-400 rounded-full" />
-              Surge Active
-            </span>
-          )}
-        </div>
+        {/* Active Status Indicators */}
+        {(settings.hideAsap || settings.eventMode || settings.surgeActive) && (
+          <div className="flex items-center justify-center gap-4 mt-3 pt-3 border-t border-gray-200">
+            {settings.hideAsap && (
+              <span className="flex items-center gap-1.5 text-xs font-medium text-gray-600 px-2 py-1 bg-gray-100 rounded-full">
+                <div className="w-2 h-2 bg-gray-500 rounded-full animate-pulse" />
+                ASAP Orders Hidden
+              </span>
+            )}
+            {settings.eventMode && (
+              <span className="flex items-center gap-1.5 text-xs font-medium text-purple-700 px-2 py-1 bg-purple-100 rounded-full">
+                <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" />
+                Event Mode Active
+              </span>
+            )}
+            {settings.surgeActive && (
+              <span className="flex items-center gap-1.5 text-xs font-medium text-green-700 px-2 py-1 bg-green-100 rounded-full">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                Surge Pricing On
+              </span>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
