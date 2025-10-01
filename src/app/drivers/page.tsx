@@ -360,25 +360,11 @@ export default function DriversPage() {
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50">
       <style jsx>{`
         @media (min-width: 992px) {
-          .driver-grid {
-            display: grid;
-            grid-template-columns: 7fr 5fr;
-            gap: 4rem;
-            overflow-x: hidden;
-          }
-          .position-card {
-            position: sticky;
-            top: 120px;
-            max-width: 420px;
-          }
           .driver-infobar {
             position: sticky;
             top: 84px;
             z-index: 5;
           }
-        }
-        .benefits-wrapper {
-          overflow: hidden;
         }
         /* AA contrast fix for purple text on light backgrounds */
         .contrast-purple {
