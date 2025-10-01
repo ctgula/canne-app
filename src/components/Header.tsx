@@ -200,7 +200,7 @@ export default function Header({ scrollToCollection }: HeaderProps) {
           onClick={() => setIsMenuOpen(false)}
         >
           {/* Backdrop */}
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-md" />
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-xl" />
 
           {/* Panel */}
           <nav
