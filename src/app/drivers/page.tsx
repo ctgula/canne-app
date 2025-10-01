@@ -434,14 +434,14 @@ export default function DriversPage() {
         {/* Hero Section */}
         <header className="mb-16">
           {/* Top Bar */}
-          <div className="flex items-center mb-12">
+          <div className="flex items-center justify-between mb-12">
             <motion.div 
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               className="flex items-center gap-3"
             >
-              <span className="text-4xl">🍦</span>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
+              <span className="text-5xl">🍦</span>
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
                 Cannè
               </h1>
             </motion.div>
@@ -450,7 +450,7 @@ export default function DriversPage() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               onClick={handleDriverLogin}
-              className="ml-auto px-5 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full text-sm font-medium hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg hover:shadow-xl"
+              className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full text-sm font-semibold hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg hover:shadow-xl whitespace-nowrap"
             >
               Driver Login
             </motion.button>
@@ -473,16 +473,20 @@ export default function DriversPage() {
                   <MapPin className="w-4 h-4" />
                   Washington DC
                 </motion.div>
-                <motion.h2 
+                <motion.div
                   variants={itemVariants}
-                  className="text-5xl sm:text-6xl lg:text-7xl font-black text-green-800 leading-[0.95]"
-                  style={{ letterSpacing: '-0.015em' }}
+                  className="flex items-center gap-6 flex-wrap"
                 >
-                  🚴 JOIN THE CANNÈ<br />DELIVERY TEAM — DC ONLY
-                </motion.h2>
+                  <div className="text-8xl sm:text-9xl">🚴‍♂️</div>
+                  <h2 className="text-5xl sm:text-6xl lg:text-7xl font-black text-green-800 leading-[0.95] flex-1 min-w-[300px]"
+                      style={{ letterSpacing: '-0.015em' }}
+                  >
+                    JOIN THE CANNÈ<br />DELIVERY TEAM<br /><span className="text-4xl sm:text-5xl">— DC ONLY</span>
+                  </h2>
+                </motion.div>
                 <motion.div 
                   variants={itemVariants}
-                  className="space-y-3 text-lg sm:text-xl text-gray-900 max-w-3xl font-semibold"
+                  className="space-y-2 text-base sm:text-lg text-gray-900 max-w-2xl font-semibold"
                 >
                   <p>• $20–$30/hr active time</p>
                   <p>• Paid per order ($8 first, +$4 each extra stop)</p>
