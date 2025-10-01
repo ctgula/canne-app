@@ -405,49 +405,60 @@ export default function AdminOrdersPage() {
                   </div>
                 </div>
 
-                {/* Quick Actions */}
-                <div className="grid grid-cols-2 gap-2">
-                  {/* Payment Toggle */}
-                  {(order.payment_status || 'unpaid') === 'unpaid' ? (
-                    <button
-                      onClick={() => handlePaymentStatusChange(order.id, order.payment_status || 'unpaid', 'paid')}
-                      className="px-3 py-2 text-xs bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-lg hover:from-emerald-600 hover:to-green-600 transition-all font-medium shadow-sm"
-                    >
-                      💰 Mark Paid
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => handlePaymentStatusChange(order.id, order.payment_status || 'paid', 'unpaid')}
-                      className="px-3 py-2 text-xs bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition-colors font-medium"
-                    >
-                      💳 Unpaid
-                    </button>
-                  )}
-                  
-                  {/* View Details */}
+                {/* Quick Actions - Highly Visible */}
+                <div className="space-y-2">
+                  {/* View Details - Most Important */}
                   <button
                     onClick={() => openOrderDetails(order.id)}
-                    className="px-3 py-2 text-xs bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all font-medium shadow-sm"
+                    className="w-full px-4 py-3 text-sm bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all font-bold shadow-md hover:shadow-lg"
                   >
-                    View Details
+                    👁️ View Full Details
                   </button>
                   
-                  {/* Status Actions */}
-                  {['pending', 'awaiting_payment', 'verifying', 'paid'].includes(order.status) && (
-                    <>
+                  <div className="grid grid-cols-2 gap-2">
+                    {/* Payment Toggle */}
+                    {(order.payment_status || 'unpaid') === 'unpaid' ? (
+                      <button
+                        onClick={() => handlePaymentStatusChange(order.id, order.payment_status || 'unpaid', 'paid')}
+                        className="px-4 py-2.5 text-sm bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-lg hover:from-emerald-600 hover:to-green-600 transition-all font-bold shadow-sm"
+                      >
+                        💰 Mark Paid
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handlePaymentStatusChange(order.id, order.payment_status || 'paid', 'unpaid')}
+                        className="px-4 py-2.5 text-sm bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition-colors font-bold"
+                      >
+                        💳 Mark Unpaid
+                      </button>
+                    )}
+                    
+                    {/* Status Actions */}
+                    {['pending', 'awaiting_payment', 'verifying', 'paid'].includes(order.status) ? (
                       <button
                         onClick={() => handleStatusChange(order.id, order.status, 'delivered')}
-                        className="px-3 py-2 text-xs bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors font-medium"
+                        className="px-4 py-2.5 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-bold shadow-sm"
                       >
-                        ✅ Deliver
+                        ✅ Mark Delivered
                       </button>
+                    ) : order.status === 'delivered' ? (
                       <button
-                        onClick={() => handleStatusChange(order.id, order.status, 'cancelled')}
-                        className="px-3 py-2 text-xs bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors font-medium"
+                        onClick={() => handleStatusChange(order.id, order.status, 'pending')}
+                        className="px-4 py-2.5 text-sm bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors font-bold"
                       >
-                        ❌ Cancel
+                        🔄 Reopen
                       </button>
-                    </>
+                    ) : null}
+                  </div>
+                  
+                  {/* Cancel Button - Full Width */}
+                  {order.status !== 'cancelled' && (
+                    <button
+                      onClick={() => handleStatusChange(order.id, order.status, 'cancelled')}
+                      className="w-full px-4 py-2 text-sm bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors font-bold"
+                    >
+                      ❌ Cancel Order
+                    </button>
                   )}
                 </div>
               </motion.div>
