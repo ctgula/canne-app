@@ -669,10 +669,10 @@ export default function DriversPage() {
           </div>
         </header>
 
-        {/* Application Form */}
-        <section className="mx-auto" style={{ maxWidth: '680px' }}>
-          {/* QUICK INFO BAR */}
-          <ul className="driver-infobar">
+        {/* Application Form - Hidden, using text-to-apply instead */}
+        <section className="mx-auto hidden" style={{ maxWidth: '680px' }}>
+          {/* QUICK INFO BAR - Moved to hero section */}
+          <ul className="driver-infobar hidden">
             <li><span>💸</span><small>Pay</small><strong>$8 + $4/stop</strong></li>
             <li><span>🕒</span><small>Hours</small><strong>Flexible</strong></li>
             <li><span>🛵</span><small>Vehicle</small><strong>Any</strong></li>
@@ -687,8 +687,8 @@ export default function DriversPage() {
             className="bg-white/90 backdrop-blur-sm rounded-3xl p-8 md:p-10 border border-purple-100 shadow-2xl"
           >
             <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold contrast-purple mb-2">Apply Now</h2>
-              <p className="text-gray-700">We'll reach out within 24 hours</p>
+              <h2 className="text-2xl font-bold contrast-purple mb-2">Apply Now (Alternative)</h2>
+              <p className="text-gray-700">Or use the web form below</p>
             </div>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 text-left">
               {/* Name & Phone - Two Column on Desktop */}
