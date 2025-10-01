@@ -25,6 +25,10 @@ export async function POST(request: NextRequest) {
 
     // Create a payment record in the cashapp_payments table
     console.log('📝 Creating Cash App payment with short code:', shortCode);
+    
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + 15 * 60 * 1000); // 15 minutes from now
+    
     const { data: paymentRecord, error } = await supabase
       .from('cashapp_payments')
       .insert({
@@ -32,7 +36,8 @@ export async function POST(request: NextRequest) {
         amount_cents: amount_cents,
         customer_phone: customer_phone || null,
         status: 'awaiting_payment',
-        created_at: new Date().toISOString()
+        created_at: now.toISOString(),
+        expires_at: expiresAt.toISOString()
       })
       .select('short_code')
       .single();

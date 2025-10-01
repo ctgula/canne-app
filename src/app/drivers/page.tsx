@@ -329,7 +329,7 @@ export default function DriversPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50">
       <main className="mx-auto max-w-5xl px-4 sm:px-6 py-12 sm:py-16">
         {/* Hero Section */}
         <header className="mb-16">
@@ -341,14 +341,16 @@ export default function DriversPage() {
               className="flex items-center gap-3"
             >
               <span className="text-4xl">🍦</span>
-              <h1 className="text-3xl font-semibold text-gray-900">Cannè</h1>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
+                Cannè
+              </h1>
             </motion.div>
             
             <motion.button
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               onClick={handleDriverLogin}
-              className="px-5 py-2.5 bg-gray-900 text-white rounded-full text-sm font-medium hover:bg-gray-800 transition-colors"
+              className="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full text-sm font-medium hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg hover:shadow-xl"
             >
               Driver Login
             </motion.button>
@@ -362,14 +364,14 @@ export default function DriversPage() {
               transition={{ delay: 0.1 }}
               className="space-y-4"
             >
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-purple-50 text-purple-700 rounded-full text-sm font-medium">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm text-purple-700 rounded-full text-sm font-medium shadow-sm">
                 <MapPin className="w-4 h-4" />
                 Washington DC
               </div>
-              <h2 className="text-5xl sm:text-6xl font-bold text-gray-900 tracking-tight">
+              <h2 className="text-5xl sm:text-6xl font-bold bg-gradient-to-r from-gray-900 via-purple-900 to-pink-900 bg-clip-text text-transparent tracking-tight">
                 Join the Cannè<br />Delivery Team
               </h2>
-              <p className="text-xl text-gray-600 max-w-2xl">
+              <p className="text-xl text-gray-700 max-w-2xl">
                 Earn $20–$30/hr with flexible shifts. No restaurant waits, just quick deliveries across DC.
               </p>
             </motion.div>
@@ -379,18 +381,18 @@ export default function DriversPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="grid grid-cols-3 gap-6 py-8 border-y border-gray-200"
+              className="grid grid-cols-3 gap-6 py-8"
             >
-              <div>
-                <div className="text-3xl font-bold text-gray-900">$8–12</div>
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-sm">
+                <div className="text-3xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">$8–12</div>
                 <div className="text-sm text-gray-600 mt-1">Per delivery</div>
               </div>
-              <div>
-                <div className="text-3xl font-bold text-gray-900">100%</div>
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-sm">
+                <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">100%</div>
                 <div className="text-sm text-gray-600 mt-1">Keep all tips</div>
               </div>
-              <div>
-                <div className="text-3xl font-bold text-gray-900">4</div>
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-sm">
+                <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">4</div>
                 <div className="text-sm text-gray-600 mt-1">Shift options</div>
               </div>
             </motion.div>
@@ -402,42 +404,42 @@ export default function DriversPage() {
               transition={{ delay: 0.3 }}
               className="grid sm:grid-cols-2 gap-4"
             >
-              <div className="p-6 bg-gradient-to-br from-purple-50 to-pink-50 rounded-3xl">
-                <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center mb-4 shadow-sm">
-                  <DollarSign className="w-6 h-6 text-purple-600" />
+              <div className="p-6 bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg border border-purple-100">
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mb-4 shadow-md">
+                  <DollarSign className="w-6 h-6 text-white" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Great Pay</h3>
-                <p className="text-gray-600 text-sm leading-relaxed">
+                <h3 className="text-lg font-semibold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">Great Pay</h3>
+                <p className="text-gray-700 text-sm leading-relaxed">
                   $8 base per delivery, plus $4 for each additional stop. Average $20–30/hr during active hours.
                 </p>
               </div>
 
-              <div className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-3xl">
-                <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center mb-4 shadow-sm">
-                  <Clock className="w-6 h-6 text-green-600" />
+              <div className="p-6 bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg border border-purple-100">
+                <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-500 rounded-2xl flex items-center justify-center mb-4 shadow-md">
+                  <Clock className="w-6 h-6 text-white" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Flexible Hours</h3>
-                <p className="text-gray-600 text-sm leading-relaxed">
+                <h3 className="text-lg font-semibold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent mb-2">Flexible Hours</h3>
+                <p className="text-gray-700 text-sm leading-relaxed">
                   Choose from morning, lunch, dinner, or late-night shifts. Work when it fits your schedule.
                 </p>
               </div>
 
-              <div className="p-6 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-3xl">
-                <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center mb-4 shadow-sm">
-                  <Package className="w-6 h-6 text-blue-600" />
+              <div className="p-6 bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg border border-purple-100">
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-500 rounded-2xl flex items-center justify-center mb-4 shadow-md">
+                  <Package className="w-6 h-6 text-white" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Simple Deliveries</h3>
-                <p className="text-gray-600 text-sm leading-relaxed">
+                <h3 className="text-lg font-semibold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">Simple Deliveries</h3>
+                <p className="text-gray-700 text-sm leading-relaxed">
                   No restaurant waits or complicated orders. Quick, discrete drop-offs only in DC.
                 </p>
               </div>
 
-              <div className="p-6 bg-gradient-to-br from-amber-50 to-orange-50 rounded-3xl">
-                <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center mb-4 shadow-sm">
-                  <User className="w-6 h-6 text-amber-600" />
+              <div className="p-6 bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg border border-purple-100">
+                <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-500 rounded-2xl flex items-center justify-center mb-4 shadow-md">
+                  <User className="w-6 h-6 text-white" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Fast Onboarding</h3>
-                <p className="text-gray-600 text-sm leading-relaxed">
+                <h3 className="text-lg font-semibold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent mb-2">Fast Onboarding</h3>
+                <p className="text-gray-700 text-sm leading-relaxed">
                   Apply in minutes. We'll review and contact you within 24 hours to get you started.
                 </p>
               </div>
@@ -451,11 +453,11 @@ export default function DriversPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="bg-gray-50 rounded-3xl p-8 md:p-10 border border-gray-200"
+            className="bg-white/90 backdrop-blur-sm rounded-3xl p-8 md:p-10 border border-purple-100 shadow-2xl"
           >
             <div className="text-center mb-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Apply Now</h3>
-              <p className="text-gray-600">We'll reach out within 24 hours</p>
+              <h3 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">Apply Now</h3>
+              <p className="text-gray-700">We'll reach out within 24 hours</p>
             </div>
             <form onSubmit={handleSubmit(onSubmit)} className="max-w-xl mx-auto space-y-6 text-left">
               {/* Name Field */}
@@ -584,7 +586,7 @@ export default function DriversPage() {
                             />
                             <label
                               htmlFor={`availability-${option.value}`}
-                              className="block rounded-xl border-2 border-gray-300 p-3 transition cursor-pointer hover:border-gray-400 hover:bg-gray-50 peer-checked:bg-green-600 peer-checked:text-white peer-checked:border-green-600 peer-focus:ring-2 peer-focus:ring-green-200"
+                              className="block rounded-xl border-2 border-gray-300 p-3 transition cursor-pointer hover:border-purple-400 hover:bg-purple-50 peer-checked:bg-gradient-to-r peer-checked:from-purple-600 peer-checked:to-pink-600 peer-checked:text-white peer-checked:border-purple-600 peer-focus:ring-2 peer-focus:ring-purple-200"
                             >
                               <span className="text-xl mr-2">{option.icon}</span>
                               <span>{option.label}</span>
