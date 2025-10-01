@@ -5,7 +5,7 @@ Discord notifications are not working because the `DISCORD_WEBHOOK` environment 
 
 ## Your Webhook URL
 ```
-https://discord.com/api/webhooks/1423010929641128007/82gj403g7XT3Un-IRC0xr1Du4rfNSoceN2PNKhAta5G5gnCubWCwr4bA91ZqFfa5oKqv
+https://discord.com/api/webhooks/1423015576183246938/Z4AMKHIRKUsG7bNn3ZiekDtMHYVgNcntwoNWNaN5tshXr_XSUu2NKLPiSguqHJ94pBTK
 ```
 
 ✅ **Webhook URL is valid** - I tested it and it works!
@@ -20,7 +20,7 @@ https://discord.com/api/webhooks/1423010929641128007/82gj403g7XT3Un-IRC0xr1Du4rf
 4. Click **Add New**
 5. Enter:
    - **Name**: `DISCORD_WEBHOOK`
-   - **Value**: `https://discord.com/api/webhooks/1423010929641128007/82gj403g7XT3Un-IRC0xr1Du4rfNSoceN2PNKhAta5G5gnCubWCwr4bA91ZqFfa5oKqv`
+   - **Value**: `https://discord.com/api/webhooks/1423015576183246938/Z4AMKHIRKUsG7bNn3ZiekDtMHYVgNcntwoNWNaN5tshXr_XSUu2NKLPiSguqHJ94pBTK`
    - **Environments**: Check all (Production, Preview, Development)
 6. Click **Save**
 
@@ -59,7 +59,7 @@ For local testing, create a `.env.local` file:
 
 ```bash
 # .env.local
-DISCORD_WEBHOOK=https://discord.com/api/webhooks/1423010929641128007/82gj403g7XT3Un-IRC0xr1Du4rfNSoceN2PNKhAta5G5gnCubWCwr4bA91ZqFfa5oKqv
+DISCORD_WEBHOOK=https://discord.com/api/webhooks/1423015576183246938/Z4AMKHIRKUsG7bNn3ZiekDtMHYVgNcntwoNWNaN5tshXr_XSUu2NKLPiSguqHJ94pBTK
 ```
 
 Then restart your dev server:
@@ -71,7 +71,7 @@ npm run dev
 
 ### **Direct Test (Verify Webhook Works)**
 ```bash
-curl -X POST "https://discord.com/api/webhooks/1423010929641128007/82gj403g7XT3Un-IRC0xr1Du4rfNSoceN2PNKhAta5G5gnCubWCwr4bA91ZqFfa5oKqv" \
+curl -X POST "https://discord.com/api/webhooks/1423015576183246938/Z4AMKHIRKUsG7bNn3ZiekDtMHYVgNcntwoNWNaN5tshXr_XSUu2NKLPiSguqHJ94pBTK" \
   -H "Content-Type: application/json" \
   -d '{
     "content": "✅ Webhook test successful - Cannè notifications are working!"
