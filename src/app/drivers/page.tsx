@@ -475,14 +475,17 @@ export default function DriversPage() {
                 </motion.div>
                 <motion.div
                   variants={itemVariants}
-                  className="flex items-center gap-6 flex-wrap"
+                  className="flex items-start gap-6 flex-wrap"
                 >
-                  <div className="text-8xl sm:text-9xl">🚴‍♂️</div>
-                  <h2 className="text-5xl sm:text-6xl lg:text-7xl font-black text-green-800 leading-[0.95] flex-1 min-w-[300px]"
-                      style={{ letterSpacing: '-0.015em' }}
-                  >
-                    JOIN THE CANNÈ<br />DELIVERY TEAM<br /><span className="text-4xl sm:text-5xl">— DC ONLY</span>
-                  </h2>
+                  <div className="text-7xl sm:text-8xl">🚴‍♂️</div>
+                  <div className="flex-1 min-w-[280px]">
+                    <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-green-800 leading-tight"
+                        style={{ letterSpacing: '-0.015em' }}
+                    >
+                      JOIN THE CANNÈ DELIVERY TEAM
+                    </h2>
+                    <p className="text-2xl sm:text-3xl font-bold text-green-700 mt-2">DC ONLY</p>
+                  </div>
                 </motion.div>
                 <motion.div 
                   variants={itemVariants}
@@ -497,29 +500,18 @@ export default function DriversPage() {
                 </motion.div>
               </motion.div>
 
-              {/* CTA Section */}
+              {/* Quick Apply CTA */}
               <motion.div 
                 initial="hidden"
                 animate="visible"
                 variants={containerVariants}
-                className="space-y-6"
               >
-                <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-4 border-green-800 rounded-3xl p-8 shadow-2xl">
-                  <div className="text-center space-y-4">
-                    <p className="text-4xl">👉</p>
-                    <p className="text-3xl sm:text-4xl font-black text-green-800">Text 2028522281</p>
-                    <div className="text-lg font-bold text-gray-800 space-y-2">
-                      <p>with your:</p>
-                      <p>FIRST & LAST NAME</p>
-                      <p>PHONE NUMBER</p>
-                      <p>EMAIL</p>
-                    </div>
-                    <p className="text-base text-gray-700 font-semibold pt-4">We'll be in contact with next steps.</p>
+                <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-600 rounded-2xl p-6 shadow-lg">
+                  <div className="text-center space-y-3">
+                    <p className="text-3xl">📱</p>
+                    <p className="text-xl sm:text-2xl font-black text-green-800">Quick Apply: Text 2028522281</p>
+                    <p className="text-sm text-gray-700 font-medium">Or fill out the form below</p>
                   </div>
-                </div>
-                
-                <div className="text-center">
-                  <p className="text-2xl sm:text-3xl font-black text-gray-900 tracking-wider">DISCRETE. LOCAL. RELIABLE.</p>
                 </div>
               </motion.div>
 
@@ -669,10 +661,10 @@ export default function DriversPage() {
           </div>
         </header>
 
-        {/* Application Form - Hidden, using text-to-apply instead */}
-        <section className="mx-auto hidden" style={{ maxWidth: '680px' }}>
-          {/* QUICK INFO BAR - Moved to hero section */}
-          <ul className="driver-infobar hidden">
+        {/* Application Form */}
+        <section className="mx-auto" style={{ maxWidth: '680px' }}>
+          {/* QUICK INFO BAR */}
+          <ul className="driver-infobar">
             <li><span>💸</span><small>Pay</small><strong>$8 + $4/stop</strong></li>
             <li><span>🕒</span><small>Hours</small><strong>Flexible</strong></li>
             <li><span>🛵</span><small>Vehicle</small><strong>Any</strong></li>
@@ -687,8 +679,8 @@ export default function DriversPage() {
             className="bg-white/90 backdrop-blur-sm rounded-3xl p-8 md:p-10 border border-purple-100 shadow-2xl"
           >
             <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold contrast-purple mb-2">Apply Now (Alternative)</h2>
-              <p className="text-gray-700">Or use the web form below</p>
+              <h2 className="text-2xl font-bold contrast-purple mb-2">Apply Now</h2>
+              <p className="text-gray-700">Fill out the form below or text us at 2028522281</p>
             </div>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 text-left">
               {/* Name & Phone - Two Column on Desktop */}
