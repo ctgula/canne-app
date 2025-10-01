@@ -22,11 +22,7 @@ function AdminPageContent() {
     date: 'today',
     sort: 'age',
   });
-  const [opsSettings, setOpsSettings] = useState<OpsSettings>({
-    hideAsap: false,
-    eventMode: false,
-    surgeActive: false,
-  });
+  const [opsSettings, setOpsSettings] = useState<OpsSettings>({} as OpsSettings);
   const [kpiData, setKpiData] = useState({
     revenue: 0,
     orders: 0,

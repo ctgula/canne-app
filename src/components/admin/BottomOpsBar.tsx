@@ -11,14 +11,12 @@ interface BottomOpsBarProps {
 }
 
 export interface OpsSettings {
-  hideAsap: boolean;
-  eventMode: boolean;
+  surgeActive?: boolean;
 }
 
 export function BottomOpsBar({ asapCount15m, asapQuota, onSettingsChange }: BottomOpsBarProps) {
   const [settings, setSettings] = useState<OpsSettings>({
-    hideAsap: false,
-    eventMode: false,
+    surgeActive: false,
   });
 
   // Load settings from localStorage on mount
@@ -86,60 +84,12 @@ export function BottomOpsBar({ asapCount15m, asapQuota, onSettingsChange }: Bott
               style={{ width: `${Math.min(asapPercentage, 100)}%` }}
             />
           </div>
-        </div>
 
         {/* Toggle Controls */}
-        <div className="grid grid-cols-2 gap-4">
-          {/* Hide ASAP Toggle */}
-          <button
-            onClick={() => updateSetting('hideAsap', !settings.hideAsap)}
-            className={cn(
-              "flex flex-col items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all min-h-[70px] shadow-sm hover:shadow-md",
-              settings.hideAsap
-                ? "bg-gray-200 text-gray-800 ring-2 ring-gray-400"
-                : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200"
-            )}
-            title="Hide ASAP orders from the list to focus on scheduled deliveries"
-          >
-            {settings.hideAsap ? <EyeOff className="w-6 h-6" /> : <Eye className="w-6 h-6" />}
-            <span className="font-semibold">Hide ASAP</span>
-            <span className="text-xs text-gray-500">Filter view</span>
-          </button>
-
-          {/* Event Mode Toggle */}
-          <button
-            onClick={() => updateSetting('eventMode', !settings.eventMode)}
-            className={cn(
-              "flex flex-col items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all min-h-[70px] shadow-sm hover:shadow-md",
-              settings.eventMode
-                ? "bg-purple-500 text-white ring-2 ring-purple-600"
-                : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200"
-            )}
-            title="High volume mode: optimized for events and peak times"
-          >
-            <Zap className="w-6 h-6" />
-            <span className="font-semibold">Event Mode</span>
-            <span className="text-xs opacity-80">Peak hours</span>
-          </button>
+        <div className="text-center py-4">
+          <p className="text-sm text-gray-600">Operations controls removed for simplicity</p>
         </div>
 
-        {/* Active Status Indicators */}
-        {(settings.hideAsap || settings.eventMode) && (
-          <div className="flex items-center justify-center gap-4 mt-3 pt-3 border-t border-gray-200">
-            {settings.hideAsap && (
-              <span className="flex items-center gap-1.5 text-xs font-medium text-gray-600 px-3 py-1.5 bg-gray-100 rounded-full">
-                <div className="w-2 h-2 bg-gray-500 rounded-full animate-pulse" />
-                ASAP Orders Hidden
-              </span>
-            )}
-            {settings.eventMode && (
-              <span className="flex items-center gap-1.5 text-xs font-medium text-purple-700 px-3 py-1.5 bg-purple-100 rounded-full">
-                <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" />
-                Event Mode Active
-              </span>
-            )}
-          </div>
-        )}
       </div>
     </div>
   );
