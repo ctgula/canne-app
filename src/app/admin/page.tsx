@@ -160,38 +160,49 @@ function AdminPageContent() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pb-20">
       {/* Sticky KPI Header */}
-      <AdminKpiBar
-        revenue={kpiData.revenue}
-        orders={kpiData.orders}
-        pending={kpiData.pending}
-        p90={kpiData.p90}
-        lastUpdated={kpiData.lastUpdated}
-        onRefresh={fetchKpiData}
-        isRefreshing={isRefreshing}
-      />
+      <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-200">
+        <AdminKpiBar
+          revenue={kpiData.revenue}
+          orders={kpiData.orders}
+          pending={kpiData.pending}
+          p90={kpiData.p90}
+          lastUpdated={kpiData.lastUpdated}
+          onRefresh={fetchKpiData}
+          isRefreshing={isRefreshing}
+        />
+      </div>
 
       {/* Segmented Tabs */}
-      <SegmentedTabs
-        tabs={tabs}
-        value={activeTab}
-        onValueChange={setActiveTab}
-      />
+      <div className="sticky top-[72px] z-30 bg-white/90 backdrop-blur-sm">
+        <SegmentedTabs
+          tabs={tabs}
+          value={activeTab}
+          onValueChange={setActiveTab}
+        />
+      </div>
 
-      {/* Filters */}
-      <FilterBar onFiltersChange={setFilters} />
+      {/* Main Content Container */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Filters */}
+        <div className="mb-6">
+          <FilterBar onFiltersChange={setFilters} />
+        </div>
 
-      {/* Order List */}
-      <InfiniteOrderList
-        status={activeTab}
-        filters={filters}
-        onAssign={handleAssign}
-        onIssue={handleIssue}
-        onText={handleText}
-        onCall={handleCall}
-        onDirections={handleDirections}
-      />
+        {/* Order List */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+          <InfiniteOrderList
+            status={activeTab}
+            filters={filters}
+            onAssign={handleAssign}
+            onIssue={handleIssue}
+            onText={handleText}
+            onCall={handleCall}
+            onDirections={handleDirections}
+          />
+        </div>
+      </div>
 
       {/* Bottom Operations Bar */}
       <BottomOpsBar
