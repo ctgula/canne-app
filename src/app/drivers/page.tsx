@@ -44,28 +44,51 @@ export default function DriversPage() {
 
   const onSubmit = async (data: DriverForm) => {
     setIsSubmitting(true);
+    console.log('📝 Submitting driver application:', data);
+    
     try {
-      const { error } = await supabase.from('driver_applications').insert([{
-        name: data.name,
-        phone: data.phone,
-        email: data.email,
-        availability: data.availability,
-        vehicle_type: data.vehicleType,
-        cashapp_handle: data.cashappHandle,
-        status: 'pending',
-        created_at: new Date().toISOString(),
-      }]);
+      // Insert into driver_applications table
+      const { data: insertedData, error } = await supabase
+        .from('driver_applications')
+        .insert([{
+          name: data.name,
+          phone: data.phone,
+          email: data.email,
+          availability: data.availability,
+          vehicle_type: data.vehicleType || null,
+          cashapp_handle: data.cashappHandle || null,
+          status: 'pending',
+          created_at: new Date().toISOString(),
+        }])
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Supabase error:', error);
+        throw error;
+      }
 
+      console.log('✅ Application saved to Supabase:', insertedData);
+      
       setShowSuccess(true);
       reset();
-      toast.success('Application submitted! We\'ll contact you within 24 hours.');
+      toast.success('Application submitted! We\'ll contact you within 24 hours.', {
+        duration: 5000,
+        style: {
+          background: '#10b981',
+          color: '#fff',
+        },
+      });
       
       setTimeout(() => setShowSuccess(false), 5000);
-    } catch (error) {
-      console.error('Error:', error);
-      toast.error('Something went wrong. Please try again.');
+    } catch (error: any) {
+      console.error('❌ Error submitting application:', error);
+      toast.error(error.message || 'Something went wrong. Please try again.', {
+        duration: 5000,
+        style: {
+          background: '#ef4444',
+          color: '#fff',
+        },
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -137,7 +160,7 @@ export default function DriversPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-16 sm:mb-24"
+          className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-12 sm:mb-16"
         >
           {[
             { icon: DollarSign, label: 'Per Delivery', value: '$8–12', color: 'from-pink-500 to-rose-500' },
@@ -169,7 +192,7 @@ export default function DriversPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="mb-16 sm:mb-24"
+          className="mb-12 sm:mb-16"
         >
           <h3 className="text-3xl sm:text-4xl font-bold text-center mb-12">
             <span className="bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
@@ -406,7 +429,7 @@ export default function DriversPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6 }}
-          className="text-center mt-16 sm:mt-24 py-12 px-4 bg-gradient-to-r from-pink-100 via-purple-100 to-blue-100 rounded-3xl"
+          className="text-center mt-12 sm:mt-16 py-12 px-4 bg-gradient-to-r from-pink-100 via-purple-100 to-blue-100 rounded-3xl"
         >
           <h3 className="text-2xl sm:text-3xl font-bold mb-4">
             <span className="bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
