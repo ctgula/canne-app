@@ -330,7 +330,7 @@ export default function DriversPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50">
-      <main className="mx-auto max-w-5xl px-4 sm:px-6 py-12 sm:py-16">
+      <main className="mx-auto max-w-6xl px-4 sm:px-6 py-8 sm:py-12">
         {/* Hero Section */}
         <header className="mb-16">
           {/* Top Bar */}
@@ -368,12 +368,43 @@ export default function DriversPage() {
                 <MapPin className="w-4 h-4" />
                 Washington DC
               </div>
-              <h2 className="text-5xl sm:text-6xl font-bold bg-gradient-to-r from-gray-900 via-purple-900 to-pink-900 bg-clip-text text-transparent tracking-tight">
-                Join the Cannè<br />Delivery Team
+              <h2 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-gray-900 via-purple-900 to-pink-900 bg-clip-text text-transparent tracking-tight leading-tight">
+                Join the Cannè Delivery Team
               </h2>
-              <p className="text-xl text-gray-700 max-w-2xl">
+              <p className="text-lg sm:text-xl text-gray-700 max-w-3xl">
                 Earn $20–$30/hr with flexible shifts. No restaurant waits, just quick deliveries across DC.
               </p>
+              
+              {/* Position Details */}
+              <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-purple-100 shadow-lg max-w-3xl">
+                <h3 className="text-lg font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">Position Details</h3>
+                <div className="grid sm:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="font-semibold text-gray-900 mb-1">📍 Location</p>
+                    <p className="text-gray-600">Washington, DC metro area</p>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900 mb-1">⏰ Schedule</p>
+                    <p className="text-gray-600">Flexible - Choose your shifts</p>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900 mb-1">💰 Pay Structure</p>
+                    <p className="text-gray-600">$8 base + $4 per extra stop</p>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900 mb-1">🚗 Requirements</p>
+                    <p className="text-gray-600">Car, bike, scooter, or on foot</p>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900 mb-1">📱 Payment</p>
+                    <p className="text-gray-600">Cash App - Same day payouts</p>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900 mb-1">⚡ Start Time</p>
+                    <p className="text-gray-600">24-48 hours after approval</p>
+                  </div>
+                </div>
+              </div>
             </motion.div>
 
             {/* Stats Bar */}
@@ -381,19 +412,23 @@ export default function DriversPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="grid grid-cols-3 gap-6 py-8"
+              className="grid grid-cols-2 sm:grid-cols-4 gap-4"
             >
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-sm">
-                <div className="text-3xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">$8–12</div>
-                <div className="text-sm text-gray-600 mt-1">Per delivery</div>
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-sm">
+                <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">$8–12</div>
+                <div className="text-xs sm:text-sm text-gray-600 mt-1">Per delivery</div>
               </div>
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-sm">
-                <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">100%</div>
-                <div className="text-sm text-gray-600 mt-1">Keep all tips</div>
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-sm">
+                <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">100%</div>
+                <div className="text-xs sm:text-sm text-gray-600 mt-1">Keep tips</div>
               </div>
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-sm">
-                <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">4</div>
-                <div className="text-sm text-gray-600 mt-1">Shift options</div>
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-sm">
+                <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">4</div>
+                <div className="text-xs sm:text-sm text-gray-600 mt-1">Shift options</div>
+              </div>
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-sm">
+                <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">24h</div>
+                <div className="text-xs sm:text-sm text-gray-600 mt-1">Response time</div>
               </div>
             </motion.div>
 
@@ -402,45 +437,45 @@ export default function DriversPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="grid sm:grid-cols-2 gap-4"
+              className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4"
             >
-              <div className="p-6 bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg border border-purple-100">
-                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mb-4 shadow-md">
-                  <DollarSign className="w-6 h-6 text-white" />
+              <div className="p-5 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-purple-100">
+                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mb-3 shadow-md">
+                  <DollarSign className="w-5 h-5 text-white" />
                 </div>
-                <h3 className="text-lg font-semibold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">Great Pay</h3>
+                <h3 className="text-base font-semibold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">Great Pay</h3>
                 <p className="text-gray-700 text-sm leading-relaxed">
-                  $8 base per delivery, plus $4 for each additional stop. Average $20–30/hr during active hours.
+                  $8 base + $4 per extra stop. Avg $20–30/hr.
                 </p>
               </div>
 
-              <div className="p-6 bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg border border-purple-100">
-                <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-500 rounded-2xl flex items-center justify-center mb-4 shadow-md">
-                  <Clock className="w-6 h-6 text-white" />
+              <div className="p-5 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-purple-100">
+                <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-purple-500 rounded-xl flex items-center justify-center mb-3 shadow-md">
+                  <Clock className="w-5 h-5 text-white" />
                 </div>
-                <h3 className="text-lg font-semibold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent mb-2">Flexible Hours</h3>
+                <h3 className="text-base font-semibold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent mb-2">Flexible Hours</h3>
                 <p className="text-gray-700 text-sm leading-relaxed">
-                  Choose from morning, lunch, dinner, or late-night shifts. Work when it fits your schedule.
+                  Choose your shifts. Work when it fits your schedule.
                 </p>
               </div>
 
-              <div className="p-6 bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg border border-purple-100">
-                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-500 rounded-2xl flex items-center justify-center mb-4 shadow-md">
-                  <Package className="w-6 h-6 text-white" />
+              <div className="p-5 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-purple-100">
+                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center mb-3 shadow-md">
+                  <Package className="w-5 h-5 text-white" />
                 </div>
-                <h3 className="text-lg font-semibold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">Simple Deliveries</h3>
+                <h3 className="text-base font-semibold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">Simple Deliveries</h3>
                 <p className="text-gray-700 text-sm leading-relaxed">
-                  No restaurant waits or complicated orders. Quick, discrete drop-offs only in DC.
+                  No restaurant waits. Quick, discrete drop-offs in DC.
                 </p>
               </div>
 
-              <div className="p-6 bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg border border-purple-100">
-                <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-500 rounded-2xl flex items-center justify-center mb-4 shadow-md">
-                  <User className="w-6 h-6 text-white" />
+              <div className="p-5 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-purple-100">
+                <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-purple-500 rounded-xl flex items-center justify-center mb-3 shadow-md">
+                  <User className="w-5 h-5 text-white" />
                 </div>
-                <h3 className="text-lg font-semibold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent mb-2">Fast Onboarding</h3>
+                <h3 className="text-base font-semibold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent mb-2">Fast Onboarding</h3>
                 <p className="text-gray-700 text-sm leading-relaxed">
-                  Apply in minutes. We'll review and contact you within 24 hours to get you started.
+                  Apply in minutes. 24-hour response time.
                 </p>
               </div>
             </motion.div>
