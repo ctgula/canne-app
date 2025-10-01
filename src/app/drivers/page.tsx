@@ -475,25 +475,56 @@ export default function DriversPage() {
                 </motion.div>
                 <motion.h2 
                   variants={itemVariants}
-                  className="text-5xl sm:text-6xl lg:text-7xl font-black bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-clip-text text-transparent leading-[0.95] animate-gradient"
-                  style={{ letterSpacing: '-0.025em' }}
+                  className="text-5xl sm:text-6xl lg:text-7xl font-black text-green-800 leading-[0.95]"
+                  style={{ letterSpacing: '-0.015em' }}
                 >
-                  Join the Cannè<br />Delivery Team
+                  🚴 JOIN THE CANNÈ<br />DELIVERY TEAM — DC ONLY
                 </motion.h2>
-                <motion.p 
+                <motion.div 
                   variants={itemVariants}
-                  className="text-xl sm:text-2xl text-gray-600 max-w-3xl leading-relaxed font-medium"
+                  className="space-y-3 text-lg sm:text-xl text-gray-900 max-w-3xl font-semibold"
                 >
-                  Earn <span className="text-purple-600 font-bold">$20–$30/hr</span> with flexible shifts. No restaurant waits, just quick deliveries across DC.
-                </motion.p>
+                  <p>• $20–$30/hr active time</p>
+                  <p>• Paid per order ($8 first, +$4 each extra stop)</p>
+                  <p>• 100% of tips go to you</p>
+                  <p>• No restaurant waits — quick, discrete drop-offs inside DC</p>
+                  <p>• Flexible shifts</p>
+                  <p>• Fast onboarding</p>
+                </motion.div>
               </motion.div>
 
-              {/* Stats Bar */}
+              {/* CTA Section */}
               <motion.div 
                 initial="hidden"
                 animate="visible"
                 variants={containerVariants}
-                className="grid grid-cols-2 sm:grid-cols-4 gap-4"
+                className="space-y-6"
+              >
+                <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-4 border-green-800 rounded-3xl p-8 shadow-2xl">
+                  <div className="text-center space-y-4">
+                    <p className="text-4xl">👉</p>
+                    <p className="text-3xl sm:text-4xl font-black text-green-800">Text 2028522281</p>
+                    <div className="text-lg font-bold text-gray-800 space-y-2">
+                      <p>with your:</p>
+                      <p>FIRST & LAST NAME</p>
+                      <p>PHONE NUMBER</p>
+                      <p>EMAIL</p>
+                    </div>
+                    <p className="text-base text-gray-700 font-semibold pt-4">We'll be in contact with next steps.</p>
+                  </div>
+                </div>
+                
+                <div className="text-center">
+                  <p className="text-2xl sm:text-3xl font-black text-gray-900 tracking-wider">DISCRETE. LOCAL. RELIABLE.</p>
+                </div>
+              </motion.div>
+
+              {/* Stats Bar - Hidden on mobile, shown as reference */}
+              <motion.div 
+                initial="hidden"
+                animate="visible"
+                variants={containerVariants}
+                className="hidden lg:grid grid-cols-4 gap-4"
               >
                 <motion.div 
                   variants={itemVariants}
@@ -529,12 +560,12 @@ export default function DriversPage() {
                 </motion.div>
               </motion.div>
 
-              {/* Feature Cards */}
+              {/* Feature Cards - Hidden, info now in bullet list */}
               <motion.div 
                 initial="hidden"
                 animate="visible"
                 variants={containerVariants}
-                className="benefits-wrapper grid sm:grid-cols-2 lg:grid-cols-4 gap-4"
+                className="hidden benefits-wrapper grid sm:grid-cols-2 lg:grid-cols-4 gap-4"
               >
                 <motion.div 
                   variants={itemVariants}
