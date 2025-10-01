@@ -330,11 +330,33 @@ export default function DriversPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50">
+      <style jsx>{`
+        @media (min-width: 992px) {
+          .driver-grid {
+            display: grid;
+            grid-template-columns: 7fr 5fr;
+            gap: 4rem;
+            overflow-x: hidden;
+          }
+          .position-card {
+            position: sticky;
+            top: 120px;
+            max-width: 420px;
+          }
+        }
+        .benefits-wrapper {
+          overflow: hidden;
+        }
+        /* AA contrast fix for purple text on light backgrounds */
+        .contrast-purple {
+          color: #2D274C;
+        }
+      `}</style>
       <main className="mx-auto max-w-6xl px-4 sm:px-6 py-8 sm:py-12">
         {/* Hero Section */}
         <header className="mb-16">
           {/* Top Bar */}
-          <div className="flex items-center justify-between mb-12">
+          <div className="flex items-center mb-12">
             <motion.div 
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -350,35 +372,118 @@ export default function DriversPage() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               onClick={handleDriverLogin}
-              className="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full text-sm font-medium hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg hover:shadow-xl"
+              className="ml-auto px-5 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full text-sm font-medium hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg hover:shadow-xl"
             >
               Driver Login
             </motion.button>
           </div>
 
-          {/* Main Hero Content */}
-          <div className="space-y-8">
+          {/* Main Hero Content - Desktop Grid */}
+          <div className="driver-grid">
+            {/* Left Column */}
+            <div className="space-y-8">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="space-y-4"
+              >
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm contrast-purple rounded-full text-sm font-medium shadow-sm">
+                  <MapPin className="w-4 h-4" />
+                  Washington DC
+                </div>
+                <h2 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-gray-900 via-purple-900 to-pink-900 bg-clip-text text-transparent tracking-tight leading-tight">
+                  Join the Cannè Delivery Team
+                </h2>
+                <p className="text-lg sm:text-xl text-gray-700 max-w-3xl">
+                  Earn $20–$30/hr with flexible shifts. No restaurant waits, just quick deliveries across DC.
+                </p>
+              </motion.div>
+
+              {/* Stats Bar */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="grid grid-cols-2 sm:grid-cols-4 gap-4"
+              >
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-sm">
+                  <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">$8–12</div>
+                  <div className="text-xs sm:text-sm text-gray-600 mt-1">Per delivery</div>
+                </div>
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-sm">
+                  <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">100%</div>
+                  <div className="text-xs sm:text-sm text-gray-600 mt-1">Keep tips</div>
+                </div>
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-sm">
+                  <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">4</div>
+                  <div className="text-xs sm:text-sm text-gray-600 mt-1">Shift options</div>
+                </div>
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-sm">
+                  <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">24h</div>
+                  <div className="text-xs sm:text-sm text-gray-600 mt-1">Response time</div>
+                </div>
+              </motion.div>
+
+              {/* Feature Cards */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="benefits-wrapper grid sm:grid-cols-2 lg:grid-cols-4 gap-4"
+              >
+                <div className="p-5 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-purple-100">
+                  <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mb-3 shadow-md">
+                    <DollarSign className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="text-base font-semibold contrast-purple mb-2">Great Pay</h3>
+                  <p className="text-gray-700 text-sm leading-relaxed">
+                    $8 base + $4 per extra stop. Avg $20–30/hr.
+                  </p>
+                </div>
+
+                <div className="p-5 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-purple-100">
+                  <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-purple-500 rounded-xl flex items-center justify-center mb-3 shadow-md">
+                    <Clock className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="text-base font-semibold contrast-purple mb-2">Flexible Hours</h3>
+                  <p className="text-gray-700 text-sm leading-relaxed">
+                    Choose your shifts. Work when it fits your schedule.
+                  </p>
+                </div>
+
+                <div className="p-5 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-purple-100">
+                  <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center mb-3 shadow-md">
+                    <Package className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="text-base font-semibold contrast-purple mb-2">Simple Deliveries</h3>
+                  <p className="text-gray-700 text-sm leading-relaxed">
+                    No restaurant waits. Quick, discrete drop-offs in DC.
+                  </p>
+                </div>
+
+                <div className="p-5 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-purple-100">
+                  <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-purple-500 rounded-xl flex items-center justify-center mb-3 shadow-md">
+                    <User className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="text-base font-semibold contrast-purple mb-2">Fast Onboarding</h3>
+                  <p className="text-gray-700 text-sm leading-relaxed">
+                    Apply in minutes. 24-hour response time.
+                  </p>
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Right Column - Position Details (Sticky) */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="space-y-4"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4 }}
+              className="position-card"
             >
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm text-purple-700 rounded-full text-sm font-medium shadow-sm">
-                <MapPin className="w-4 h-4" />
-                Washington DC
-              </div>
-              <h2 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-gray-900 via-purple-900 to-pink-900 bg-clip-text text-transparent tracking-tight leading-tight">
-                Join the Cannè Delivery Team
-              </h2>
-              <p className="text-lg sm:text-xl text-gray-700 max-w-3xl">
-                Earn $20–$30/hr with flexible shifts. No restaurant waits, just quick deliveries across DC.
-              </p>
-              
-              {/* Position Details */}
-              <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-purple-100 shadow-lg max-w-3xl">
-                <h3 className="text-lg font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">Position Details</h3>
-                <div className="grid sm:grid-cols-2 gap-4 text-sm">
+              <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-purple-100 shadow-lg">
+                <h3 className="text-lg font-bold contrast-purple mb-4">Position Details</h3>
+                <div className="grid gap-4 text-sm">
                   <div>
                     <p className="font-semibold text-gray-900 mb-1">📍 Location</p>
                     <p className="text-gray-600">Washington, DC metro area</p>
@@ -406,155 +511,85 @@ export default function DriversPage() {
                 </div>
               </div>
             </motion.div>
-
-            {/* Stats Bar */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="grid grid-cols-2 sm:grid-cols-4 gap-4"
-            >
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-sm">
-                <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">$8–12</div>
-                <div className="text-xs sm:text-sm text-gray-600 mt-1">Per delivery</div>
-              </div>
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-sm">
-                <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">100%</div>
-                <div className="text-xs sm:text-sm text-gray-600 mt-1">Keep tips</div>
-              </div>
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-sm">
-                <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">4</div>
-                <div className="text-xs sm:text-sm text-gray-600 mt-1">Shift options</div>
-              </div>
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-sm">
-                <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">24h</div>
-                <div className="text-xs sm:text-sm text-gray-600 mt-1">Response time</div>
-              </div>
-            </motion.div>
-
-            {/* Feature Cards */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4"
-            >
-              <div className="p-5 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-purple-100">
-                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mb-3 shadow-md">
-                  <DollarSign className="w-5 h-5 text-white" />
-                </div>
-                <h3 className="text-base font-semibold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">Great Pay</h3>
-                <p className="text-gray-700 text-sm leading-relaxed">
-                  $8 base + $4 per extra stop. Avg $20–30/hr.
-                </p>
-              </div>
-
-              <div className="p-5 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-purple-100">
-                <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-purple-500 rounded-xl flex items-center justify-center mb-3 shadow-md">
-                  <Clock className="w-5 h-5 text-white" />
-                </div>
-                <h3 className="text-base font-semibold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent mb-2">Flexible Hours</h3>
-                <p className="text-gray-700 text-sm leading-relaxed">
-                  Choose your shifts. Work when it fits your schedule.
-                </p>
-              </div>
-
-              <div className="p-5 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-purple-100">
-                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center mb-3 shadow-md">
-                  <Package className="w-5 h-5 text-white" />
-                </div>
-                <h3 className="text-base font-semibold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">Simple Deliveries</h3>
-                <p className="text-gray-700 text-sm leading-relaxed">
-                  No restaurant waits. Quick, discrete drop-offs in DC.
-                </p>
-              </div>
-
-              <div className="p-5 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-purple-100">
-                <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-purple-500 rounded-xl flex items-center justify-center mb-3 shadow-md">
-                  <User className="w-5 h-5 text-white" />
-                </div>
-                <h3 className="text-base font-semibold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent mb-2">Fast Onboarding</h3>
-                <p className="text-gray-700 text-sm leading-relaxed">
-                  Apply in minutes. 24-hour response time.
-                </p>
-              </div>
-            </motion.div>
           </div>
         </header>
 
         {/* Application Form */}
-        <section className="mx-auto max-w-2xl">
+        <section className="mx-auto" style={{ maxWidth: '680px' }}>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
+            transition={{ delay: 0.5 }}
             className="bg-white/90 backdrop-blur-sm rounded-3xl p-8 md:p-10 border border-purple-100 shadow-2xl"
           >
             <div className="text-center mb-8">
-              <h3 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">Apply Now</h3>
+              <h3 className="text-2xl font-bold contrast-purple mb-2">Apply Now</h3>
               <p className="text-gray-700">We'll reach out within 24 hours</p>
             </div>
-            <form onSubmit={handleSubmit(onSubmit)} className="max-w-xl mx-auto space-y-6 text-left">
-              {/* Name Field */}
-              <div className="space-y-2">
-                <label htmlFor="name" className="block text-sm font-medium text-gray-900">
-                  Full Name *
-                </label>
-                <Controller
-                  name="name"
-                  control={control}
-                  render={({ field }) => (
-                    <input
-                      {...field}
-                      id="name"
-                      type="text"
-                      placeholder="First & Last Name"
-                      aria-invalid={errors.name ? 'true' : 'false'}
-                      aria-describedby={errors.name ? 'name-error' : undefined}
-                      className={`w-full rounded-xl border-2 px-4 py-3 text-lg transition-colors focus:outline-none ${
-                        errors.name
-                          ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
-                          : 'border-gray-300 focus:border-purple-500 focus:ring-purple-500/20'
-                      }`}
-                    />
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 text-left">
+              {/* Name & Phone - Two Column on Desktop */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Name Field */}
+                <div className="space-y-2">
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-900">
+                    Full Name *
+                  </label>
+                  <Controller
+                    name="name"
+                    control={control}
+                    render={({ field }) => (
+                      <input
+                        {...field}
+                        id="name"
+                        type="text"
+                        placeholder="First & Last Name"
+                        aria-invalid={errors.name ? 'true' : 'false'}
+                        aria-describedby={errors.name ? 'name-error' : undefined}
+                        className={`w-full rounded-xl border-2 px-4 py-3 text-lg transition-colors focus:outline-none ${
+                          errors.name
+                            ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
+                            : 'border-gray-300 focus:border-purple-500 focus:ring-purple-500/20'
+                        }`}
+                      />
+                    )}
+                  />
+                  {errors.name && (
+                    <p id="name-error" className="text-sm text-red-600" role="alert">
+                      {errors.name.message}
+                    </p>
                   )}
-                />
-                {errors.name && (
-                  <p id="name-error" className="text-sm text-red-600" role="alert">
-                    {errors.name.message}
-                  </p>
-                )}
-              </div>
+                </div>
 
-              {/* Phone Field */}
-              <div className="space-y-2">
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-900">
-                  Phone Number *
-                </label>
-                <Controller
-                  name="phone"
-                  control={control}
-                  render={({ field }) => (
-                    <input
-                      {...field}
-                      id="phone"
-                      type="tel"
-                      placeholder="(555) 123-4567"
-                      aria-invalid={errors.phone ? 'true' : 'false'}
-                      aria-describedby={errors.phone ? 'phone-error' : undefined}
-                      className={`w-full rounded-xl border-2 px-4 py-3 text-lg transition-colors focus:outline-none ${
-                        errors.phone
-                          ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
-                          : 'border-gray-300 focus:border-purple-500 focus:ring-purple-500/20'
-                      }`}
-                    />
+                {/* Phone Field */}
+                <div className="space-y-2">
+                  <label htmlFor="phone" className="block text-sm font-medium text-gray-900">
+                    Phone Number *
+                  </label>
+                  <Controller
+                    name="phone"
+                    control={control}
+                    render={({ field }) => (
+                      <input
+                        {...field}
+                        id="phone"
+                        type="tel"
+                        placeholder="(555) 123-4567"
+                        aria-invalid={errors.phone ? 'true' : 'false'}
+                        aria-describedby={errors.phone ? 'phone-error' : undefined}
+                        className={`w-full rounded-xl border-2 px-4 py-3 text-lg transition-colors focus:outline-none ${
+                          errors.phone
+                            ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
+                            : 'border-gray-300 focus:border-purple-500 focus:ring-purple-500/20'
+                        }`}
+                      />
+                    )}
+                  />
+                  {errors.phone && (
+                    <p id="phone-error" className="text-sm text-red-600" role="alert">
+                      {errors.phone.message}
+                    </p>
                   )}
-                />
-                {errors.phone && (
-                  <p id="phone-error" className="text-sm text-red-600" role="alert">
-                    {errors.phone.message}
-                  </p>
-                )}
+                </div>
               </div>
 
               {/* Email Field */}
