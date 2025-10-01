@@ -15,22 +15,32 @@ export interface CashAppOrderResponse {
  */
 export async function createCashAppOrder(orderData: CashAppOrderData): Promise<string | null> {
   try {
+    console.log('🚀 Creating Cash App order with data:', orderData);
     const response = await fetch("/api/orders/create", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(orderData)
     });
 
+    console.log('📡 Response status:', response.status, response.statusText);
     const result: CashAppOrderResponse = await response.json();
+    console.log('📦 Response data:', result);
     
     if (response.ok && result.short_code) {
+      console.log('✅ Order created successfully with code:', result.short_code);
       return result.short_code;
     } else {
-      console.error('Cash App order creation failed:', result.error);
+      console.error('❌ Cash App order creation failed:', {
+        status: response.status,
+        error: result.error,
+        fullResponse: result
+      });
+      alert(`Order creation failed: ${result.error || 'Unknown error'}`);
       return null;
     }
   } catch (error) {
-    console.error('Network error creating Cash App order:', error);
+    console.error('❌ Network error creating Cash App order:', error);
+    alert(`Network error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     return null;
   }
 }
