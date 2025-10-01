@@ -668,43 +668,8 @@ export default function DriversPage() {
               </motion.div>
             </div>
 
-            {/* Right Column - Position Details (Sticky) */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 }}
-              className="position-card"
-            >
-              <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-purple-100 shadow-lg">
-                <h3 className="text-lg font-bold contrast-purple mb-4">Position Details</h3>
-                <div className="grid gap-4 text-sm">
-                  <div>
-                    <p className="font-semibold text-gray-900 mb-1">📍 Location</p>
-                    <p className="text-gray-600">Washington, DC metro area</p>
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-900 mb-1">⏰ Schedule</p>
-                    <p className="text-gray-600">Flexible - Choose your shifts</p>
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-900 mb-1">💰 Pay Structure</p>
-                    <p className="text-gray-600">$8 base + $4 per extra stop</p>
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-900 mb-1">🚗 Requirements</p>
-                    <p className="text-gray-600">Car, bike, scooter, or on foot</p>
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-900 mb-1">📱 Payment</p>
-                    <p className="text-gray-600">Cash App - Same day payouts</p>
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-900 mb-1">⚡ Start Time</p>
-                    <p className="text-gray-600">24-48 hours after approval</p>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
+            {/* Right Column - Hidden, info now in announcement banner */}
+            <div className="hidden lg:block"></div>
           </div>
         </header>
 
