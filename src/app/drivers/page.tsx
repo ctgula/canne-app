@@ -330,109 +330,65 @@ export default function DriversPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-white">
-      <main className="mx-auto max-w-4xl px-4 sm:px-6 py-12 sm:py-16">
+      <main className="mx-auto max-w-6xl px-4 sm:px-6 py-8 sm:py-12">
         {/* Hero Section */}
-        <header className="text-center mb-12">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col items-center justify-center gap-4 mb-8"
-          >
-            <div className="flex items-center gap-3">
-              <span className="text-5xl sm:text-6xl">🍦</span>
-              <h1 className="text-5xl sm:text-6xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 text-transparent bg-clip-text">Cannè</h1>
-            </div>
-          </motion.div>
-          
-          <motion.h2 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6"
-          >
-            🚴 Join the Cannè Delivery Team
-          </motion.h2>
-          
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-purple-100 text-purple-700 rounded-full text-base font-semibold mb-8"
-          >
-            <MapPin className="w-5 h-5" />
-            Washington DC Only
-          </motion.div>
-          
-          {/* Benefits Grid */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8"
-          >
-            <div className="bg-white rounded-2xl p-6 shadow-lg border border-purple-100">
-              <div className="text-3xl mb-3">💰</div>
-              <h3 className="font-bold text-xl text-gray-900 mb-2">Great Earnings</h3>
-              <p className="text-gray-600">$20–$30/hr active time</p>
-              <p className="text-sm text-purple-600 font-semibold mt-2">$8 base + $4 per extra stop</p>
+        <header className="space-y-8 mb-12">
+          {/* Top Row: Logo + Driver Login Button */}
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            {/* Logo - Left aligned desktop, centered mobile */}
+            <div className="flex items-center gap-3 justify-center md:justify-start">
+              <span className="text-4xl sm:text-5xl">🍦</span>
+              <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 text-transparent bg-clip-text">Cannè</h1>
             </div>
             
-            <div className="bg-white rounded-2xl p-6 shadow-lg border border-pink-100">
-              <div className="text-3xl mb-3">⚡</div>
-              <h3 className="font-bold text-xl text-gray-900 mb-2">Quick & Easy</h3>
-              <p className="text-gray-600">No restaurant waits</p>
-              <p className="text-sm text-pink-600 font-semibold mt-2">Fast discrete drop-offs</p>
-            </div>
-            
-            <div className="bg-white rounded-2xl p-6 shadow-lg border border-green-100">
-              <div className="text-3xl mb-3">🎯</div>
-              <h3 className="font-bold text-xl text-gray-900 mb-2">Keep Your Tips</h3>
-              <p className="text-gray-600">100% of tips are yours</p>
-              <p className="text-sm text-green-600 font-semibold mt-2">No hidden fees</p>
-            </div>
-            
-            <div className="bg-white rounded-2xl p-6 shadow-lg border border-blue-100">
-              <div className="text-3xl mb-3">🕐</div>
-              <h3 className="font-bold text-xl text-gray-900 mb-2">Flexible Schedule</h3>
-              <p className="text-gray-600">Choose your shifts</p>
-              <p className="text-sm text-blue-600 font-semibold mt-2">Morning to late-night</p>
-            </div>
-          </motion.div>
-        </header>
-
-        {/* Driver Login Option */}
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          className="text-center mb-12"
-        >
-          <button
-            onClick={handleDriverLogin}
-            className="px-8 py-4 bg-white border-2 border-purple-600 text-purple-600 rounded-2xl font-semibold hover:bg-purple-600 hover:text-white transition-all duration-200 shadow-lg hover:shadow-xl inline-flex items-center gap-2"
-          >
-            <User className="w-5 h-5" />
-            Already a driver? Access Dashboard
-          </button>
-        </motion.div>
-
-        {/* Call to Action */}
-        <motion.section 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-        >
-          <div className="text-center mb-10">
-            <h3 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-              Ready to Get Started?
-            </h3>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Fill out the form below and we'll reach out within 24 hours
-            </p>
+            {/* Driver Login Button - Right aligned desktop, full width mobile */}
+            <button
+              onClick={handleDriverLogin}
+              className="w-full md:w-auto px-6 py-3 bg-white border-2 border-purple-600 text-purple-600 rounded-full font-semibold hover:bg-purple-600 hover:text-white transition-all duration-200 shadow-md hover:shadow-lg inline-flex items-center justify-center gap-2"
+            >
+              <User className="w-4 h-4" />
+              Already a driver? Access dashboard
+            </button>
           </div>
 
-          {/* Application Form */}
-          <div className="bg-white rounded-3xl shadow-2xl border border-purple-100 p-8 sm:p-12">
+          {/* Hero Content: Two Column Layout */}
+          <div className="grid md:grid-cols-12 md:gap-6 gap-4">
+            {/* Left Column: Headline Stack */}
+            <div className="md:col-span-8 space-y-4 text-center md:text-left">
+              {/* Headline */}
+              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
+                Cannè Delivery Team
+              </h2>
+              
+              {/* Location Pill - Right aligned desktop, centered mobile */}
+              <div className="flex justify-center md:justify-start">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-full text-sm font-semibold">
+                  <MapPin className="w-4 h-4" />
+                  Washington DC Only
+                </div>
+              </div>
+              
+              {/* Subheadline */}
+              <p className="text-lg text-gray-600">
+                Fill out the form below and we'll reach out within 24 hours
+              </p>
+            </div>
+
+            {/* Right Column: Keep Your Tips Card */}
+            <div className="md:col-span-4 mt-6 md:mt-0">
+              <div className="relative max-w-sm mx-auto md:mx-0 bg-white rounded-xl shadow-md p-4 border border-green-100">
+                <div className="text-3xl mb-2">🎯</div>
+                <h3 className="font-bold text-lg text-gray-900 mb-1">Keep Your Tips</h3>
+                <p className="text-sm text-gray-600">100% of tips are yours</p>
+                <p className="text-xs text-green-600 font-semibold mt-2">No hidden fees</p>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Application Form */}
+        <section className="mx-auto max-w-2xl">
+          <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8">
             <form onSubmit={handleSubmit(onSubmit)} className="max-w-xl mx-auto space-y-6 text-left">
               {/* Name Field */}
               <div className="space-y-2">
@@ -560,10 +516,10 @@ export default function DriversPage() {
                             />
                             <label
                               htmlFor={`availability-${option.value}`}
-                              className="flex items-center justify-center gap-3 w-full min-h-[60px] px-6 py-4 text-lg font-semibold text-gray-800 bg-white border-3 border-gray-300 rounded-2xl cursor-pointer transition-all duration-300 ease-in-out hover:bg-gray-50 hover:border-gray-400 hover:shadow-md peer-checked:bg-gradient-to-r peer-checked:from-purple-500 peer-checked:to-pink-500 peer-checked:text-white peer-checked:border-purple-500 peer-checked:shadow-lg peer-checked:scale-[1.02] peer-focus:ring-4 peer-focus:ring-purple-200 peer-focus:outline-none active:scale-[0.98] touch-manipulation select-none"
+                              className="block rounded-xl border-2 border-gray-300 p-3 transition cursor-pointer hover:border-gray-400 hover:bg-gray-50 peer-checked:bg-green-600 peer-checked:text-white peer-checked:border-green-600 peer-focus:ring-2 peer-focus:ring-green-200"
                             >
-                              <span className="text-2xl">{option.icon}</span>
-                              <span className="text-center leading-tight">{option.label}</span>
+                              <span className="text-xl mr-2">{option.icon}</span>
+                              <span>{option.label}</span>
                             </label>
                           </div>
                         ))}
@@ -707,7 +663,7 @@ export default function DriversPage() {
               },
             }}
           />
-        </motion.section>
+        </section>
       </main>
     </div>
   );
