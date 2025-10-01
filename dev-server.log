@@ -1,0 +1,16 @@
+
+> canne-app@0.1.0 dev
+> next dev --turbopack -p 4000
+
+ ⚠ Attempted to load /Users/ct/Documents/canne on cursor/canne-app/node_modules/next/next-swc-fallback/@next/swc-darwin-arm64/next-swc.darwin-arm64.node, but it was not installed
+ ⚠ Attempted to load @next/swc-darwin-arm64, but it was not installed
+ ⚠ Attempted to load /Users/ct/Documents/canne on cursor/canne-app/node_modules/next/next-swc-fallback/@next/swc-darwin-arm64/next-swc.darwin-arm64.node, but it was not installed
+ ⚠ Attempted to load @next/swc-darwin-arm64, but it was not installed
+   ▲ Next.js 15.3.3 (Turbopack)
+   - Local:        http://localhost:4000
+   - Network:      http://172.16.33.147:4000
+   - Environments: .env.local
+
+ ✓ Starting...
+[Error: `turbo.createProject` is not supported by the wasm bindings.]
+[?25h
