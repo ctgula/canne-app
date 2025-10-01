@@ -8,9 +8,12 @@ const supabase = createClient(
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('🚀 Cash App payment creation started');
     const { amount_cents, customer_phone } = await request.json();
+    console.log('📦 Request data:', { amount_cents, customer_phone });
 
     if (!amount_cents || amount_cents <= 0) {
+      console.error('❌ Invalid amount:', amount_cents);
       return NextResponse.json(
         { error: 'Invalid amount' },
         { status: 400 }
@@ -22,6 +25,7 @@ export async function POST(request: NextRequest) {
 
     // Step 1: Create a temporary customer first (required for orders table)
     const customerEmail = `cashapp_${Date.now()}@temp.com`;
+    console.log('👤 Creating customer with email:', customerEmail);
     
     const { data: customer, error: customerError } = await supabase
       .from('customers')
@@ -38,14 +42,17 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (customerError) {
-      console.error('Error creating customer:', customerError);
+      console.error('❌ Customer creation failed:', customerError);
       return NextResponse.json(
         { error: `Failed to create customer: ${customerError.message}` },
         { status: 500 }
       );
     }
 
+    console.log('✅ Customer created:', customer.id);
+
     // Step 2: Create a payment record in the orders table
+    console.log('📝 Creating payment order with short code:', shortCode);
     const { data: paymentRecord, error } = await supabase
       .from('orders')
       .insert({
@@ -66,7 +73,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      console.error('Error creating payment record:', error);
+      console.error('❌ Order creation failed:', error);
       // Clean up the customer if order creation fails
       await supabase.from('customers').delete().eq('id', customer.id);
       return NextResponse.json(
@@ -75,6 +82,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    console.log('✅ Payment order created successfully:', paymentRecord.order_number);
     return NextResponse.json({
       short_code: paymentRecord.order_number
     });
