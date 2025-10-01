@@ -330,23 +330,25 @@ export default function DriversPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-white">
-      <main className="mx-auto max-w-3xl px-4 sm:px-6 py-8 sm:py-12 space-y-8 sm:space-y-12">
+      <main className="mx-auto max-w-4xl px-4 sm:px-6 py-12 sm:py-16">
         {/* Hero Section */}
-        <header className="text-center space-y-6">
+        <header className="text-center mb-12">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex items-center justify-center gap-3 mb-6"
+            className="flex flex-col items-center justify-center gap-4 mb-8"
           >
-            <span className="text-5xl">🍦</span>
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 text-transparent bg-clip-text">Cannè</h1>
+            <div className="flex items-center gap-3">
+              <span className="text-5xl sm:text-6xl">🍦</span>
+              <h1 className="text-5xl sm:text-6xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 text-transparent bg-clip-text">Cannè</h1>
+            </div>
           </motion.div>
           
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight"
+            className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6"
           >
             🚴 Join the Cannè Delivery Team
           </motion.h2>
@@ -355,9 +357,9 @@ export default function DriversPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-full text-sm font-semibold"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-purple-100 text-purple-700 rounded-full text-base font-semibold mb-8"
           >
-            <MapPin className="w-4 h-4" />
+            <MapPin className="w-5 h-5" />
             Washington DC Only
           </motion.div>
           
@@ -403,13 +405,13 @@ export default function DriversPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
-          className="text-center"
+          className="text-center mb-12"
         >
           <button
             onClick={handleDriverLogin}
-            className="px-8 py-4 bg-white border-2 border-purple-600 text-purple-600 rounded-2xl font-semibold hover:bg-purple-600 hover:text-white transition-all duration-200 shadow-lg hover:shadow-xl"
+            className="px-8 py-4 bg-white border-2 border-purple-600 text-purple-600 rounded-2xl font-semibold hover:bg-purple-600 hover:text-white transition-all duration-200 shadow-lg hover:shadow-xl inline-flex items-center gap-2"
           >
-            <User className="w-5 h-5 inline mr-2" />
+            <User className="w-5 h-5" />
             Already a driver? Access Dashboard
           </button>
         </motion.div>
@@ -419,19 +421,18 @@ export default function DriversPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="text-center"
         >
-          <div className="mb-8">
-            <h3 className="text-3xl font-bold text-gray-900 mb-3">
+          <div className="text-center mb-10">
+            <h3 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
               Ready to Get Started?
             </h3>
-            <p className="text-lg text-gray-600">
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               Fill out the form below and we'll reach out within 24 hours
             </p>
           </div>
 
           {/* Application Form */}
-          <div className="bg-white rounded-3xl shadow-2xl border border-purple-100 p-6 sm:p-10">
+          <div className="bg-white rounded-3xl shadow-2xl border border-purple-100 p-8 sm:p-12">
             <form onSubmit={handleSubmit(onSubmit)} className="max-w-xl mx-auto space-y-6 text-left">
               {/* Name Field */}
               <div className="space-y-2">
