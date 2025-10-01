@@ -391,9 +391,10 @@ export default function DriversPage() {
           gap: 1.2rem;
           padding: 1.2rem 1.6rem;
           margin-bottom: 2.4rem;
-          border-radius: 12px;
-          background: #fff;
-          box-shadow: 0 4px 12px rgb(0 0 0 / .06);
+          border-radius: 16px;
+          background: linear-gradient(135deg, #ffffff 0%, #faf5ff 100%);
+          box-shadow: 0 8px 32px rgba(139, 92, 246, 0.12), 0 2px 8px rgba(0, 0, 0, 0.04);
+          border: 1px solid rgba(139, 92, 246, 0.1);
         }
         .driver-infobar li {
           list-style: none;
@@ -403,16 +404,30 @@ export default function DriversPage() {
           min-width: 86px;
         }
         .driver-infobar span {
-          font-size: 1.4rem;
+          font-size: 1.5rem;
+          filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
         }
         .driver-infobar small {
           font-size: .72rem;
           color: #888;
+          font-weight: 500;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
         }
         .driver-infobar strong {
-          font-size: .9rem;
+          font-size: .95rem;
           color: #111;
           margin-top: 2px;
+          font-weight: 700;
+        }
+        /* Gradient text animation */
+        @keyframes gradient-shift {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+        .animate-gradient {
+          background-size: 200% 200%;
+          animation: gradient-shift 8s ease infinite;
         }
       `}</style>
       <main className="mx-auto max-w-6xl px-4 sm:px-6 py-8 sm:py-12">
@@ -460,16 +475,16 @@ export default function DriversPage() {
                 </motion.div>
                 <motion.h2 
                   variants={itemVariants}
-                  className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-gray-900 via-purple-900 to-pink-900 bg-clip-text text-transparent leading-tight"
-                  style={{ letterSpacing: '-0.019em' }}
+                  className="text-5xl sm:text-6xl lg:text-7xl font-black bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-clip-text text-transparent leading-[0.95] animate-gradient"
+                  style={{ letterSpacing: '-0.025em' }}
                 >
-                  Join the Cannè Delivery Team
+                  Join the Cannè<br />Delivery Team
                 </motion.h2>
                 <motion.p 
                   variants={itemVariants}
-                  className="text-lg sm:text-xl text-gray-700 max-w-3xl leading-relaxed"
+                  className="text-xl sm:text-2xl text-gray-600 max-w-3xl leading-relaxed font-medium"
                 >
-                  Earn $20–$30/hr with flexible shifts. No restaurant waits, just quick deliveries across DC.
+                  Earn <span className="text-purple-600 font-bold">$20–$30/hr</span> with flexible shifts. No restaurant waits, just quick deliveries across DC.
                 </motion.p>
               </motion.div>
 
@@ -482,35 +497,35 @@ export default function DriversPage() {
               >
                 <motion.div 
                   variants={itemVariants}
-                  whileHover={!prefersReducedMotion ? { scale: 1.02, y: -2 } : {}}
-                  className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-sm transition-shadow hover:shadow-md"
+                  whileHover={!prefersReducedMotion ? { scale: 1.05, y: -4 } : {}}
+                  className="bg-gradient-to-br from-white to-purple-50 backdrop-blur-sm rounded-2xl p-5 shadow-lg border border-purple-100 transition-all hover:shadow-2xl hover:border-purple-300"
                 >
-                  <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">$8–12</div>
-                  <div className="text-xs sm:text-sm text-gray-600 mt-1">Per delivery</div>
+                  <div className="text-3xl sm:text-4xl font-black bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">$8–12</div>
+                  <div className="text-xs sm:text-sm text-gray-600 mt-1 font-semibold">Per delivery</div>
                 </motion.div>
                 <motion.div 
                   variants={itemVariants}
-                  whileHover={!prefersReducedMotion ? { scale: 1.02, y: -2 } : {}}
-                  className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-sm transition-shadow hover:shadow-md"
+                  whileHover={!prefersReducedMotion ? { scale: 1.05, y: -4 } : {}}
+                  className="bg-gradient-to-br from-white to-purple-50 backdrop-blur-sm rounded-2xl p-5 shadow-lg border border-purple-100 transition-all hover:shadow-2xl hover:border-purple-300"
                 >
-                  <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">100%</div>
-                  <div className="text-xs sm:text-sm text-gray-600 mt-1">Keep tips</div>
+                  <div className="text-3xl sm:text-4xl font-black bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">100%</div>
+                  <div className="text-xs sm:text-sm text-gray-600 mt-1 font-semibold">Keep tips</div>
                 </motion.div>
                 <motion.div 
                   variants={itemVariants}
-                  whileHover={!prefersReducedMotion ? { scale: 1.02, y: -2 } : {}}
-                  className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-sm transition-shadow hover:shadow-md"
+                  whileHover={!prefersReducedMotion ? { scale: 1.05, y: -4 } : {}}
+                  className="bg-gradient-to-br from-white to-purple-50 backdrop-blur-sm rounded-2xl p-5 shadow-lg border border-purple-100 transition-all hover:shadow-2xl hover:border-purple-300"
                 >
-                  <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">4</div>
-                  <div className="text-xs sm:text-sm text-gray-600 mt-1">Shift options</div>
+                  <div className="text-3xl sm:text-4xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">4</div>
+                  <div className="text-xs sm:text-sm text-gray-600 mt-1 font-semibold">Shift options</div>
                 </motion.div>
                 <motion.div 
                   variants={itemVariants}
-                  whileHover={!prefersReducedMotion ? { scale: 1.02, y: -2 } : {}}
-                  className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-sm transition-shadow hover:shadow-md"
+                  whileHover={!prefersReducedMotion ? { scale: 1.05, y: -4 } : {}}
+                  className="bg-gradient-to-br from-white to-green-50 backdrop-blur-sm rounded-2xl p-5 shadow-lg border border-green-100 transition-all hover:shadow-2xl hover:border-green-300"
                 >
-                  <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">24h</div>
-                  <div className="text-xs sm:text-sm text-gray-600 mt-1">Response time</div>
+                  <div className="text-3xl sm:text-4xl font-black bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">24h</div>
+                  <div className="text-xs sm:text-sm text-gray-600 mt-1 font-semibold">Response time</div>
                 </motion.div>
               </motion.div>
 
@@ -523,56 +538,56 @@ export default function DriversPage() {
               >
                 <motion.div 
                   variants={itemVariants}
-                  whileHover={!prefersReducedMotion ? { scale: 1.02, y: -4 } : {}}
-                  className="p-5 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-purple-100 transition-all hover:shadow-xl"
+                  whileHover={!prefersReducedMotion ? { scale: 1.03, y: -6, rotate: -1 } : {}}
+                  className="p-6 bg-gradient-to-br from-white via-purple-50/30 to-white backdrop-blur-sm rounded-2xl shadow-xl border-2 border-purple-200 transition-all hover:shadow-2xl hover:border-purple-400"
                 >
-                  <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mb-3 shadow-md">
-                    <DollarSign className="w-5 h-5 text-white" />
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mb-4 shadow-lg">
+                    <DollarSign className="w-6 h-6 text-white" />
                   </div>
-                  <h3 className="text-base font-semibold contrast-purple mb-2">Great Pay</h3>
-                  <p className="text-gray-700 text-sm leading-relaxed">
+                  <h3 className="text-lg font-bold contrast-purple mb-2">Great Pay</h3>
+                  <p className="text-gray-700 text-sm leading-relaxed font-medium">
                     $8 base + $4 per extra stop. Avg $20–30/hr.
                   </p>
                 </motion.div>
 
                 <motion.div 
                   variants={itemVariants}
-                  whileHover={!prefersReducedMotion ? { scale: 1.02, y: -4 } : {}}
-                  className="p-5 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-purple-100 transition-all hover:shadow-xl"
+                  whileHover={!prefersReducedMotion ? { scale: 1.03, y: -6, rotate: 1 } : {}}
+                  className="p-6 bg-gradient-to-br from-white via-pink-50/30 to-white backdrop-blur-sm rounded-2xl shadow-xl border-2 border-pink-200 transition-all hover:shadow-2xl hover:border-pink-400"
                 >
-                  <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-purple-500 rounded-xl flex items-center justify-center mb-3 shadow-md">
-                    <Clock className="w-5 h-5 text-white" />
+                  <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-500 rounded-xl flex items-center justify-center mb-4 shadow-lg">
+                    <Clock className="w-6 h-6 text-white" />
                   </div>
-                  <h3 className="text-base font-semibold contrast-purple mb-2">Flexible Hours</h3>
-                  <p className="text-gray-700 text-sm leading-relaxed">
+                  <h3 className="text-lg font-bold contrast-purple mb-2">Flexible Hours</h3>
+                  <p className="text-gray-700 text-sm leading-relaxed font-medium">
                     Choose your shifts. Work when it fits your schedule.
                   </p>
                 </motion.div>
 
                 <motion.div 
                   variants={itemVariants}
-                  whileHover={!prefersReducedMotion ? { scale: 1.02, y: -4 } : {}}
-                  className="p-5 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-purple-100 transition-all hover:shadow-xl"
+                  whileHover={!prefersReducedMotion ? { scale: 1.03, y: -6, rotate: -1 } : {}}
+                  className="p-6 bg-gradient-to-br from-white via-blue-50/30 to-white backdrop-blur-sm rounded-2xl shadow-xl border-2 border-blue-200 transition-all hover:shadow-2xl hover:border-blue-400"
                 >
-                  <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center mb-3 shadow-md">
-                    <Package className="w-5 h-5 text-white" />
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center mb-4 shadow-lg">
+                    <Package className="w-6 h-6 text-white" />
                   </div>
-                  <h3 className="text-base font-semibold contrast-purple mb-2">Simple Deliveries</h3>
-                  <p className="text-gray-700 text-sm leading-relaxed">
+                  <h3 className="text-lg font-bold contrast-purple mb-2">Simple Deliveries</h3>
+                  <p className="text-gray-700 text-sm leading-relaxed font-medium">
                     No restaurant waits. Quick, discrete drop-offs in DC.
                   </p>
                 </motion.div>
 
                 <motion.div 
                   variants={itemVariants}
-                  whileHover={!prefersReducedMotion ? { scale: 1.02, y: -4 } : {}}
-                  className="p-5 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-purple-100 transition-all hover:shadow-xl"
+                  whileHover={!prefersReducedMotion ? { scale: 1.03, y: -6, rotate: 1 } : {}}
+                  className="p-6 bg-gradient-to-br from-white via-purple-50/30 to-white backdrop-blur-sm rounded-2xl shadow-xl border-2 border-purple-200 transition-all hover:shadow-2xl hover:border-purple-400"
                 >
-                  <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-purple-500 rounded-xl flex items-center justify-center mb-3 shadow-md">
-                    <User className="w-5 h-5 text-white" />
+                  <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-500 rounded-xl flex items-center justify-center mb-4 shadow-lg">
+                    <User className="w-6 h-6 text-white" />
                   </div>
-                  <h3 className="text-base font-semibold contrast-purple mb-2">Fast Onboarding</h3>
-                  <p className="text-gray-700 text-sm leading-relaxed">
+                  <h3 className="text-lg font-bold contrast-purple mb-2">Fast Onboarding</h3>
+                  <p className="text-gray-700 text-sm leading-relaxed font-medium">
                     Apply in minutes. 24-hour response time.
                   </p>
                 </motion.div>
