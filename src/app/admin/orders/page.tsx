@@ -318,32 +318,23 @@ export default function AdminOrdersPage() {
       onStatusFilterChange={setStatusFilter}
       statusOptions={statusOptions}
     >
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-          Order Management
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400 mb-6">
-          Manage customer orders, track status, and assign drivers
-        </p>
-        
-        {/* Order Statistics - With Payment Status */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="text-center">
-            <div className="text-3xl font-bold text-purple-600">{statusCounts.pending || 0}</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Pending</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl font-bold text-green-600">{statusCounts.delivered || 0}</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Delivered</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl font-bold text-emerald-600">{paymentCounts.paid || 0}</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">💰 Paid</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl font-bold text-orange-600">{paymentCounts.unpaid || 0}</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">💳 Unpaid</div>
-          </div>
+      {/* Simplified Stats Bar */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-2xl p-4 border border-purple-100 dark:border-purple-800">
+          <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">{statusCounts.pending || 0}</div>
+          <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Pending</div>
+        </div>
+        <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-2xl p-4 border border-green-100 dark:border-green-800">
+          <div className="text-3xl font-bold text-green-600">{ statusCounts.delivered || 0}</div>
+          <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Delivered</div>
+        </div>
+        <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-2xl p-4 border border-emerald-100 dark:border-emerald-800">
+          <div className="text-3xl font-bold text-emerald-600">{paymentCounts.paid || 0}</div>
+          <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">💰 Paid</div>
+        </div>
+        <div className="bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 rounded-2xl p-4 border border-orange-100 dark:border-orange-800">
+          <div className="text-3xl font-bold text-orange-600">{paymentCounts.unpaid || 0}</div>
+          <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">💳 Unpaid</div>
         </div>
       </div>
 
@@ -369,144 +360,95 @@ export default function AdminOrdersPage() {
                 key={order.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow"
+                className="bg-white/80 backdrop-blur-sm dark:bg-gray-800/80 rounded-2xl shadow-sm border border-purple-100 dark:border-gray-700 p-5 hover:shadow-lg hover:border-purple-200 transition-all"
               >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
+                {/* Header */}
+                <div className="flex items-start justify-between mb-3">
+                  <div>
                     <button
                       onClick={() => openOrderDetails(order.id)}
-                      className="text-lg font-semibold text-gray-900 dark:text-white hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
+                      className="text-base font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent hover:from-purple-700 hover:to-pink-700 transition-all"
                     >
                       {order.order_number}
                     </button>
-                    {/* Priority Indicators - Simplified */}
-                    {order.total >= 100 && (
-                      <span className="text-amber-500" title="High Value Order">💰</span>
-                    )}
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                      {getTimeAgo(order.created_at)}
+                    </div>
                   </div>
-                  <div className="flex gap-1">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      order.status === 'pending' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300' :
-                      order.status === 'delivered' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' :
-                      order.status === 'cancelled' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' :
-                      'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                  <div className="flex flex-col gap-1 items-end">
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                      ['pending', 'awaiting_payment', 'verifying', 'paid'].includes(order.status) ? 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300' :
+                      order.status === 'delivered' ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' :
+                      order.status === 'cancelled' ? 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300' :
+                      'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
                     }`}>
-                      {order.status.replace('_', ' ').toUpperCase()}
+                      {order.status.replace('_', ' ')}
                     </span>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      (order.payment_status || 'unpaid') === 'paid' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300' :
-                      'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300'
-                    }`}>
-                      {(order.payment_status || 'unpaid') === 'paid' ? '💰 PAID' : '💳 UNPAID'}
-                    </span>
+                    {order.total >= 100 && (
+                      <span className="text-xs text-amber-600 font-medium">💰 High Value</span>
+                    )}
                   </div>
                 </div>
 
-                <div className="space-y-2 mb-4">
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm font-medium text-gray-900 dark:text-white">
+                {/* Customer Info */}
+                <div className="mb-4 pb-4 border-b border-gray-100 dark:border-gray-700">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-sm font-semibold text-gray-900 dark:text-white">
                       {`${order.customers.first_name} ${order.customers.last_name}`}
                     </div>
-                    <div className="text-xl font-bold text-gray-900 dark:text-white">
+                    <div className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
                       {formatCurrency(order.total)}
                     </div>
                   </div>
-                  
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                    {order.customers.phone}
-                  </div>
-                  
-                  <div className="text-xs text-gray-500 dark:text-gray-400">
-                    {getTimeAgo(order.created_at)}
+                  <div className="text-xs text-gray-600 dark:text-gray-400">
+                    📱 {order.customers.phone}
                   </div>
                 </div>
 
-                {/* Quick Actions for Orders */}
-                <div className="space-y-2 mb-2">
-                  {/* Payment Status Actions */}
-                  <div className="flex space-x-2">
-                    {(order.payment_status || 'unpaid') === 'unpaid' ? (
-                      <button
-                        onClick={() => handlePaymentStatusChange(order.id, order.payment_status || 'unpaid', 'paid')}
-                        className="flex-1 px-2 py-1 text-xs bg-emerald-100 text-emerald-800 rounded hover:bg-emerald-200 transition-colors font-medium"
-                      >
-                        💰 Mark Paid
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => handlePaymentStatusChange(order.id, order.payment_status || 'paid', 'unpaid')}
-                        className="flex-1 px-2 py-1 text-xs bg-orange-100 text-orange-800 rounded hover:bg-orange-200 transition-colors font-medium"
-                      >
-                        💳 Mark Unpaid
-                      </button>
-                    )}
-                  </div>
+                {/* Quick Actions */}
+                <div className="grid grid-cols-2 gap-2">
+                  {/* Payment Toggle */}
+                  {(order.payment_status || 'unpaid') === 'unpaid' ? (
+                    <button
+                      onClick={() => handlePaymentStatusChange(order.id, order.payment_status || 'unpaid', 'paid')}
+                      className="px-3 py-2 text-xs bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-lg hover:from-emerald-600 hover:to-green-600 transition-all font-medium shadow-sm"
+                    >
+                      💰 Mark Paid
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handlePaymentStatusChange(order.id, order.payment_status || 'paid', 'unpaid')}
+                      className="px-3 py-2 text-xs bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition-colors font-medium"
+                    >
+                      💳 Unpaid
+                    </button>
+                  )}
                   
-                  {/* Order Status Actions */}
-                  {order.status === 'pending' && (
-                    <div className="flex space-x-2">
+                  {/* View Details */}
+                  <button
+                    onClick={() => openOrderDetails(order.id)}
+                    className="px-3 py-2 text-xs bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all font-medium shadow-sm"
+                  >
+                    View Details
+                  </button>
+                  
+                  {/* Status Actions */}
+                  {['pending', 'awaiting_payment', 'verifying', 'paid'].includes(order.status) && (
+                    <>
                       <button
                         onClick={() => handleStatusChange(order.id, order.status, 'delivered')}
-                        className="flex-1 px-2 py-1 text-xs bg-green-100 text-green-800 rounded hover:bg-green-200 transition-colors font-medium"
+                        className="px-3 py-2 text-xs bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors font-medium"
                       >
                         ✅ Deliver
                       </button>
                       <button
                         onClick={() => handleStatusChange(order.id, order.status, 'cancelled')}
-                        className="flex-1 px-2 py-1 text-xs bg-red-100 text-red-800 rounded hover:bg-red-200 transition-colors font-medium"
+                        className="px-3 py-2 text-xs bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors font-medium"
                       >
                         ❌ Cancel
                       </button>
-                    </div>
+                    </>
                   )}
-                </div>
-
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => openOrderDetails(order.id)}
-                    className="flex-1 px-3 py-2 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
-                  >
-                    View Details
-                  </button>
-                  
-                  <div className="relative">
-                    <button
-                      onClick={() => {
-                        const newDropdowns = new Set(openDropdowns);
-                        if (newDropdowns.has(order.id)) {
-                          newDropdowns.delete(order.id);
-                        } else {
-                          newDropdowns.clear();
-                          newDropdowns.add(order.id);
-                        }
-                        setOpenDropdowns(newDropdowns);
-                      }}
-                      className="flex items-center justify-center px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
-                    >
-                      <MoreHorizontal size={16} />
-                    </button>
-
-                    {openDropdowns.has(order.id) && (
-                      <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-700 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 z-50">
-                        {getValidTransitions(order.status).map((status) => (
-                          <button
-                            key={status}
-                            onClick={async () => {
-                              try {
-                                await handleStatusChange(order.id, order.status, status);
-                                setOpenDropdowns(new Set());
-                              } catch (error) {
-                                console.error('Status change failed:', error);
-                              }
-                            }}
-                            className="w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 first:rounded-t-lg last:rounded-b-lg transition-colors"
-                          >
-                            {status.replace('_', ' ').toUpperCase()}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
                 </div>
               </motion.div>
             ))}
