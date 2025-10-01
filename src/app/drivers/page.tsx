@@ -343,6 +343,11 @@ export default function DriversPage() {
             top: 120px;
             max-width: 420px;
           }
+          .driver-infobar {
+            position: sticky;
+            top: 84px;
+            z-index: 5;
+          }
         }
         .benefits-wrapper {
           overflow: hidden;
@@ -350,6 +355,36 @@ export default function DriversPage() {
         /* AA contrast fix for purple text on light backgrounds */
         .contrast-purple {
           color: #2D274C;
+        }
+        /* Infographic Bar */
+        .driver-infobar {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 1.2rem;
+          padding: 1.2rem 1.6rem;
+          margin-bottom: 2.4rem;
+          border-radius: 12px;
+          background: #fff;
+          box-shadow: 0 4px 12px rgb(0 0 0 / .06);
+        }
+        .driver-infobar li {
+          list-style: none;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          min-width: 86px;
+        }
+        .driver-infobar span {
+          font-size: 1.4rem;
+        }
+        .driver-infobar small {
+          font-size: .72rem;
+          color: #888;
+        }
+        .driver-infobar strong {
+          font-size: .9rem;
+          color: #111;
+          margin-top: 2px;
         }
       `}</style>
       <main className="mx-auto max-w-6xl px-4 sm:px-6 py-8 sm:py-12">
@@ -516,6 +551,15 @@ export default function DriversPage() {
 
         {/* Application Form */}
         <section className="mx-auto" style={{ maxWidth: '680px' }}>
+          {/* QUICK INFO BAR */}
+          <ul className="driver-infobar">
+            <li><span>💸</span><small>Pay</small><strong>$8 + $4/stop</strong></li>
+            <li><span>🕒</span><small>Hours</small><strong>Flexible</strong></li>
+            <li><span>🛵</span><small>Vehicle</small><strong>Any</strong></li>
+            <li><span>💰</span><small>Payouts</small><strong>Same-day</strong></li>
+            <li><span>⚡</span><small>Start</small><strong>24 hrs</strong></li>
+          </ul>
+
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -523,7 +567,7 @@ export default function DriversPage() {
             className="bg-white/90 backdrop-blur-sm rounded-3xl p-8 md:p-10 border border-purple-100 shadow-2xl"
           >
             <div className="text-center mb-8">
-              <h3 className="text-2xl font-bold contrast-purple mb-2">Apply Now</h3>
+              <h2 className="text-2xl font-bold contrast-purple mb-2">Apply Now</h2>
               <p className="text-gray-700">We'll reach out within 24 hours</p>
             </div>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 text-left">
