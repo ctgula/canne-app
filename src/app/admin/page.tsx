@@ -93,7 +93,6 @@ function AdminPageContent() {
     return () => clearInterval(interval);
   }, []);
 
-  // Order action handlers
   const handleAssign = (orderId: string) => {
     setAssignTargetOrderId(orderId);
     setAssignModalOpen(true);
@@ -102,13 +101,23 @@ function AdminPageContent() {
   const handleConfirmAssign = async (driverId: string) => {
     if (!assignTargetOrderId) return;
     try {
-      const res = await fetch(`/api/admin/orders/${assignTargetOrderId}/assign`, {
+      console.log('Assigning driver:', driverId, 'to order:', assignTargetOrderId);
+      const res = await fetch(`/api/admin/orders/${assignTargetOrderId}/assign-driver`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ driver_id: driverId })
       });
-      if (!res.ok) throw new Error('Failed to assign');
-      toast.success('Order assigned');
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || 'Failed to assign');
+      }
+
+      console.log('Driver assigned successfully');
+      toast.success('Driver assigned successfully!', {
+        duration: 3000,
+        style: { background: '#10b981', color: '#fff' }
+      });
       fetchKpiData();
       // Optionally trigger a list refresh via FilterBar change or URL param change; list will auto-refresh on next poll
     } catch (e) {
