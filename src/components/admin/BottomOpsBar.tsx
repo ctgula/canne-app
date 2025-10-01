@@ -84,12 +84,12 @@ export function BottomOpsBar({ asapCount15m, asapQuota, onSettingsChange }: Bott
               style={{ width: `${Math.min(asapPercentage, 100)}%` }}
             />
           </div>
+        </div>
 
         {/* Toggle Controls */}
         <div className="text-center py-4">
           <p className="text-sm text-gray-600">Operations controls removed for simplicity</p>
         </div>
-
       </div>
     </div>
   );
