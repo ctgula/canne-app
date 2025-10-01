@@ -330,60 +330,102 @@ export default function DriversPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-white">
-      <main className="mx-auto max-w-6xl px-4 sm:px-6 py-8 sm:py-12">
+      <main className="mx-auto max-w-4xl px-4 sm:px-6 py-8 sm:py-12">
         {/* Hero Section */}
-        <header className="space-y-8 mb-12">
-          {/* Top Row: Logo + Driver Login Button */}
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            {/* Logo - Left aligned desktop, centered mobile */}
-            <div className="flex items-center gap-3 justify-center md:justify-start">
-              <span className="text-4xl sm:text-5xl">🍦</span>
-              <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 text-transparent bg-clip-text">Cannè</h1>
-            </div>
-            
-            {/* Driver Login Button - Right aligned desktop, full width mobile */}
+        <header className="text-center mb-12 space-y-6">
+          {/* Logo */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center justify-center gap-3"
+          >
+            <span className="text-5xl sm:text-6xl">🍦</span>
+            <h1 className="text-5xl sm:text-6xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 text-transparent bg-clip-text">Cannè</h1>
+          </motion.div>
+
+          {/* Driver Login Button */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.1 }}
+          >
             <button
               onClick={handleDriverLogin}
-              className="w-full md:w-auto px-6 py-3 bg-white border-2 border-purple-600 text-purple-600 rounded-full font-semibold hover:bg-purple-600 hover:text-white transition-all duration-200 shadow-md hover:shadow-lg inline-flex items-center justify-center gap-2"
+              className="px-8 py-3 bg-white border-2 border-purple-600 text-purple-600 rounded-full font-semibold hover:bg-purple-600 hover:text-white transition-all duration-200 shadow-md hover:shadow-lg inline-flex items-center gap-2"
             >
-              <User className="w-4 h-4" />
+              <User className="w-5 h-5" />
               Already a driver? Access dashboard
             </button>
-          </div>
-
-          {/* Hero Content: Two Column Layout */}
-          <div className="grid md:grid-cols-12 md:gap-6 gap-4">
-            {/* Left Column: Headline Stack */}
-            <div className="md:col-span-8 space-y-4 text-center md:text-left">
-              {/* Headline */}
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
-                Cannè Delivery Team
-              </h2>
-              
-              {/* Location Pill - Right aligned desktop, centered mobile */}
-              <div className="flex justify-center md:justify-start">
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-full text-sm font-semibold">
-                  <MapPin className="w-4 h-4" />
-                  Washington DC Only
-                </div>
-              </div>
-              
-              {/* Subheadline */}
-              <p className="text-lg text-gray-600">
-                Fill out the form below and we'll reach out within 24 hours
-              </p>
+          </motion.div>
+          
+          {/* Headline */}
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="text-3xl sm:text-4xl font-bold text-gray-900"
+          >
+            Cannè Delivery Team
+          </motion.h2>
+          
+          {/* Location Pill */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="flex justify-center"
+          >
+            <div className="inline-flex items-center gap-2 px-6 py-2 bg-purple-100 text-purple-700 rounded-full text-base font-semibold">
+              <MapPin className="w-5 h-5" />
+              Washington DC Only
             </div>
+          </motion.div>
+          
+          {/* Subheadline */}
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="text-lg text-gray-600 max-w-2xl mx-auto"
+          >
+            Fill out the form below and we'll reach out within 24 hours
+          </motion.p>
 
-            {/* Right Column: Keep Your Tips Card */}
-            <div className="md:col-span-4 mt-6 md:mt-0">
-              <div className="relative max-w-sm mx-auto md:mx-0 bg-white rounded-xl shadow-md p-4 border border-green-100">
-                <div className="text-3xl mb-2">🎯</div>
-                <h3 className="font-bold text-lg text-gray-900 mb-1">Keep Your Tips</h3>
-                <p className="text-sm text-gray-600">100% of tips are yours</p>
-                <p className="text-xs text-green-600 font-semibold mt-2">No hidden fees</p>
-              </div>
+          {/* Benefits Grid */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8"
+          >
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-purple-100">
+              <div className="text-3xl mb-3">💰</div>
+              <h3 className="font-bold text-xl text-gray-900 mb-2">Great Earnings</h3>
+              <p className="text-gray-600">$20–$30/hr active time</p>
+              <p className="text-sm text-purple-600 font-semibold mt-2">$8 base + $4 per extra stop</p>
             </div>
-          </div>
+            
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-pink-100">
+              <div className="text-3xl mb-3">⚡</div>
+              <h3 className="font-bold text-xl text-gray-900 mb-2">Quick & Easy</h3>
+              <p className="text-gray-600">No restaurant waits</p>
+              <p className="text-sm text-pink-600 font-semibold mt-2">Fast discrete drop-offs</p>
+            </div>
+            
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-green-100">
+              <div className="text-3xl mb-3">🎯</div>
+              <h3 className="font-bold text-xl text-gray-900 mb-2">Keep Your Tips</h3>
+              <p className="text-gray-600">100% of tips are yours</p>
+              <p className="text-sm text-green-600 font-semibold mt-2">No hidden fees</p>
+            </div>
+            
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-blue-100">
+              <div className="text-3xl mb-3">🕐</div>
+              <h3 className="font-bold text-xl text-gray-900 mb-2">Flexible Schedule</h3>
+              <p className="text-gray-600">Choose your shifts</p>
+              <p className="text-sm text-blue-600 font-semibold mt-2">Morning to late-night</p>
+            </div>
+          </motion.div>
         </header>
 
         {/* Application Form */}
