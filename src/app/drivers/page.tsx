@@ -430,31 +430,95 @@ export default function DriversPage() {
           animation: gradient-shift 8s ease infinite;
         }
       `}</style>
-      <main className="mx-auto max-w-6xl px-4 sm:px-6 py-8 sm:py-12">
+      <main className="mx-auto max-w-7xl px-4 sm:px-6 py-6 sm:py-8">
+        {/* Top Navigation Bar */}
+        <div className="flex items-center justify-between mb-6">
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="flex items-center gap-3"
+          >
+            <span className="text-4xl">🍦</span>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
+              Cannè
+            </h1>
+          </motion.div>
+          
+          <motion.button
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            onClick={handleDriverLogin}
+            className="px-5 py-2.5 bg-white/90 backdrop-blur-sm text-purple-600 rounded-full text-sm font-semibold hover:bg-white transition-all shadow-md hover:shadow-lg border border-purple-200"
+          >
+            Driver Login
+          </motion.button>
+        </div>
+
+        {/* Apple-Style Announcement Banner */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="mb-12 bg-gradient-to-r from-purple-50 via-pink-50 to-purple-50 rounded-3xl p-8 sm:p-10 border border-purple-200 shadow-xl"
+        >
+          <div className="flex flex-col items-center text-center space-y-6">
+            {/* Icons */}
+            <div className="flex items-center gap-4">
+              <span className="text-6xl sm:text-7xl">🚴‍♂️</span>
+              <span className="text-6xl sm:text-7xl">🍦</span>
+            </div>
+            
+            {/* Title */}
+            <div className="space-y-2">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 leading-tight">
+                Join the Cannè Delivery Team
+              </h2>
+              <p className="text-xl sm:text-2xl font-bold text-purple-600">Washington DC</p>
+            </div>
+
+            {/* Key Features Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 w-full max-w-5xl mt-6">
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-sm">
+                <div className="text-3xl mb-2">💸</div>
+                <div className="text-sm font-bold text-gray-900">$8 + $4/stop</div>
+                <div className="text-xs text-gray-600">Pay</div>
+              </div>
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-sm">
+                <div className="text-3xl mb-2">🕒</div>
+                <div className="text-sm font-bold text-gray-900">Flexible</div>
+                <div className="text-xs text-gray-600">Hours</div>
+              </div>
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-sm">
+                <div className="text-3xl mb-2">🛵</div>
+                <div className="text-sm font-bold text-gray-900">Any</div>
+                <div className="text-xs text-gray-600">Vehicle</div>
+              </div>
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-sm">
+                <div className="text-3xl mb-2">💰</div>
+                <div className="text-sm font-bold text-gray-900">Same-day</div>
+                <div className="text-xs text-gray-600">Payouts</div>
+              </div>
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-sm">
+                <div className="text-3xl mb-2">⚡</div>
+                <div className="text-sm font-bold text-gray-900">24 hrs</div>
+                <div className="text-xs text-gray-600">Start</div>
+              </div>
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-sm">
+                <div className="text-3xl mb-2">👍</div>
+                <div className="text-sm font-bold text-gray-900">100%</div>
+                <div className="text-xs text-gray-600">Keep Tips</div>
+              </div>
+            </div>
+
+            {/* CTA */}
+            <div className="bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-2xl px-8 py-4 shadow-lg">
+              <p className="text-lg sm:text-xl font-bold">Quick Apply: Text 2028522281</p>
+            </div>
+          </div>
+        </motion.div>
+
         {/* Hero Section */}
         <header className="mb-16">
-          {/* Top Bar */}
-          <div className="flex items-center justify-between mb-12">
-            <motion.div 
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="flex items-center gap-3"
-            >
-              <span className="text-5xl">🍦</span>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
-                Cannè
-              </h1>
-            </motion.div>
-            
-            <motion.button
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              onClick={handleDriverLogin}
-              className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full text-sm font-semibold hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg hover:shadow-xl whitespace-nowrap"
-            >
-              Driver Login
-            </motion.button>
-          </div>
 
           {/* Main Hero Content - Desktop Grid */}
           <div className="driver-grid">
@@ -464,55 +528,38 @@ export default function DriversPage() {
                 initial="hidden"
                 animate="visible"
                 variants={containerVariants}
-                className="space-y-4"
+                className="space-y-6"
               >
+                <h3 className="text-2xl sm:text-3xl font-bold text-gray-900">Why Drive with Cannè?</h3>
                 <motion.div 
                   variants={itemVariants}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm contrast-purple rounded-full text-sm font-medium shadow-sm"
+                  className="space-y-3 text-base sm:text-lg text-gray-700 font-medium"
                 >
-                  <MapPin className="w-4 h-4" />
-                  Washington DC
+                  <p className="flex items-start gap-3">
+                    <span className="text-2xl">💵</span>
+                    <span><strong className="text-gray-900">$20–$30/hr</strong> active time with tips</span>
+                  </p>
+                  <p className="flex items-start gap-3">
+                    <span className="text-2xl">💸</span>
+                    <span>Paid per order: <strong className="text-gray-900">$8 first, +$4 each extra stop</strong></span>
+                  </p>
+                  <p className="flex items-start gap-3">
+                    <span className="text-2xl">🎁</span>
+                    <span><strong className="text-gray-900">100% of tips</strong> go directly to you</span>
+                  </p>
+                  <p className="flex items-start gap-3">
+                    <span className="text-2xl">⚡</span>
+                    <span><strong className="text-gray-900">No restaurant waits</strong> — quick, discrete drop-offs</span>
+                  </p>
+                  <p className="flex items-start gap-3">
+                    <span className="text-2xl">📅</span>
+                    <span><strong className="text-gray-900">Flexible shifts</strong> that fit your schedule</span>
+                  </p>
+                  <p className="flex items-start gap-3">
+                    <span className="text-2xl">🚀</span>
+                    <span><strong className="text-gray-900">Fast onboarding</strong> — start in 24-48 hours</span>
+                  </p>
                 </motion.div>
-                <motion.div
-                  variants={itemVariants}
-                  className="flex items-start gap-6 flex-wrap"
-                >
-                  <div className="text-7xl sm:text-8xl">🚴‍♂️</div>
-                  <div className="flex-1 min-w-[280px]">
-                    <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-green-800 leading-tight"
-                        style={{ letterSpacing: '-0.015em' }}
-                    >
-                      JOIN THE CANNÈ DELIVERY TEAM
-                    </h2>
-                    <p className="text-2xl sm:text-3xl font-bold text-green-700 mt-2">DC ONLY</p>
-                  </div>
-                </motion.div>
-                <motion.div 
-                  variants={itemVariants}
-                  className="space-y-2 text-base sm:text-lg text-gray-900 max-w-2xl font-semibold"
-                >
-                  <p>• $20–$30/hr active time</p>
-                  <p>• Paid per order ($8 first, +$4 each extra stop)</p>
-                  <p>• 100% of tips go to you</p>
-                  <p>• No restaurant waits — quick, discrete drop-offs inside DC</p>
-                  <p>• Flexible shifts</p>
-                  <p>• Fast onboarding</p>
-                </motion.div>
-              </motion.div>
-
-              {/* Quick Apply CTA */}
-              <motion.div 
-                initial="hidden"
-                animate="visible"
-                variants={containerVariants}
-              >
-                <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-600 rounded-2xl p-6 shadow-lg">
-                  <div className="text-center space-y-3">
-                    <p className="text-3xl">📱</p>
-                    <p className="text-xl sm:text-2xl font-black text-green-800">Quick Apply: Text 2028522281</p>
-                    <p className="text-sm text-gray-700 font-medium">Or fill out the form below</p>
-                  </div>
-                </div>
               </motion.div>
 
               {/* Stats Bar - Hidden on mobile, shown as reference */}
