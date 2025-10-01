@@ -23,68 +23,31 @@ export async function POST(request: NextRequest) {
     // Generate a short code for the payment
     const shortCode = `PAY-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
 
-    // Step 1: Create a temporary customer first (required for orders table)
-    const customerEmail = `cashapp_${Date.now()}@temp.com`;
-    console.log('👤 Creating customer with email:', customerEmail);
-    
-    const { data: customer, error: customerError } = await supabase
-      .from('customers')
-      .insert({
-        email: customerEmail,
-        first_name: 'Cash',
-        last_name: 'App Customer',
-        phone: customer_phone || '',
-        address: 'TBD',
-        city: 'Washington',
-        zip_code: '20001'
-      })
-      .select()
-      .single();
-
-    if (customerError) {
-      console.error('❌ Customer creation failed:', customerError);
-      return NextResponse.json(
-        { error: `Failed to create customer: ${customerError.message}` },
-        { status: 500 }
-      );
-    }
-
-    console.log('✅ Customer created:', customer.id);
-
-    // Step 2: Create a payment record in the orders table
-    console.log('📝 Creating payment order with short code:', shortCode);
+    // Create a payment record in the cashapp_payments table
+    console.log('📝 Creating Cash App payment with short code:', shortCode);
     const { data: paymentRecord, error } = await supabase
-      .from('orders')
+      .from('cashapp_payments')
       .insert({
-        customer_id: customer.id, // Required field
-        order_number: shortCode,
+        short_code: shortCode,
+        amount_cents: amount_cents,
+        customer_phone: customer_phone || null,
         status: 'awaiting_payment',
-        total: amount_cents / 100, // Convert cents to dollars
-        subtotal: amount_cents / 100,
-        delivery_fee: 0,
-        full_name: 'Cash App Customer',
-        phone: customer_phone || '',
-        delivery_address_line1: 'TBD',
-        delivery_city: 'Washington',
-        delivery_state: 'DC',
-        delivery_zip: '20001'
+        created_at: new Date().toISOString()
       })
-      .select('order_number')
+      .select('short_code')
       .single();
 
     if (error) {
-      console.error('❌ Order creation failed:', error);
-      // Clean up the customer if order creation fails
-      await supabase.from('customers').delete().eq('id', customer.id);
+      console.error('❌ Payment creation failed:', error);
       return NextResponse.json(
         { error: `Failed to create payment record: ${error.message}` },
         { status: 500 }
       );
     }
 
-    console.log('✅ Payment order created successfully:', paymentRecord.order_number);
+    console.log('✅ Cash App payment created successfully:', paymentRecord.short_code);
     return NextResponse.json({
-      short_code: paymentRecord.order_number
+      short_code: paymentRecord.short_code
     });
 
   } catch (error) {

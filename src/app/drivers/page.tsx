@@ -329,108 +329,134 @@ export default function DriversPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-white">
-      <main className="mx-auto max-w-4xl px-4 sm:px-6 py-8 sm:py-12">
+    <div className="min-h-screen bg-white">
+      <main className="mx-auto max-w-5xl px-4 sm:px-6 py-12 sm:py-16">
         {/* Hero Section */}
-        <header className="text-center mb-12 space-y-6">
-          {/* Logo */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-center justify-center gap-3"
-          >
-            <span className="text-5xl sm:text-6xl">🍦</span>
-            <h1 className="text-5xl sm:text-6xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 text-transparent bg-clip-text">Cannè</h1>
-          </motion.div>
-
-          {/* Driver Login Button */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.1 }}
-          >
-            <button
-              onClick={handleDriverLogin}
-              className="px-8 py-3 bg-white border-2 border-purple-600 text-purple-600 rounded-full font-semibold hover:bg-purple-600 hover:text-white transition-all duration-200 shadow-md hover:shadow-lg inline-flex items-center gap-2"
+        <header className="mb-16">
+          {/* Top Bar */}
+          <div className="flex items-center justify-between mb-12">
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="flex items-center gap-3"
             >
-              <User className="w-5 h-5" />
-              Already a driver? Access dashboard
-            </button>
-          </motion.div>
-          
-          {/* Headline */}
-          <motion.h2 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="text-3xl sm:text-4xl font-bold text-gray-900"
-          >
-            Cannè Delivery Team
-          </motion.h2>
-          
-          {/* Location Pill */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="flex justify-center"
-          >
-            <div className="inline-flex items-center gap-2 px-6 py-2 bg-purple-100 text-purple-700 rounded-full text-base font-semibold">
-              <MapPin className="w-5 h-5" />
-              Washington DC Only
-            </div>
-          </motion.div>
-          
-          {/* Subheadline */}
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="text-lg text-gray-600 max-w-2xl mx-auto"
-          >
-            Fill out the form below and we'll reach out within 24 hours
-          </motion.p>
+              <span className="text-4xl">🍦</span>
+              <h1 className="text-3xl font-semibold text-gray-900">Cannè</h1>
+            </motion.div>
+            
+            <motion.button
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              onClick={handleDriverLogin}
+              className="px-5 py-2.5 bg-gray-900 text-white rounded-full text-sm font-medium hover:bg-gray-800 transition-colors"
+            >
+              Driver Login
+            </motion.button>
+          </div>
 
-          {/* Benefits Grid */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8"
-          >
-            <div className="bg-white rounded-2xl p-6 shadow-lg border border-purple-100">
-              <div className="text-3xl mb-3">💰</div>
-              <h3 className="font-bold text-xl text-gray-900 mb-2">Great Earnings</h3>
-              <p className="text-gray-600">$20–$30/hr active time</p>
-              <p className="text-sm text-purple-600 font-semibold mt-2">$8 base + $4 per extra stop</p>
-            </div>
-            
-            <div className="bg-white rounded-2xl p-6 shadow-lg border border-pink-100">
-              <div className="text-3xl mb-3">⚡</div>
-              <h3 className="font-bold text-xl text-gray-900 mb-2">Quick & Easy</h3>
-              <p className="text-gray-600">No restaurant waits</p>
-              <p className="text-sm text-pink-600 font-semibold mt-2">Fast discrete drop-offs</p>
-            </div>
-            
-            <div className="bg-white rounded-2xl p-6 shadow-lg border border-green-100">
-              <div className="text-3xl mb-3">🎯</div>
-              <h3 className="font-bold text-xl text-gray-900 mb-2">Keep Your Tips</h3>
-              <p className="text-gray-600">100% of tips are yours</p>
-              <p className="text-sm text-green-600 font-semibold mt-2">No hidden fees</p>
-            </div>
-            
-            <div className="bg-white rounded-2xl p-6 shadow-lg border border-blue-100">
-              <div className="text-3xl mb-3">🕐</div>
-              <h3 className="font-bold text-xl text-gray-900 mb-2">Flexible Schedule</h3>
-              <p className="text-gray-600">Choose your shifts</p>
-              <p className="text-sm text-blue-600 font-semibold mt-2">Morning to late-night</p>
-            </div>
-          </motion.div>
+          {/* Main Hero Content */}
+          <div className="space-y-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="space-y-4"
+            >
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-purple-50 text-purple-700 rounded-full text-sm font-medium">
+                <MapPin className="w-4 h-4" />
+                Washington DC
+              </div>
+              <h2 className="text-5xl sm:text-6xl font-bold text-gray-900 tracking-tight">
+                Join the Cannè<br />Delivery Team
+              </h2>
+              <p className="text-xl text-gray-600 max-w-2xl">
+                Earn $20–$30/hr with flexible shifts. No restaurant waits, just quick deliveries across DC.
+              </p>
+            </motion.div>
+
+            {/* Stats Bar */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="grid grid-cols-3 gap-6 py-8 border-y border-gray-200"
+            >
+              <div>
+                <div className="text-3xl font-bold text-gray-900">$8–12</div>
+                <div className="text-sm text-gray-600 mt-1">Per delivery</div>
+              </div>
+              <div>
+                <div className="text-3xl font-bold text-gray-900">100%</div>
+                <div className="text-sm text-gray-600 mt-1">Keep all tips</div>
+              </div>
+              <div>
+                <div className="text-3xl font-bold text-gray-900">4</div>
+                <div className="text-sm text-gray-600 mt-1">Shift options</div>
+              </div>
+            </motion.div>
+
+            {/* Feature Cards */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="grid sm:grid-cols-2 gap-4"
+            >
+              <div className="p-6 bg-gradient-to-br from-purple-50 to-pink-50 rounded-3xl">
+                <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center mb-4 shadow-sm">
+                  <DollarSign className="w-6 h-6 text-purple-600" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Great Pay</h3>
+                <p className="text-gray-600 text-sm leading-relaxed">
+                  $8 base per delivery, plus $4 for each additional stop. Average $20–30/hr during active hours.
+                </p>
+              </div>
+
+              <div className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-3xl">
+                <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center mb-4 shadow-sm">
+                  <Clock className="w-6 h-6 text-green-600" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Flexible Hours</h3>
+                <p className="text-gray-600 text-sm leading-relaxed">
+                  Choose from morning, lunch, dinner, or late-night shifts. Work when it fits your schedule.
+                </p>
+              </div>
+
+              <div className="p-6 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-3xl">
+                <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center mb-4 shadow-sm">
+                  <Package className="w-6 h-6 text-blue-600" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Simple Deliveries</h3>
+                <p className="text-gray-600 text-sm leading-relaxed">
+                  No restaurant waits or complicated orders. Quick, discrete drop-offs only in DC.
+                </p>
+              </div>
+
+              <div className="p-6 bg-gradient-to-br from-amber-50 to-orange-50 rounded-3xl">
+                <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center mb-4 shadow-sm">
+                  <User className="w-6 h-6 text-amber-600" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Fast Onboarding</h3>
+                <p className="text-gray-600 text-sm leading-relaxed">
+                  Apply in minutes. We'll review and contact you within 24 hours to get you started.
+                </p>
+              </div>
+            </motion.div>
+          </div>
         </header>
 
         {/* Application Form */}
         <section className="mx-auto max-w-2xl">
-          <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="bg-gray-50 rounded-3xl p-8 md:p-10 border border-gray-200"
+          >
+            <div className="text-center mb-8">
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Apply Now</h3>
+              <p className="text-gray-600">We'll reach out within 24 hours</p>
+            </div>
             <form onSubmit={handleSubmit(onSubmit)} className="max-w-xl mx-auto space-y-6 text-left">
               {/* Name Field */}
               <div className="space-y-2">
@@ -671,7 +697,7 @@ export default function DriversPage() {
                 )}
               </button>
             </form>
-          </div>
+          </motion.div>
 
           {/* Success Message */}
           {showSuccess && (
