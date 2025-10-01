@@ -199,6 +199,70 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ Order items created successfully');
 
+    // Send Discord notification
+    try {
+      const webhookUrl = process.env.DISCORD_WEBHOOK;
+      if (webhookUrl) {
+        console.log('📢 Sending Discord notification...');
+        
+        const itemsDescription = orderData.items.map((item: OrderItem) => 
+          `• **${item.product.name}** x${item.quantity} - $${(item.product.price * item.quantity).toFixed(2)}\n` +
+          `  ${item.strain?.name || 'Moroccan Peach'} • ${item.strain?.type || 'sativa'} • ${item.strain?.thcLow || 18}-${item.strain?.thcHigh || 22}% THC\n` +
+          `  ${item.product.weight || '3.5g'}`
+        ).join('\n\n');
+
+        await fetch(webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            embeds: [{
+              title: '🎉 New Order Received!',
+              description: `Order **${orderNumber}** has been placed`,
+              color: 0x8B5CF6, // Purple
+              fields: [
+                {
+                  name: '👤 Customer',
+                  value: `${orderData.deliveryDetails.name}\n📱 ${orderData.deliveryDetails.phone}\n📧 ${orderData.deliveryDetails.email}`,
+                  inline: false
+                },
+                {
+                  name: '📦 Items',
+                  value: itemsDescription,
+                  inline: false
+                },
+                {
+                  name: '💰 Order Total',
+                  value: `Subtotal: $${subtotal.toFixed(2)}\nDelivery: ${deliveryFee === 0 ? 'FREE' : `$${deliveryFee.toFixed(2)}`}\n**Total: $${total.toFixed(2)}**`,
+                  inline: true
+                },
+                {
+                  name: '📍 Delivery Address',
+                  value: `${orderData.deliveryDetails.address}\n${orderData.deliveryDetails.city}, DC ${orderData.deliveryDetails.zipCode}`,
+                  inline: true
+                },
+                {
+                  name: '⏰ Preferred Time',
+                  value: orderData.deliveryDetails.timePreference || 'ASAP (60-90 min)',
+                  inline: false
+                }
+              ],
+              footer: {
+                text: 'Cannè Order System'
+              },
+              timestamp: new Date().toISOString()
+            }]
+          })
+        });
+        
+        console.log('✅ Discord notification sent');
+      } else {
+        console.log('⚠️ Discord webhook URL not configured');
+      }
+    } catch (discordError) {
+      console.error('❌ Discord notification failed:', discordError);
+      // Don't fail the order if Discord fails
+    }
+
     // Success response
     return NextResponse.json({
       success: true,
