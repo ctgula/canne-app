@@ -517,161 +517,46 @@ export default function DriversPage() {
           </div>
         </motion.div>
 
-        {/* Hero Section */}
-        <header className="mb-16">
-
-          {/* Main Hero Content - Desktop Grid */}
-          <div className="driver-grid">
-            {/* Left Column */}
-            <div className="space-y-8">
-              <motion.div
-                initial="hidden"
-                animate="visible"
-                variants={containerVariants}
-                className="space-y-6"
-              >
-                <h3 className="text-2xl sm:text-3xl font-bold text-gray-900">Why Drive with Cannè?</h3>
-                <motion.div 
-                  variants={itemVariants}
-                  className="space-y-3 text-base sm:text-lg text-gray-700 font-medium"
-                >
-                  <p className="flex items-start gap-3">
-                    <span className="text-2xl">💵</span>
-                    <span><strong className="text-gray-900">$20–$30/hr</strong> active time with tips</span>
-                  </p>
-                  <p className="flex items-start gap-3">
-                    <span className="text-2xl">💸</span>
-                    <span>Paid per order: <strong className="text-gray-900">$8 first, +$4 each extra stop</strong></span>
-                  </p>
-                  <p className="flex items-start gap-3">
-                    <span className="text-2xl">🎁</span>
-                    <span><strong className="text-gray-900">100% of tips</strong> go directly to you</span>
-                  </p>
-                  <p className="flex items-start gap-3">
-                    <span className="text-2xl">⚡</span>
-                    <span><strong className="text-gray-900">No restaurant waits</strong> — quick, discrete drop-offs</span>
-                  </p>
-                  <p className="flex items-start gap-3">
-                    <span className="text-2xl">📅</span>
-                    <span><strong className="text-gray-900">Flexible shifts</strong> that fit your schedule</span>
-                  </p>
-                  <p className="flex items-start gap-3">
-                    <span className="text-2xl">🚀</span>
-                    <span><strong className="text-gray-900">Fast onboarding</strong> — start in 24-48 hours</span>
-                  </p>
-                </motion.div>
-              </motion.div>
-
-              {/* Stats Bar - Hidden on mobile, shown as reference */}
-              <motion.div 
-                initial="hidden"
-                animate="visible"
-                variants={containerVariants}
-                className="hidden lg:grid grid-cols-4 gap-4"
-              >
-                <motion.div 
-                  variants={itemVariants}
-                  whileHover={!prefersReducedMotion ? { scale: 1.05, y: -4 } : {}}
-                  className="bg-gradient-to-br from-white to-purple-50 backdrop-blur-sm rounded-2xl p-5 shadow-lg border border-purple-100 transition-all hover:shadow-2xl hover:border-purple-300"
-                >
-                  <div className="text-3xl sm:text-4xl font-black bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">$8–12</div>
-                  <div className="text-xs sm:text-sm text-gray-600 mt-1 font-semibold">Per delivery</div>
-                </motion.div>
-                <motion.div 
-                  variants={itemVariants}
-                  whileHover={!prefersReducedMotion ? { scale: 1.05, y: -4 } : {}}
-                  className="bg-gradient-to-br from-white to-purple-50 backdrop-blur-sm rounded-2xl p-5 shadow-lg border border-purple-100 transition-all hover:shadow-2xl hover:border-purple-300"
-                >
-                  <div className="text-3xl sm:text-4xl font-black bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">100%</div>
-                  <div className="text-xs sm:text-sm text-gray-600 mt-1 font-semibold">Keep tips</div>
-                </motion.div>
-                <motion.div 
-                  variants={itemVariants}
-                  whileHover={!prefersReducedMotion ? { scale: 1.05, y: -4 } : {}}
-                  className="bg-gradient-to-br from-white to-purple-50 backdrop-blur-sm rounded-2xl p-5 shadow-lg border border-purple-100 transition-all hover:shadow-2xl hover:border-purple-300"
-                >
-                  <div className="text-3xl sm:text-4xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">4</div>
-                  <div className="text-xs sm:text-sm text-gray-600 mt-1 font-semibold">Shift options</div>
-                </motion.div>
-                <motion.div 
-                  variants={itemVariants}
-                  whileHover={!prefersReducedMotion ? { scale: 1.05, y: -4 } : {}}
-                  className="bg-gradient-to-br from-white to-green-50 backdrop-blur-sm rounded-2xl p-5 shadow-lg border border-green-100 transition-all hover:shadow-2xl hover:border-green-300"
-                >
-                  <div className="text-3xl sm:text-4xl font-black bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">24h</div>
-                  <div className="text-xs sm:text-sm text-gray-600 mt-1 font-semibold">Response time</div>
-                </motion.div>
-              </motion.div>
-
-              {/* Feature Cards - Hidden, info now in bullet list */}
-              <motion.div 
-                initial="hidden"
-                animate="visible"
-                variants={containerVariants}
-                className="hidden benefits-wrapper grid sm:grid-cols-2 lg:grid-cols-4 gap-4"
-              >
-                <motion.div 
-                  variants={itemVariants}
-                  whileHover={!prefersReducedMotion ? { scale: 1.03, y: -6, rotate: -1 } : {}}
-                  className="p-6 bg-gradient-to-br from-white via-purple-50/30 to-white backdrop-blur-sm rounded-2xl shadow-xl border-2 border-purple-200 transition-all hover:shadow-2xl hover:border-purple-400"
-                >
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mb-4 shadow-lg">
-                    <DollarSign className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="text-lg font-bold contrast-purple mb-2">Great Pay</h3>
-                  <p className="text-gray-700 text-sm leading-relaxed font-medium">
-                    $8 base + $4 per extra stop. Avg $20–30/hr.
-                  </p>
-                </motion.div>
-
-                <motion.div 
-                  variants={itemVariants}
-                  whileHover={!prefersReducedMotion ? { scale: 1.03, y: -6, rotate: 1 } : {}}
-                  className="p-6 bg-gradient-to-br from-white via-pink-50/30 to-white backdrop-blur-sm rounded-2xl shadow-xl border-2 border-pink-200 transition-all hover:shadow-2xl hover:border-pink-400"
-                >
-                  <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-500 rounded-xl flex items-center justify-center mb-4 shadow-lg">
-                    <Clock className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="text-lg font-bold contrast-purple mb-2">Flexible Hours</h3>
-                  <p className="text-gray-700 text-sm leading-relaxed font-medium">
-                    Choose your shifts. Work when it fits your schedule.
-                  </p>
-                </motion.div>
-
-                <motion.div 
-                  variants={itemVariants}
-                  whileHover={!prefersReducedMotion ? { scale: 1.03, y: -6, rotate: -1 } : {}}
-                  className="p-6 bg-gradient-to-br from-white via-blue-50/30 to-white backdrop-blur-sm rounded-2xl shadow-xl border-2 border-blue-200 transition-all hover:shadow-2xl hover:border-blue-400"
-                >
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center mb-4 shadow-lg">
-                    <Package className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="text-lg font-bold contrast-purple mb-2">Simple Deliveries</h3>
-                  <p className="text-gray-700 text-sm leading-relaxed font-medium">
-                    No restaurant waits. Quick, discrete drop-offs in DC.
-                  </p>
-                </motion.div>
-
-                <motion.div 
-                  variants={itemVariants}
-                  whileHover={!prefersReducedMotion ? { scale: 1.03, y: -6, rotate: 1 } : {}}
-                  className="p-6 bg-gradient-to-br from-white via-purple-50/30 to-white backdrop-blur-sm rounded-2xl shadow-xl border-2 border-purple-200 transition-all hover:shadow-2xl hover:border-purple-400"
-                >
-                  <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-500 rounded-xl flex items-center justify-center mb-4 shadow-lg">
-                    <User className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="text-lg font-bold contrast-purple mb-2">Fast Onboarding</h3>
-                  <p className="text-gray-700 text-sm leading-relaxed font-medium">
-                    Apply in minutes. 24-hour response time.
-                  </p>
-                </motion.div>
-              </motion.div>
-            </div>
-
-            {/* Right Column - Hidden, info now in announcement banner */}
-            <div className="hidden lg:block"></div>
-          </div>
-        </header>
+        {/* Benefits Section */}
+        <section className="mb-16 max-w-4xl mx-auto">
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={containerVariants}
+            className="space-y-6"
+          >
+            <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 text-center">Why Drive with Cannè?</h3>
+            <motion.div 
+              variants={itemVariants}
+              className="grid sm:grid-cols-2 gap-4 text-base sm:text-lg text-gray-700 font-medium"
+            >
+              <p className="flex items-start gap-3 bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-sm">
+                <span className="text-2xl">💵</span>
+                <span><strong className="text-gray-900">$20–$30/hr</strong> active time with tips</span>
+              </p>
+              <p className="flex items-start gap-3 bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-sm">
+                <span className="text-2xl">💸</span>
+                <span>Paid per order: <strong className="text-gray-900">$8 first, +$4 each extra stop</strong></span>
+              </p>
+              <p className="flex items-start gap-3 bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-sm">
+                <span className="text-2xl">🎁</span>
+                <span><strong className="text-gray-900">100% of tips</strong> go directly to you</span>
+              </p>
+              <p className="flex items-start gap-3 bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-sm">
+                <span className="text-2xl">⚡</span>
+                <span><strong className="text-gray-900">No restaurant waits</strong> — quick, discrete drop-offs</span>
+              </p>
+              <p className="flex items-start gap-3 bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-sm">
+                <span className="text-2xl">📅</span>
+                <span><strong className="text-gray-900">Flexible shifts</strong> that fit your schedule</span>
+              </p>
+              <p className="flex items-start gap-3 bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-sm">
+                <span className="text-2xl">🚀</span>
+                <span><strong className="text-gray-900">Fast onboarding</strong> — start in 24-48 hours</span>
+              </p>
+            </motion.div>
+          </motion.div>
+        </section>
 
         {/* Application Form */}
         <section className="mx-auto" style={{ maxWidth: '680px' }}>
