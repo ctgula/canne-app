@@ -329,49 +329,109 @@ export default function DriversPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <main className="mx-auto max-w-2xl px-6 py-12 space-y-12">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-white">
+      <main className="mx-auto max-w-3xl px-4 sm:px-6 py-8 sm:py-12 space-y-8 sm:space-y-12">
         {/* Hero Section */}
         <header className="text-center space-y-6">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <span className="text-4xl">🍦</span>
-            <h1 className="text-4xl font-bold text-black">Cannè</h1>
-          </div>
-          <h2 className="text-3xl font-bold text-black leading-tight">
-            🚴 Join the Cannè Delivery Team — DC Only 🚴‍♂️
-          </h2>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center justify-center gap-3 mb-6"
+          >
+            <span className="text-5xl">🍦</span>
+            <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 text-transparent bg-clip-text">Cannè</h1>
+          </motion.div>
           
-          {/* Benefits List */}
-          <div className="bg-gray-50 rounded-lg p-6 mt-8">
-            <ul className="text-left list-disc list-inside text-gray-800 space-y-3 text-lg">
-              <li><strong>Earn $20–$30/hr</strong> active time</li>
-              <li>Paid per order: <strong className="text-green-600">$8 first stop, +$4 each extra stop</strong></li>
-              <li><strong>Keep 100% of your tips</strong></li>
-              <li>No restaurant waits — only quick, discrete drop-offs inside DC</li>
-              <li>Flexible shifts (lunch, dinner, late-night)</li>
-              <li>Fast onboarding process</li>
-            </ul>
-          </div>
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight"
+          >
+            🚴 Join the Cannè Delivery Team
+          </motion.h2>
+          
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-full text-sm font-semibold"
+          >
+            <MapPin className="w-4 h-4" />
+            Washington DC Only
+          </motion.div>
+          
+          {/* Benefits Grid */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8"
+          >
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-purple-100">
+              <div className="text-3xl mb-3">💰</div>
+              <h3 className="font-bold text-xl text-gray-900 mb-2">Great Earnings</h3>
+              <p className="text-gray-600">$20–$30/hr active time</p>
+              <p className="text-sm text-purple-600 font-semibold mt-2">$8 base + $4 per extra stop</p>
+            </div>
+            
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-pink-100">
+              <div className="text-3xl mb-3">⚡</div>
+              <h3 className="font-bold text-xl text-gray-900 mb-2">Quick & Easy</h3>
+              <p className="text-gray-600">No restaurant waits</p>
+              <p className="text-sm text-pink-600 font-semibold mt-2">Fast discrete drop-offs</p>
+            </div>
+            
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-green-100">
+              <div className="text-3xl mb-3">🎯</div>
+              <h3 className="font-bold text-xl text-gray-900 mb-2">Keep Your Tips</h3>
+              <p className="text-gray-600">100% of tips are yours</p>
+              <p className="text-sm text-green-600 font-semibold mt-2">No hidden fees</p>
+            </div>
+            
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-blue-100">
+              <div className="text-3xl mb-3">🕐</div>
+              <h3 className="font-bold text-xl text-gray-900 mb-2">Flexible Schedule</h3>
+              <p className="text-gray-600">Choose your shifts</p>
+              <p className="text-sm text-blue-600 font-semibold mt-2">Morning to late-night</p>
+            </div>
+          </motion.div>
         </header>
 
         {/* Driver Login Option */}
-        <div className="text-center">
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="text-center"
+        >
           <button
             onClick={handleDriverLogin}
-            className="mb-8 px-6 py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 transition-colors"
+            className="px-8 py-4 bg-white border-2 border-purple-600 text-purple-600 rounded-2xl font-semibold hover:bg-purple-600 hover:text-white transition-all duration-200 shadow-lg hover:shadow-xl"
           >
+            <User className="w-5 h-5 inline mr-2" />
             Already a driver? Access Dashboard
           </button>
-        </div>
+        </motion.div>
 
         {/* Call to Action */}
-        <section className="text-center">
-          <h3 className="text-2xl font-semibold text-black mb-8">
-            Fill out the form below to apply.
-          </h3>
+        <motion.section 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="text-center"
+        >
+          <div className="mb-8">
+            <h3 className="text-3xl font-bold text-gray-900 mb-3">
+              Ready to Get Started?
+            </h3>
+            <p className="text-lg text-gray-600">
+              Fill out the form below and we'll reach out within 24 hours
+            </p>
+          </div>
 
           {/* Application Form */}
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8">
+          <div className="bg-white rounded-3xl shadow-2xl border border-purple-100 p-6 sm:p-10">
             <form onSubmit={handleSubmit(onSubmit)} className="max-w-xl mx-auto space-y-6 text-left">
               {/* Name Field */}
               <div className="space-y-2">
@@ -478,9 +538,10 @@ export default function DriversPage() {
                     render={({ field }) => (
                       <div className="space-y-3" role="group" aria-labelledby="availability-legend">
                         {[
-                          { value: 'lunch', label: 'Lunch (11am - 3pm)' },
-                          { value: 'dinner', label: 'Dinner (5pm - 10pm)' },
-                          { value: 'late-night', label: 'Late-night (10pm - 2am)' }
+                          { value: 'morning', label: 'Morning (8am - 11am)', icon: '🌅' },
+                          { value: 'lunch', label: 'Lunch (11am - 3pm)', icon: '☀️' },
+                          { value: 'dinner', label: 'Dinner (5pm - 10pm)', icon: '🌆' },
+                          { value: 'late-night', label: 'Late-night (10pm - 2am)', icon: '🌙' }
                         ].map((option) => (
                           <div key={option.value} className="relative">
                             <input
@@ -498,8 +559,9 @@ export default function DriversPage() {
                             />
                             <label
                               htmlFor={`availability-${option.value}`}
-                              className="flex items-center justify-center w-full min-h-[60px] px-6 py-4 text-lg font-semibold text-gray-800 bg-white border-3 border-gray-300 rounded-2xl cursor-pointer transition-all duration-300 ease-in-out hover:bg-gray-50 hover:border-gray-400 hover:shadow-md peer-checked:bg-green-500 peer-checked:text-white peer-checked:border-green-500 peer-checked:shadow-lg peer-checked:scale-[1.02] peer-focus:ring-4 peer-focus:ring-green-200 peer-focus:outline-none active:scale-[0.98] touch-manipulation select-none"
+                              className="flex items-center justify-center gap-3 w-full min-h-[60px] px-6 py-4 text-lg font-semibold text-gray-800 bg-white border-3 border-gray-300 rounded-2xl cursor-pointer transition-all duration-300 ease-in-out hover:bg-gray-50 hover:border-gray-400 hover:shadow-md peer-checked:bg-gradient-to-r peer-checked:from-purple-500 peer-checked:to-pink-500 peer-checked:text-white peer-checked:border-purple-500 peer-checked:shadow-lg peer-checked:scale-[1.02] peer-focus:ring-4 peer-focus:ring-purple-200 peer-focus:outline-none active:scale-[0.98] touch-manipulation select-none"
                             >
+                              <span className="text-2xl">{option.icon}</span>
                               <span className="text-center leading-tight">{option.label}</span>
                             </label>
                           </div>
@@ -644,7 +706,7 @@ export default function DriversPage() {
               },
             }}
           />
-        </section>
+        </motion.section>
       </main>
     </div>
   );
