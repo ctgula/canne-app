@@ -202,6 +202,8 @@ export async function POST(request: NextRequest) {
     // Send Discord notification
     try {
       const webhookUrl = process.env.DISCORD_WEBHOOK;
+      console.log('🔍 Discord webhook check:', webhookUrl ? 'CONFIGURED' : 'NOT CONFIGURED');
+      
       if (webhookUrl) {
         console.log('📢 Sending Discord notification...');
         
@@ -211,7 +213,7 @@ export async function POST(request: NextRequest) {
           `  ${item.product.weight || '3.5g'}`
         ).join('\n\n');
 
-        await fetch(webhookUrl, {
+        const response = await fetch(webhookUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -254,12 +256,17 @@ export async function POST(request: NextRequest) {
           })
         });
         
-        console.log('✅ Discord notification sent');
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('❌ Discord webhook failed:', response.status, errorText);
+        } else {
+          console.log('✅ Discord notification sent successfully');
+        }
       } else {
-        console.log('⚠️ Discord webhook URL not configured');
+        console.log('⚠️ Discord webhook URL not configured - set DISCORD_WEBHOOK environment variable');
       }
     } catch (discordError) {
-      console.error('❌ Discord notification failed:', discordError);
+      console.error('❌ Discord notification failed with error:', discordError);
       // Don't fail the order if Discord fails
     }
 
