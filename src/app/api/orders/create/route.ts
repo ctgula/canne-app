@@ -20,11 +20,29 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate a short code for the payment
-    const shortCode = `PAY-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
+    // Generate a memorable short code using phone + daily sequence
+    // Format: Last 4 of phone + 2-digit sequence = "5748-42"
+    const phoneLast4 = customer_phone ? customer_phone.slice(-4) : '0000';
+    
+    // Get today's order count for this phone to generate sequence
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const { count } = await supabase
+      .from('cashapp_payments')
+      .select('*', { count: 'exact', head: true })
+      .gte('created_at', today.toISOString())
+      .eq('customer_phone', customer_phone || '');
+    
+    const sequence = String((count || 0) + 1).padStart(2, '0');
+    const shortCode = `${phoneLast4}-${sequence}`;
+    
+    console.log('📱 Generated short code:', shortCode, 'for phone:', customer_phone);
 
     // Create a payment record in the cashapp_payments table
     console.log('📝 Creating Cash App payment with short code:', shortCode);
+    console.log('💡 Customer should remember: Last 4 digits of phone + order number');
+    console.log('   Example: Phone ending in', phoneLast4, '+ Order #' + sequence, '=', shortCode);
     
     const now = new Date();
     const expiresAt = new Date(now.getTime() + 15 * 60 * 1000); // 15 minutes from now
