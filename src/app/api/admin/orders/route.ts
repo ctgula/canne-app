@@ -125,31 +125,37 @@ export async function GET(request: NextRequest) {
     });
 
     // Transform Cash App payments to match order format
-    const transformedCashappOrders = (cashappPayments || []).map(payment => ({
-      id: payment.id,
-      order_number: payment.short_code,
-      status: payment.status,
-      total: payment.amount_cents / 100,
-      subtotal: payment.amount_cents / 100,
-      delivery_fee: 0,
-      created_at: payment.created_at,
-      updated_at: payment.updated_at,
-      full_name: 'Cash App Customer',
-      phone: payment.customer_phone || '',
-      delivery_address_line1: 'Pending',
-      delivery_city: 'Washington',
-      delivery_state: 'DC',
-      delivery_zip: '',
-      customer_id: null,
-      order_type: 'cashapp',
-      customers: {
-        first_name: 'Cash',
-        last_name: 'App Customer',
+    const transformedCashappOrders = (cashappPayments || []).map(payment => {
+      // Format phone as customer name if available
+      const phone = payment.customer_phone || '';
+      const formattedPhone = phone ? `${phone.slice(0, 3)}-${phone.slice(3, 6)}-${phone.slice(6)}` : 'Unknown';
+      
+      return {
+        id: payment.id,
+        order_number: payment.short_code,
+        status: payment.status,
+        total: payment.amount_cents / 100,
+        subtotal: payment.amount_cents / 100,
+        delivery_fee: 0,
+        created_at: payment.created_at,
+        updated_at: payment.updated_at,
+        full_name: formattedPhone,
         phone: payment.customer_phone || '',
-        email: ''
-      },
-      order_items: []
-    }));
+        delivery_address_line1: 'Pending',
+        delivery_city: 'Washington',
+        delivery_state: 'DC',
+        delivery_zip: '',
+        customer_id: null,
+        order_type: 'cashapp',
+        customers: {
+          first_name: formattedPhone,
+          last_name: '',
+          phone: payment.customer_phone || '',
+          email: ''
+        },
+        order_items: []
+      };
+    });
 
     // Combine and sort by created_at
     const allOrders = [...transformedOrders, ...transformedCashappOrders].sort((a, b) => 

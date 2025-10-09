@@ -117,6 +117,7 @@ export default function AdminOrdersPage() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showDriverDropdown, setShowDriverDropdown] = useState<string | null>(null);
+  const [showStatusDropdown, setShowStatusDropdown] = useState<string | null>(null);
   const [copiedPhone, setCopiedPhone] = useState<string | null>(null);
 
   const { success: showSuccessToast, error: showErrorToast } = useToast();
@@ -173,18 +174,14 @@ export default function AdminOrdersPage() {
     }
   };
 
-  const handleStatusChange = async (orderId: string, currentStatus: string, newStatus: string) => {
+  const handleStatusChange = async (orderId: string, newStatus: string) => {
     try {
-      const response = await fetch(`/api/admin/orders/${orderId}/status`, {
+      const response = await fetch(`/api/admin/orders/${orderId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          status: newStatus,
-          reason: `Status changed from ${currentStatus} to ${newStatus}`,
-          admin_user: 'admin'
-        }),
+        body: JSON.stringify({ status: newStatus }),
       });
 
       if (response.ok) {
@@ -518,6 +515,51 @@ export default function AdminOrdersPage() {
 
                     {/* Compact Action Row */}
                     <div className="flex items-center gap-2">
+                      {/* Status Change Dropdown */}
+                      <div className="relative flex-1">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowStatusDropdown(showStatusDropdown === order.id ? null : order.id);
+                          }}
+                          className="w-full px-3 py-2 text-sm bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 text-blue-700 dark:text-blue-300 rounded-lg hover:from-blue-100 hover:to-indigo-100 dark:hover:from-blue-900/30 dark:hover:to-indigo-900/30 transition-all font-medium flex items-center justify-between border border-blue-200 dark:border-blue-800"
+                        >
+                          <span className="flex items-center gap-2 truncate">
+                            <Package className="w-4 h-4 flex-shrink-0" />
+                            <span className="truncate">{order.status.replace('_', ' ')}</span>
+                          </span>
+                          <ChevronDown className={`w-4 h-4 flex-shrink-0 transition-transform ${showStatusDropdown === order.id ? 'rotate-180' : ''}`} />
+                        </button>
+                        
+                        {showStatusDropdown === order.id && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="absolute z-20 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl overflow-hidden"
+                          >
+                            {['awaiting_payment', 'verifying', 'paid', 'assigned', 'delivered', 'cancelled', 'pending', 'confirmed', 'preparing', 'out_for_delivery'].map((status) => (
+                              <button
+                                key={status}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleStatusChange(order.id, status);
+                                  setShowStatusDropdown(null);
+                                }}
+                                disabled={order.status === status}
+                                className={`w-full px-3 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors border-b border-gray-100 dark:border-gray-700 last:border-b-0 ${
+                                  order.status === status ? 'bg-blue-50 dark:bg-blue-900/20 opacity-50 cursor-not-allowed' : ''
+                                }`}
+                              >
+                                <div className="text-sm font-medium text-gray-900 dark:text-white">
+                                  {status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                </div>
+                              </button>
+                            ))}
+                          </motion.div>
+                        )}
+                      </div>
+                      
                       {/* Driver Assignment Dropdown */}
                       {!order.driver ? (
                         <div className="relative flex-1">
