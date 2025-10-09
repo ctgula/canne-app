@@ -32,6 +32,13 @@ export async function GET(
         delivery_state,
         delivery_zip,
         driver_id,
+        customer_id,
+        customers (
+          first_name,
+          last_name,
+          phone,
+          email
+        ),
         order_items (
           id,
           quantity,
@@ -80,12 +87,17 @@ export async function GET(
     }
 
     // Transform data to match frontend expectations
+    // Note: Supabase returns customers as array, take first element
+    const customer = Array.isArray(order.customers) ? order.customers[0] : order.customers;
+    
     const transformedOrder = {
       ...order,
       customers: {
-        name: order.full_name || '',
-        phone: order.phone || '',
-        email: ''
+        name: customer 
+          ? `${customer.first_name || ''} ${customer.last_name || ''}`.trim()
+          : order.full_name || 'Guest',
+        phone: customer?.phone || order.phone || '',
+        email: customer?.email || ''
       },
       driver
     };
