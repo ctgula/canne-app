@@ -15,25 +15,51 @@ export default function OrderDetailsModal({ isOpen, orderId, onClose }: OrderDet
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [order, setOrder] = useState<any>(null);
+  const [updating, setUpdating] = useState(false);
+
+  const loadOrder = async () => {
+    if (!orderId) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/admin/orders/${orderId}`);
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Order not found");
+      }
+      const data = await res.json();
+      setOrder(data.order);
+    } catch (e: any) {
+      console.error('Error loading order:', e);
+      setError(e?.message || "Failed to load order");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!isOpen || !orderId) return;
-    const load = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await fetch(`/api/admin/orders/${orderId}`);
-        if (!res.ok) throw new Error("Order not found");
-        const data = await res.json();
-        setOrder(data.order);
-      } catch (e: any) {
-        setError(e?.message || "Failed to load order");
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
+    loadOrder();
   }, [isOpen, orderId]);
+
+  const handleStatusChange = async (newStatus: string) => {
+    if (!orderId) return;
+    setUpdating(true);
+    try {
+      const res = await fetch(`/api/admin/orders/${orderId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      });
+      if (!res.ok) throw new Error('Failed to update status');
+      await loadOrder(); // Reload order data
+    } catch (e: any) {
+      console.error('Error updating status:', e);
+      alert('Failed to update status');
+    } finally {
+      setUpdating(false);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -107,12 +133,76 @@ export default function OrderDetailsModal({ isOpen, orderId, onClose }: OrderDet
                   </ul>
                 </div>
               )}
+
+              {/* Quick Status Actions */}
+              <div className="border rounded-lg p-3 bg-gradient-to-r from-purple-50 to-pink-50">
+                <div className="font-semibold mb-3">Quick Actions</div>
+                <div className="grid grid-cols-2 gap-2">
+                  {order.status !== 'pending' && (
+                    <button
+                      onClick={() => handleStatusChange('pending')}
+                      disabled={updating}
+                      className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors disabled:opacity-50 text-sm font-medium"
+                    >
+                      🟡 Mark Pending
+                    </button>
+                  )}
+                  {order.status !== 'confirmed' && (
+                    <button
+                      onClick={() => handleStatusChange('confirmed')}
+                      disabled={updating}
+                      className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 text-sm font-medium"
+                    >
+                      🔵 Mark Confirmed
+                    </button>
+                  )}
+                  {order.status !== 'preparing' && (
+                    <button
+                      onClick={() => handleStatusChange('preparing')}
+                      disabled={updating}
+                      className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors disabled:opacity-50 text-sm font-medium"
+                    >
+                      ⚙️ Mark Preparing
+                    </button>
+                  )}
+                  {order.status !== 'out_for_delivery' && (
+                    <button
+                      onClick={() => handleStatusChange('out_for_delivery')}
+                      disabled={updating}
+                      className="px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors disabled:opacity-50 text-sm font-medium"
+                    >
+                      🚚 Out for Delivery
+                    </button>
+                  )}
+                  {order.status !== 'delivered' && (
+                    <button
+                      onClick={() => handleStatusChange('delivered')}
+                      disabled={updating}
+                      className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 text-sm font-medium"
+                    >
+                      🟢 Mark Delivered
+                    </button>
+                  )}
+                  {order.status !== 'cancelled' && (
+                    <button
+                      onClick={() => handleStatusChange('cancelled')}
+                      disabled={updating}
+                      className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 text-sm font-medium"
+                    >
+                      🔴 Cancel Order
+                    </button>
+                  )}
+                </div>
+              </div>
             </>
           )}
         </div>
 
-        <div className="p-4 border-t text-right">
-          <button onClick={onClose} className="px-4 py-2 rounded-lg border">Close</button>
+        <div className="p-4 border-t flex items-center justify-between">
+          <div className="text-sm text-gray-600">
+            Current Status: <span className="font-semibold">{order?.status || 'unknown'}</span>
+          </div>
+          <button onClick={onClose} className="px-4 py-2 rounded-lg border hover:bg-gray-50 transition-colors">Close</button>
         </div>
       </motion.div>
     </div>
