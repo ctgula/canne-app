@@ -263,9 +263,13 @@ export default function AdminOrdersPage() {
   };
 
   const getStatusCategory = (status: string): string => {
-    if (['pending', 'awaiting_payment', 'verifying', 'paid'].includes(status)) return 'pending';
-    if (['assigned', 'en_route'].includes(status)) return 'active';
+    // Pending: Orders waiting for payment or verification
+    if (['awaiting_payment', 'verifying'].includes(status)) return 'pending';
+    // Active: Paid and being processed/delivered
+    if (['paid', 'assigned'].includes(status)) return 'active';
+    // Delivered: Successfully completed
     if (status === 'delivered') return 'delivered';
+    // Issues: Cancelled or problems
     if (['cancelled', 'refunded', 'undelivered'].includes(status)) return 'issues';
     return 'pending';
   };
@@ -576,8 +580,16 @@ export default function AdminOrdersPage() {
                           className="w-full px-3 py-2 text-sm bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 text-blue-700 dark:text-blue-300 rounded-lg hover:from-blue-100 hover:to-indigo-100 dark:hover:from-blue-900/30 dark:hover:to-indigo-900/30 transition-all font-medium flex items-center justify-between border border-blue-200 dark:border-blue-800"
                         >
                           <span className="flex items-center gap-2 truncate">
-                            <Package className="w-4 h-4 flex-shrink-0" />
-                            <span className="truncate">{order.status.replace('_', ' ')}</span>
+                            <span className="flex-shrink-0">
+                              {order.status === 'awaiting_payment' && '⏳'}
+                              {order.status === 'verifying' && '🔍'}
+                              {order.status === 'paid' && '✅'}
+                              {order.status === 'assigned' && '🚚'}
+                              {order.status === 'delivered' && '✅'}
+                              {order.status === 'cancelled' && '❌'}
+                              {!['awaiting_payment', 'verifying', 'paid', 'assigned', 'delivered', 'cancelled'].includes(order.status) && '📦'}
+                            </span>
+                            <span className="truncate capitalize">{order.status.replace('_', ' ')}</span>
                           </span>
                           <ChevronDown className={`w-4 h-4 flex-shrink-0 transition-transform ${showStatusDropdown === order.id ? 'rotate-180' : ''}`} />
                         </button>
@@ -589,21 +601,28 @@ export default function AdminOrdersPage() {
                             onClick={(e) => e.stopPropagation()}
                             className="absolute z-20 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl overflow-hidden"
                           >
-                            {['awaiting_payment', 'verifying', 'paid', 'assigned', 'delivered', 'cancelled', 'pending', 'confirmed', 'preparing', 'out_for_delivery'].map((status) => (
+                            {[
+                              { value: 'awaiting_payment', label: '⏳ Awaiting Payment', color: 'yellow' },
+                              { value: 'verifying', label: '🔍 Verifying', color: 'blue' },
+                              { value: 'paid', label: '✅ Paid', color: 'green' },
+                              { value: 'assigned', label: '🚚 Assigned to Driver', color: 'blue' },
+                              { value: 'delivered', label: '✅ Delivered', color: 'green' },
+                              { value: 'cancelled', label: '❌ Cancelled', color: 'red' }
+                            ].map((statusOption) => (
                               <button
-                                key={status}
+                                key={statusOption.value}
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleStatusChange(order.id, status);
+                                  handleStatusChange(order.id, statusOption.value);
                                   setShowStatusDropdown(null);
                                 }}
-                                disabled={order.status === status}
+                                disabled={order.status === statusOption.value}
                                 className={`w-full px-3 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors border-b border-gray-100 dark:border-gray-700 last:border-b-0 ${
-                                  order.status === status ? 'bg-blue-50 dark:bg-blue-900/20 opacity-50 cursor-not-allowed' : ''
+                                  order.status === statusOption.value ? 'bg-blue-50 dark:bg-blue-900/20 opacity-50 cursor-not-allowed' : ''
                                 }`}
                               >
                                 <div className="text-sm font-medium text-gray-900 dark:text-white">
-                                  {status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                  {statusOption.label}
                                 </div>
                               </button>
                             ))}
