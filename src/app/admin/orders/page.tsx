@@ -112,6 +112,7 @@ export default function AdminOrdersPage() {
   const [password, setPassword] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [paymentFilter, setPaymentFilter] = useState('all');
   const [openDropdowns, setOpenDropdowns] = useState<Set<string>>(new Set());
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -355,7 +356,13 @@ export default function AdminOrdersPage() {
                           statusFilter === orderCategory || 
                           order.status === statusFilter;
     
-    return matchesSearch && matchesStatus;
+    // Payment filter
+    const isPaid = ['paid', 'verifying', 'assigned', 'delivered'].includes(order.status);
+    const matchesPayment = paymentFilter === 'all' || 
+                          (paymentFilter === 'paid' && isPaid) ||
+                          (paymentFilter === 'unpaid' && !isPaid);
+    
+    return matchesSearch && matchesStatus && matchesPayment;
   });
 
   const statusCounts = orders.reduce((acc, order) => {
@@ -370,7 +377,8 @@ export default function AdminOrdersPage() {
   }, {} as Record<string, number>);
 
   const paymentCounts = orders.reduce((acc, order) => {
-    const paymentStatus = order.payment_status || 'unpaid';
+    const isPaid = ['paid', 'verifying', 'assigned', 'delivered'].includes(order.status);
+    const paymentStatus = isPaid ? 'paid' : 'unpaid';
     acc[paymentStatus] = (acc[paymentStatus] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
@@ -381,6 +389,12 @@ export default function AdminOrdersPage() {
     { value: 'pending', label: 'Pending', count: categoryCounts.pending || 0, icon: Clock, color: 'yellow' },
     { value: 'delivered', label: 'Delivered', count: categoryCounts.delivered || 0, icon: CheckCircle2, color: 'green' },
     { value: 'issues', label: 'Issues', count: categoryCounts.issues || 0, icon: AlertCircle, color: 'red' }
+  ];
+
+  const paymentOptions = [
+    { value: 'all', label: 'All', count: orders.length },
+    { value: 'paid', label: 'Paid', count: paymentCounts.paid || 0 },
+    { value: 'unpaid', label: 'Unpaid', count: paymentCounts.unpaid || 0 }
   ];
 
   return (
@@ -416,7 +430,7 @@ export default function AdminOrdersPage() {
         </div>
         
         {/* Clean Status Filter Tabs */}
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 mb-3">
           {statusOptions.map((option) => {
             const isActive = statusFilter === option.value;
             const emoji = {
@@ -449,6 +463,43 @@ export default function AdminOrdersPage() {
               </button>
             );
           })}
+        </div>
+        
+        {/* Payment Filter Tabs */}
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Payment:</span>
+          <div className="flex gap-2">
+            {paymentOptions.map((option) => {
+              const isActive = paymentFilter === option.value;
+              const emoji = {
+                all: '💳',
+                paid: '✅',
+                unpaid: '⏳'
+              }[option.value];
+              
+              return (
+                <button
+                  key={option.value}
+                  onClick={() => setPaymentFilter(option.value)}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                    isActive
+                      ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-md'
+                      : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:border-green-300 dark:hover:border-green-700 hover:shadow-sm'
+                  }`}
+                >
+                  <span>{emoji}</span>
+                  <span>{option.label}</span>
+                  {option.count > 0 && (
+                    <span className={`px-1.5 py-0.5 rounded-full text-xs font-bold ${
+                      isActive ? 'bg-white/30' : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                    }`}>
+                      {option.count}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
