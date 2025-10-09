@@ -394,56 +394,57 @@ export default function AdminOrdersPage() {
       onStatusFilterChange={setStatusFilter}
       statusOptions={statusOptions}
     >
-      {/* Enhanced Status Tabs with Badges */}
+      {/* Header with Actions */}
       <div className="mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Orders</h2>
-          <button
-            onClick={() => fetchOrders(true)}
-            disabled={isRefreshing}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
-          >
-            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-            Refresh
-          </button>
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
+              Cannè Orders Dashboard
+            </h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              Manage and track all orders in real-time
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => fetchOrders(true)}
+              disabled={isRefreshing}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all shadow-sm disabled:opacity-50"
+              title="Refresh orders"
+            >
+              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">Refresh</span>
+            </button>
+          </div>
         </div>
         
-        {/* Status Filter Tabs */}
+        {/* Clean Status Filter Tabs */}
         <div className="flex flex-wrap gap-2">
           {statusOptions.map((option) => {
-            const Icon = option.icon;
             const isActive = statusFilter === option.value;
-            const colorClasses = {
-              gray: 'bg-gray-100 text-gray-700 border-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600',
-              blue: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800',
-              yellow: 'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-300 dark:border-yellow-800',
-              green: 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800',
-              red: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800'
-            };
-            const activeClasses = {
-              gray: 'bg-gray-200 border-gray-400 dark:bg-gray-700 dark:border-gray-500',
-              blue: 'bg-blue-100 border-blue-300 dark:bg-blue-900/40 dark:border-blue-700',
-              yellow: 'bg-yellow-100 border-yellow-300 dark:bg-yellow-900/40 dark:border-yellow-700',
-              green: 'bg-green-100 border-green-300 dark:bg-green-900/40 dark:border-green-700',
-              red: 'bg-red-100 border-red-300 dark:bg-red-900/40 dark:border-red-700'
-            };
+            const emoji = {
+              gray: '📦',
+              blue: '🔵',
+              yellow: '🟡',
+              green: '🟢',
+              red: '⚠️'
+            }[option.color as keyof typeof emoji];
             
             return (
               <button
                 key={option.value}
                 onClick={() => setStatusFilter(option.value)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 font-medium transition-all hover:scale-105 ${
-                  isActive 
-                    ? activeClasses[option.color as keyof typeof activeClasses]
-                    : colorClasses[option.color as keyof typeof colorClasses]
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold transition-all ${
+                  isActive
+                    ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg scale-105'
+                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-700 hover:shadow-md'
                 }`}
               >
-                <Icon className="w-4 h-4" />
-                <span className="hidden sm:inline">{option.label}</span>
-                <span className="sm:hidden">{option.label.split(' ')[0]}</span>
+                <span className="text-base">{emoji}</span>
+                <span>{option.label}</span>
                 {option.count > 0 && (
-                  <span className={`ml-1 px-2 py-0.5 rounded-full text-xs font-bold ${
-                    isActive ? 'bg-white/50 dark:bg-black/20' : 'bg-white/70 dark:bg-black/30'
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                    isActive ? 'bg-white/30' : 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'
                   }`}>
                     {option.count}
                   </span>
@@ -470,249 +471,180 @@ export default function AdminOrdersPage() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredOrders.map((order) => {
+          <>
+            <div className="space-y-3">
+              {filteredOrders.map((order) => {
               const statusColor = getStatusColor(order.status);
-              const statusIcon = getStatusIcon(order.status);
+              const statusEmoji = {
+                'bg-blue-500': '🔵',
+                'bg-yellow-500': '🟡',
+                'bg-green-500': '🟢',
+                'bg-red-500': '🔴',
+                'bg-gray-500': '⚪'
+              }[statusColor] || '⚪';
               
               return (
                 <motion.div
                   key={order.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg transition-all group"
+                  onClick={() => openOrderDetails(order.id)}
+                  className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border-l-4 border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all cursor-pointer group"
+                  style={{ borderLeftColor: statusColor.replace('bg-', '#').replace('-500', '') }}
                 >
-                  {/* Colored Status Strip */}
-                  <div className={`h-1.5 ${statusColor}`} />
-                  
-                  <div className="p-5">
-                    {/* Header with Status Icon */}
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-start gap-2">
-                        <div className={`p-1.5 rounded-lg ${statusColor} bg-opacity-10 text-white mt-0.5`}>
-                          {statusIcon}
-                        </div>
-                        <div>
-                          <button
-                            onClick={() => openOrderDetails(order.id)}
-                            className="text-lg font-bold text-gray-900 dark:text-white hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
-                          >
+                  <div className="p-4">
+                    {/* Compact Header */}
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3 flex-1">
+                        <span className="text-xl">{statusEmoji}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-lg font-bold text-gray-900 dark:text-white truncate">
                             {`${order.customers.first_name} ${order.customers.last_name}`}
-                          </button>
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                            {order.order_number} • {getTimeAgo(order.created_at)}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            {getTimeAgo(order.created_at)} • #{order.order_number}
                           </div>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <div className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                      <div className="text-right ml-4">
+                        <div className="text-xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
                           {formatCurrency(order.total)}
                         </div>
-                        {order.total >= 100 && (
-                          <span className="text-xs text-amber-600 font-medium">💰 High</span>
-                        )}
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          {order.status.replace('_', ' ')}
+                        </div>
                       </div>
                     </div>
 
-                    {/* Status Badge */}
-                    <div className="mb-3">
-                      <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${
-                        getStatusCategory(order.status) === 'active' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' :
-                        getStatusCategory(order.status) === 'pending' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300' :
-                        getStatusCategory(order.status) === 'delivered' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' :
-                        'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
-                      }`}>
-                        {order.status.replace('_', ' ').toUpperCase()}
-                      </span>
-                    </div>
-
-                    {/* Contact & Location Info */}
-                    <div className="mb-4 pb-4 border-b border-gray-100 dark:border-gray-700 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                          <Phone className="w-4 h-4" />
-                          <span className="font-mono">{order.customers.phone}</span>
-                        </div>
-                        <div className="flex gap-1">
+                    {/* Compact Action Row */}
+                    <div className="flex items-center gap-2">
+                      {/* Driver Assignment Dropdown */}
+                      {!order.driver ? (
+                        <div className="relative flex-1">
                           <button
-                            onClick={() => copyToClipboard(order.customers.phone, order.id)}
-                            className="p-1.5 text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/20"
-                            title="Copy phone"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShowDriverDropdown(showDriverDropdown === order.id ? null : order.id);
+                            }}
+                            className="w-full px-3 py-2 text-sm bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 text-purple-700 dark:text-purple-300 rounded-lg hover:from-purple-100 hover:to-pink-100 dark:hover:from-purple-900/30 dark:hover:to-pink-900/30 transition-all font-medium flex items-center justify-between border border-purple-200 dark:border-purple-800"
                           >
-                            {copiedPhone === order.id ? (
-                              <CheckCircle2 className="w-4 h-4 text-green-500" />
-                            ) : (
-                              <Copy className="w-4 h-4" />
-                            )}
+                            <span className="flex items-center gap-2">
+                              <Truck className="w-4 h-4" />
+                              <span className="hidden sm:inline">Assign Driver</span>
+                              <span className="sm:hidden">Assign</span>
+                            </span>
+                            <ChevronDown className={`w-4 h-4 transition-transform ${showDriverDropdown === order.id ? 'rotate-180' : ''}`} />
                           </button>
-                          <a
-                            href={`tel:${order.customers.phone}`}
-                            className="p-1.5 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                            title="Call"
-                          >
-                            <Phone className="w-4 h-4" />
-                          </a>
-                          <a
-                            href={`sms:${order.customers.phone}`}
-                            className="p-1.5 text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20"
-                            title="Text"
-                          >
-                            <MessageSquare className="w-4 h-4" />
-                          </a>
+                          
+                          {showDriverDropdown === order.id && drivers.length > 0 && (
+                            <motion.div
+                              initial={{ opacity: 0, y: -10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              onClick={(e) => e.stopPropagation()}
+                              className="absolute z-20 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl overflow-hidden"
+                            >
+                              {drivers.map((driver) => (
+                                <button
+                                  key={driver.id}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleAssignDriver(order.id, driver.id);
+                                    setShowDriverDropdown(null);
+                                  }}
+                                  className="w-full px-3 py-2.5 text-left hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <div>
+                                      <div className="text-sm font-medium text-gray-900 dark:text-white">
+                                        {driver.name}
+                                      </div>
+                                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                                        {driver.phone}
+                                      </div>
+                                    </div>
+                                    <span className="text-xs">
+                                      {driver.is_available ? '🟢' : '🔴'}
+                                    </span>
+                                  </div>
+                                </button>
+                              ))}
+                            </motion.div>
+                          )}
                         </div>
-                      </div>
-                      {order.delivery_address_line1 && (
-                        <div className="flex items-start gap-2 text-xs text-gray-500 dark:text-gray-400">
-                          <MapPin className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
-                          <span className="line-clamp-1">
-                            {order.delivery_address_line1}, {order.delivery_city}, {order.delivery_state}
-                          </span>
+                      ) : (
+                        <div className="flex-1 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                          <div className="text-xs text-blue-600 dark:text-blue-400 font-medium">
+                            🚚 {order.driver.name}
+                          </div>
                         </div>
                       )}
-                    </div>
-
-                    {/* Driver Assignment */}
-                    {order.driver ? (
-                      <div className="mb-3 p-2.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Truck className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                            <div>
-                              <div className="text-sm font-medium text-blue-900 dark:text-blue-100">
-                                {order.driver.name}
-                              </div>
-                              <div className="text-xs text-blue-600 dark:text-blue-400">
-                                {order.driver.phone}
-                              </div>
-                            </div>
-                          </div>
-                          <span className="text-xs font-medium text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/40 px-2 py-1 rounded-full">
-                            Assigned
-                          </span>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="mb-3 relative">
-                        <button
-                          onClick={() => setShowDriverDropdown(showDriverDropdown === order.id ? null : order.id)}
-                          className="w-full px-3 py-2.5 text-sm bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors font-medium flex items-center justify-between border border-gray-200 dark:border-gray-600"
-                        >
-                          <span className="flex items-center gap-2">
-                            <Truck className="w-4 h-4" />
-                            Assign Driver
-                          </span>
-                          <ChevronDown className={`w-4 h-4 transition-transform ${showDriverDropdown === order.id ? 'rotate-180' : ''}`} />
-                        </button>
-                        
-                        {showDriverDropdown === order.id && drivers.length > 0 && (
-                          <motion.div
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden"
-                          >
-                            {drivers.map((driver) => (
-                              <button
-                                key={driver.id}
-                                onClick={() => {
-                                  handleAssignDriver(order.id, driver.id);
-                                  setShowDriverDropdown(null);
-                                }}
-                                className="w-full px-3 py-2.5 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border-b border-gray-100 dark:border-gray-700 last:border-b-0"
-                              >
-                                <div className="flex items-center justify-between">
-                                  <div>
-                                    <div className="text-sm font-medium text-gray-900 dark:text-white">
-                                      {driver.name}
-                                    </div>
-                                    <div className="text-xs text-gray-500 dark:text-gray-400">
-                                      {driver.phone}
-                                    </div>
-                                  </div>
-                                  <span className={`text-xs font-medium px-2 py-1 rounded-full ${
-                                    driver.is_available 
-                                      ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
-                                      : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
-                                  }`}>
-                                    {driver.is_available ? '✅ Online' : '🕓 Busy'}
-                                  </span>
-                                </div>
-                              </button>
-                            ))}
-                          </motion.div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Quick Actions */}
-                    <div className="space-y-2">
-                      {/* Mobile: Icon-only buttons, Desktop: Full buttons */}
-                      <div className="grid grid-cols-2 gap-2">
-                        {/* Payment Toggle */}
-                        {(order.payment_status || 'unpaid') === 'unpaid' ? (
-                          <button
-                            onClick={() => handlePaymentStatusChange(order.id, order.payment_status || 'unpaid', 'paid')}
-                            className="px-3 py-2.5 text-sm bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-lg hover:from-emerald-600 hover:to-green-600 transition-all font-bold shadow-sm flex items-center justify-center gap-1.5"
-                          >
-                            <DollarSign className="w-4 h-4" />
-                            <span className="hidden sm:inline">Mark Paid</span>
-                            <span className="sm:hidden">Paid</span>
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => handlePaymentStatusChange(order.id, order.payment_status || 'paid', 'unpaid')}
-                            className="px-3 py-2.5 text-sm bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 rounded-lg hover:bg-orange-200 dark:hover:bg-orange-900/50 transition-colors font-bold flex items-center justify-center gap-1.5"
-                          >
-                            <XCircle className="w-4 h-4" />
-                            <span className="hidden sm:inline">Unpaid</span>
-                          </button>
-                        )}
-                        
-                        {/* Status Actions */}
-                        {['pending', 'awaiting_payment', 'verifying', 'paid', 'assigned', 'en_route'].includes(order.status) ? (
-                          <button
-                            onClick={() => handleStatusChange(order.id, order.status, 'delivered')}
-                            className="px-3 py-2.5 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-bold shadow-sm flex items-center justify-center gap-1.5"
-                          >
-                            <CheckCircle2 className="w-4 h-4" />
-                            <span className="hidden sm:inline">Delivered</span>
-                            <span className="sm:hidden">Done</span>
-                          </button>
-                        ) : order.status === 'delivered' ? (
-                          <button
-                            onClick={() => handleStatusChange(order.id, order.status, 'pending')}
-                            className="px-3 py-2.5 text-sm bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors font-bold flex items-center justify-center gap-1.5"
-                          >
-                            <RefreshCw className="w-4 h-4" />
-                            <span className="hidden sm:inline">Reopen</span>
-                          </button>
-                        ) : null}
-                      </div>
                       
-                      {/* View Details - Primary Action */}
-                      <button
-                        onClick={() => openOrderDetails(order.id)}
-                        className="w-full px-4 py-2.5 text-sm bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all font-bold shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                      {/* Icon Actions */}
+                      <a
+                        href={`sms:${order.customers.phone}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="p-2.5 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-all border border-green-200 dark:border-green-800"
+                        title="Text customer"
                       >
-                        <Eye className="w-4 h-4" />
-                        View Full Details
-                      </button>
-                      
-                      {/* Cancel Button */}
-                      {!['cancelled', 'delivered'].includes(order.status) && (
-                        <button
-                          onClick={() => handleStatusChange(order.id, order.status, 'cancelled')}
-                          className="w-full px-4 py-2 text-sm bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors font-medium flex items-center justify-center gap-2"
+                        <MessageSquare className="w-4 h-4" />
+                      </a>
+                      <a
+                        href={`tel:${order.customers.phone}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="p-2.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all border border-blue-200 dark:border-blue-800"
+                        title="Call customer"
+                      >
+                        <Phone className="w-4 h-4" />
+                      </a>
+                      {order.delivery_address_line1 && (
+                        <a
+                          href={`https://maps.google.com/?q=${encodeURIComponent(`${order.delivery_address_line1}, ${order.delivery_city}, ${order.delivery_state}`)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="p-2.5 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-all border border-purple-200 dark:border-purple-800"
+                          title="Directions"
                         >
-                          <XCircle className="w-4 h-4" />
-                          Cancel Order
-                        </button>
+                          <MapPin className="w-4 h-4" />
+                        </a>
                       )}
                     </div>
                   </div>
                 </motion.div>
               );
-            })}
-          </div>
+              })}
+            </div>
+
+            {/* Live Summary Bar */}
+            <div className="mt-8 p-6 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-2xl border border-purple-200 dark:border-purple-800">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div>
+                  <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {orders.length}
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Total Orders</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                    {categoryCounts.delivered || 0}
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Delivered</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
+                    {formatCurrency(orders.reduce((sum, o) => sum + o.total, 0))}
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Total Revenue</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+                    {categoryCounts.pending || 0}
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Pending</div>
+                </div>
+              </div>
+            </div>
+          </>
         )}
       </div>
 
@@ -729,13 +661,13 @@ export default function AdminOrdersPage() {
         drivers={drivers}
       />
 
-      {/* Sticky Quick Actions Panel - Bottom Right */}
+      {/* Sticky Quick Actions Panel - Bottom Right (Cannè Gradient) */}
       <div className="fixed bottom-6 right-6 z-30 flex flex-col gap-3">
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => fetchOrders(true)}
-          className="p-4 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all"
+          className="p-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all"
           title="Refresh Orders"
         >
           <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
@@ -745,20 +677,11 @@ export default function AdminOrdersPage() {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           href="/admin/drivers"
-          className="p-4 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all"
+          className="p-4 bg-white dark:bg-gray-800 text-purple-600 dark:text-purple-400 rounded-full shadow-lg border-2 border-purple-200 dark:border-purple-800 hover:shadow-xl transition-all"
           title="Manage Drivers"
         >
           <Truck className="w-5 h-5" />
         </motion.a>
-        
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="p-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all"
-          title="Analytics"
-        >
-          <BarChart3 className="w-5 h-5" />
-        </motion.button>
       </div>
     </AdminLayout>
   );
