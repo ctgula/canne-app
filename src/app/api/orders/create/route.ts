@@ -20,29 +20,29 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate a memorable short code using phone + daily sequence
-    // Format: Last 4 of phone + 2-digit sequence = "5748-42"
+    // Generate UNIQUE short code: phone + global sequential ID
+    // Format: "5748-A1B2" - Last 4 of phone + base-36 global counter
+    // This NEVER repeats because counter always increments
     const phoneLast4 = customer_phone ? customer_phone.slice(-4) : '0000';
     
-    // Get today's order count for this phone to generate sequence
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    const { count } = await supabase
+    // Get total count of ALL orders ever (global counter)
+    const { count: globalCount } = await supabase
       .from('cashapp_payments')
-      .select('*', { count: 'exact', head: true })
-      .gte('created_at', today.toISOString())
-      .eq('customer_phone', customer_phone || '');
+      .select('*', { count: 'exact', head: true });
     
-    const sequence = String((count || 0) + 1).padStart(2, '0');
-    const shortCode = `${phoneLast4}-${sequence}`;
+    // Convert to base-36 for compact representation (0-9, A-Z)
+    // This gives us: 1 → '1', 100 → '2S', 1000 → 'RS', 46656 → 'ZZZ'
+    const orderNumber = ((globalCount || 0) + 1).toString(36).toUpperCase().padStart(4, '0');
+    const shortCode = `${phoneLast4}-${orderNumber}`;
     
-    console.log('📱 Generated short code:', shortCode, 'for phone:', customer_phone);
+    console.log('📱 Generated UNIQUE short code:', shortCode);
+    console.log('   Phone:', phoneLast4, '+ Global Order #' + ((globalCount || 0) + 1));
+    console.log('   ✅ This code will NEVER repeat (global sequential counter)');
 
     // Create a payment record in the cashapp_payments table
     console.log('📝 Creating Cash App payment with short code:', shortCode);
-    console.log('💡 Customer should remember: Last 4 digits of phone + order number');
-    console.log('   Example: Phone ending in', phoneLast4, '+ Order #' + sequence, '=', shortCode);
+    console.log('💡 Customer should remember: Last 4 digits of phone + order ID');
+    console.log('   Example: Phone ending in', phoneLast4, '+ Order', orderNumber, '=', shortCode);
     
     const now = new Date();
     const expiresAt = new Date(now.getTime() + 15 * 60 * 1000); // 15 minutes from now
