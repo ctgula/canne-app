@@ -14,16 +14,63 @@ export async function GET(
   const { id } = params;
   
   try {
-    // First get the order
+    // Try regular orders table first
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .select('*')
       .eq('id', id)
       .single();
 
-    if (orderError || !order) {
-      console.error('Error fetching order:', orderError);
-      return NextResponse.json({ error: 'Order not found', details: orderError?.message }, { status: 404 });
+    // If not found, try cashapp_payments table
+    if (orderError) {
+      const { data: cashAppOrder, error: cashAppError } = await supabase
+        .from('cashapp_payments')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (cashAppError || !cashAppOrder) {
+        console.error('Order not found in either table:', { orderError, cashAppError });
+        return NextResponse.json({ 
+          error: 'Order not found', 
+          details: `Tried orders table: ${orderError?.message}, cashapp_payments: ${cashAppError?.message}` 
+        }, { status: 404 });
+      }
+
+      // Return simplified Cash App order
+      return NextResponse.json({
+        order: {
+          id: cashAppOrder.id,
+          order_number: cashAppOrder.short_code,
+          status: cashAppOrder.status,
+          total: cashAppOrder.amount_cents / 100,
+          subtotal: cashAppOrder.amount_cents / 100,
+          delivery_fee: 0,
+          created_at: cashAppOrder.created_at,
+          customers: {
+            name: 'Cash App Customer',
+            phone: cashAppOrder.customer_phone || '',
+            email: ''
+          },
+          delivery_address_line1: 'N/A',
+          delivery_city: '',
+          delivery_state: '',
+          delivery_zip: '',
+          order_items: [{
+            id: cashAppOrder.id,
+            quantity: 1,
+            unit_price: cashAppOrder.amount_cents / 100,
+            strain: 'N/A',
+            products: {
+              name: 'Cash App Order'
+            }
+          }],
+          order_status_events: [],
+          payouts: [],
+          driver: null,
+          isCashApp: true
+        }
+      });
     }
 
     // Get customer if exists
@@ -119,31 +166,31 @@ export async function PATCH(
       return NextResponse.json({ error: 'Status is required' }, { status: 400 });
     }
 
-    // Get current order to track old status
+    // Try regular orders first
     const { data: currentOrder } = await supabase
       .from('orders')
       .select('status')
       .eq('id', id)
       .single();
 
-    // Update order status
-    const { data: order, error } = await supabase
-      .from('orders')
-      .update({ 
-        status,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Error updating order:', error);
-      return NextResponse.json({ error: 'Failed to update order' }, { status: 500 });
-    }
-
-    // Log status change event
     if (currentOrder) {
+      // Update regular order
+      const { data: order, error } = await supabase
+        .from('orders')
+        .update({ 
+          status,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error updating order:', error);
+        return NextResponse.json({ error: 'Failed to update order' }, { status: 500 });
+      }
+
+      // Log status change event
       await supabase
         .from('order_status_events')
         .insert({
@@ -153,12 +200,44 @@ export async function PATCH(
           admin_user: 'admin',
           reason: 'Manual status change'
         });
+
+      return NextResponse.json({ 
+        success: true,
+        order 
+      });
     }
 
-    return NextResponse.json({ 
-      success: true,
-      order 
-    });
+    // Try Cash App order
+    const { data: cashAppOrder } = await supabase
+      .from('cashapp_payments')
+      .select('status')
+      .eq('id', id)
+      .single();
+
+    if (cashAppOrder) {
+      // Update Cash App order
+      const { data: updatedCashApp, error } = await supabase
+        .from('cashapp_payments')
+        .update({ 
+          status,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error updating cash app order:', error);
+        return NextResponse.json({ error: 'Failed to update order' }, { status: 500 });
+      }
+
+      return NextResponse.json({ 
+        success: true,
+        order: updatedCashApp 
+      });
+    }
+
+    return NextResponse.json({ error: 'Order not found' }, { status: 404 });
   } catch (error) {
     console.error('Error in PATCH /api/admin/orders/[id]:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

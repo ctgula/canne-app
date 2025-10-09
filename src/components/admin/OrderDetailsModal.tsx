@@ -138,59 +138,122 @@ export default function OrderDetailsModal({ isOpen, orderId, onClose }: OrderDet
               <div className="border rounded-lg p-3 bg-gradient-to-r from-purple-50 to-pink-50">
                 <div className="font-semibold mb-3">Quick Actions</div>
                 <div className="grid grid-cols-2 gap-2">
-                  {order.status !== 'pending' && (
-                    <button
-                      onClick={() => handleStatusChange('pending')}
-                      disabled={updating}
-                      className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors disabled:opacity-50 text-sm font-medium"
-                    >
-                      🟡 Mark Pending
-                    </button>
-                  )}
-                  {order.status !== 'confirmed' && (
-                    <button
-                      onClick={() => handleStatusChange('confirmed')}
-                      disabled={updating}
-                      className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 text-sm font-medium"
-                    >
-                      🔵 Mark Confirmed
-                    </button>
-                  )}
-                  {order.status !== 'preparing' && (
-                    <button
-                      onClick={() => handleStatusChange('preparing')}
-                      disabled={updating}
-                      className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors disabled:opacity-50 text-sm font-medium"
-                    >
-                      ⚙️ Mark Preparing
-                    </button>
-                  )}
-                  {order.status !== 'out_for_delivery' && (
-                    <button
-                      onClick={() => handleStatusChange('out_for_delivery')}
-                      disabled={updating}
-                      className="px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors disabled:opacity-50 text-sm font-medium"
-                    >
-                      🚚 Out for Delivery
-                    </button>
-                  )}
-                  {order.status !== 'delivered' && (
-                    <button
-                      onClick={() => handleStatusChange('delivered')}
-                      disabled={updating}
-                      className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 text-sm font-medium"
-                    >
-                      🟢 Mark Delivered
-                    </button>
-                  )}
-                  {order.status !== 'cancelled' && (
-                    <button
-                      onClick={() => handleStatusChange('cancelled')}
-                      disabled={updating}
-                      className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 text-sm font-medium"
-                    >
-                      🔴 Cancel Order
-                    </button>
+                  {order.isCashApp ? (
+                    // Cash App order statuses
+                    <>
+                      {order.status !== 'awaiting_payment' && (
+                        <button
+                          onClick={() => handleStatusChange('awaiting_payment')}
+                          disabled={updating}
+                          className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors disabled:opacity-50 text-sm font-medium"
+                        >
+                          🟡 Awaiting Payment
+                        </button>
+                      )}
+                      {order.status !== 'verifying' && (
+                        <button
+                          onClick={() => handleStatusChange('verifying')}
+                          disabled={updating}
+                          className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 text-sm font-medium"
+                        >
+                          🔵 Verifying
+                        </button>
+                      )}
+                      {order.status !== 'paid' && (
+                        <button
+                          onClick={() => handleStatusChange('paid')}
+                          disabled={updating}
+                          className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 text-sm font-medium"
+                        >
+                          💰 Mark Paid
+                        </button>
+                      )}
+                      {order.status !== 'assigned' && (
+                        <button
+                          onClick={() => handleStatusChange('assigned')}
+                          disabled={updating}
+                          className="px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors disabled:opacity-50 text-sm font-medium"
+                        >
+                          🚚 Assigned
+                        </button>
+                      )}
+                      {order.status !== 'delivered' && (
+                        <button
+                          onClick={() => handleStatusChange('delivered')}
+                          disabled={updating}
+                          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 text-sm font-medium"
+                        >
+                          🟢 Delivered
+                        </button>
+                      )}
+                      {order.status !== 'refunded' && (
+                        <button
+                          onClick={() => handleStatusChange('refunded')}
+                          disabled={updating}
+                          className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 text-sm font-medium"
+                        >
+                          🔴 Refund
+                        </button>
+                      )}
+                    </>
+                  ) : (
+                    // Regular order statuses
+                    <>
+                      {order.status !== 'pending' && (
+                        <button
+                          onClick={() => handleStatusChange('pending')}
+                          disabled={updating}
+                          className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors disabled:opacity-50 text-sm font-medium"
+                        >
+                          🟡 Mark Pending
+                        </button>
+                      )}
+                      {order.status !== 'confirmed' && (
+                        <button
+                          onClick={() => handleStatusChange('confirmed')}
+                          disabled={updating}
+                          className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 text-sm font-medium"
+                        >
+                          🔵 Mark Confirmed
+                        </button>
+                      )}
+                      {order.status !== 'preparing' && (
+                        <button
+                          onClick={() => handleStatusChange('preparing')}
+                          disabled={updating}
+                          className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors disabled:opacity-50 text-sm font-medium"
+                        >
+                          ⚙️ Mark Preparing
+                        </button>
+                      )}
+                      {order.status !== 'out_for_delivery' && (
+                        <button
+                          onClick={() => handleStatusChange('out_for_delivery')}
+                          disabled={updating}
+                          className="px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors disabled:opacity-50 text-sm font-medium"
+                        >
+                          🚚 Out for Delivery
+                        </button>
+                      )}
+                      {order.status !== 'delivered' && (
+                        <button
+                          onClick={() => handleStatusChange('delivered')}
+                          disabled={updating}
+                          className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 text-sm font-medium"
+                        >
+                          🟢 Mark Delivered
+                        </button>
+                      )}
+                      {order.status !== 'cancelled' && (
+                        <button
+                          onClick={() => handleStatusChange('cancelled')}
+                          disabled={updating}
+                          className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 text-sm font-medium"
+                        >
+                          🔴 Cancel Order
+                        </button>
+                      )}
+                    </>
                   )}
                 </div>
               </div>
