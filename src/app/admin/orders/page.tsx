@@ -32,7 +32,7 @@ import toast from 'react-hot-toast';
 interface Order {
   id: string;
   order_number: string;
-  status: 'pending' | 'delivered' | 'cancelled' | 'awaiting_payment' | 'verifying' | 'paid' | 'assigned' | 'en_route';
+  status: 'pending' | 'delivered' | 'cancelled' | 'awaiting_payment' | 'verifying' | 'paid' | 'assigned' | 'en_route' | 'issue';
   payment_status?: 'unpaid' | 'paid';
   total: number;
   subtotal: number;
@@ -269,8 +269,8 @@ export default function AdminOrdersPage() {
     if (['paid', 'assigned'].includes(status)) return 'active';
     // Delivered: Successfully completed
     if (status === 'delivered') return 'delivered';
-    // Issues: Cancelled or problems
-    if (['cancelled', 'refunded', 'undelivered'].includes(status)) return 'issues';
+    // Issues: Cancelled, problems with driver/order/delivery/customer
+    if (['cancelled', 'issue', 'refunded', 'undelivered'].includes(status)) return 'issues';
     return 'pending';
   };
 
@@ -586,8 +586,9 @@ export default function AdminOrdersPage() {
                               {order.status === 'paid' && '✅'}
                               {order.status === 'assigned' && '🚚'}
                               {order.status === 'delivered' && '✅'}
+                              {order.status === 'issue' && '⚠️'}
                               {order.status === 'cancelled' && '❌'}
-                              {!['awaiting_payment', 'verifying', 'paid', 'assigned', 'delivered', 'cancelled'].includes(order.status) && '📦'}
+                              {!['awaiting_payment', 'verifying', 'paid', 'assigned', 'delivered', 'issue', 'cancelled'].includes(order.status) && '📦'}
                             </span>
                             <span className="truncate capitalize">{order.status.replace('_', ' ')}</span>
                           </span>
@@ -607,6 +608,7 @@ export default function AdminOrdersPage() {
                               { value: 'paid', label: '✅ Paid', color: 'green' },
                               { value: 'assigned', label: '🚚 Assigned to Driver', color: 'blue' },
                               { value: 'delivered', label: '✅ Delivered', color: 'green' },
+                              { value: 'issue', label: '⚠️ Issue (Driver/Order/Customer)', color: 'red' },
                               { value: 'cancelled', label: '❌ Cancelled', color: 'red' }
                             ].map((statusOption) => (
                               <button
