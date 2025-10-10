@@ -33,6 +33,9 @@ export default function AdminLayout({
 }: AdminLayoutProps) {
   const pathname = usePathname();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(3); // Mock count
 
   const tabs = [
     { 
@@ -104,12 +107,109 @@ export default function AdminLayout({
 
             {/* Actions */}
             <div className="flex items-center space-x-3">
-              <button className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
-                <Bell size={20} />
-              </button>
-              <button className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
-                <Settings size={20} />
-              </button>
+              {/* Notifications */}
+              <div className="relative">
+                <button 
+                  onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+                  className="relative p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                >
+                  <Bell size={20} />
+                  {notificationCount > 0 && (
+                    <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                      {notificationCount}
+                    </span>
+                  )}
+                </button>
+                
+                {isNotificationOpen && (
+                  <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 z-50">
+                    <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                      <h3 className="font-semibold text-gray-900 dark:text-white">Notifications</h3>
+                    </div>
+                    <div className="max-h-96 overflow-y-auto">
+                      {/* Mock notifications */}
+                      <div className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700">
+                        <div className="flex items-start gap-3">
+                          <div className="w-2 h-2 mt-2 rounded-full bg-yellow-500 flex-shrink-0"></div>
+                          <div>
+                            <p className="text-sm font-medium text-gray-900 dark:text-white">New Order #0001</p>
+                            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">240-422-5748 • $100.00</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">2 minutes ago</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700">
+                        <div className="flex items-start gap-3">
+                          <div className="w-2 h-2 mt-2 rounded-full bg-green-500 flex-shrink-0"></div>
+                          <div>
+                            <p className="text-sm font-medium text-gray-900 dark:text-white">Payment Verified</p>
+                            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Order #0002 verified</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">5 minutes ago</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <div className="flex items-start gap-3">
+                          <div className="w-2 h-2 mt-2 rounded-full bg-blue-500 flex-shrink-0"></div>
+                          <div>
+                            <p className="text-sm font-medium text-gray-900 dark:text-white">Driver Assigned</p>
+                            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Order #0003 assigned to driver</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">10 minutes ago</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-3 border-t border-gray-200 dark:border-gray-700">
+                      <button 
+                        onClick={() => setNotificationCount(0)}
+                        className="text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 font-medium"
+                      >
+                        Mark all as read
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              {/* Settings */}
+              <div className="relative">
+                <button 
+                  onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+                  className={`p-2 transition-colors ${
+                    isSettingsOpen 
+                      ? 'text-purple-600 dark:text-purple-400' 
+                      : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                  }`}
+                >
+                  <Settings size={20} />
+                </button>
+                
+                {isSettingsOpen && (
+                  <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 z-50">
+                    <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                      <h3 className="font-semibold text-gray-900 dark:text-white">Quick Settings</h3>
+                    </div>
+                    <div className="p-2">
+                      <button className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-sm text-gray-700 dark:text-gray-300">
+                        🔔 Notification Preferences
+                      </button>
+                      <button className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-sm text-gray-700 dark:text-gray-300">
+                        🌙 Dark Mode Toggle
+                      </button>
+                      <button className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-sm text-gray-700 dark:text-gray-300">
+                        🔐 Change Password
+                      </button>
+                      <button className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-sm text-gray-700 dark:text-gray-300">
+                        📊 View Analytics
+                      </button>
+                      <div className="border-t border-gray-200 dark:border-gray-700 my-2"></div>
+                      <button className="w-full text-left px-3 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-sm text-red-600 dark:text-red-400">
+                        🚪 Logout
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
