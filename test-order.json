@@ -1,0 +1,35 @@
+{
+  "items": [
+    {
+      "product": {
+        "id": "starter-tier",
+        "name": "Starter Tier Art",
+        "price": 25,
+        "tier": "Starter",
+        "weight": "3.5g",
+        "color_theme": "Pink"
+      },
+      "strain": {
+        "name": "Moroccan Peach",
+        "type": "sativa",
+        "thcLow": 18,
+        "thcHigh": 22
+      },
+      "quantity": 1
+    }
+  ],
+  "deliveryDetails": {
+    "name": "Test Customer",
+    "email": "test@example.com",
+    "phone": "(202) 555-0123",
+    "address": "1600 Pennsylvania Avenue NW",
+    "city": "Washington",
+    "zipCode": "20001",
+    "timePreference": "ASAP (60-90 min)",
+    "specialInstructions": "Test order - please ring doorbell",
+    "emailUpdates": true
+  },
+  "total": 35,
+  "hasDelivery": false,
+  "status": "pending"
+}

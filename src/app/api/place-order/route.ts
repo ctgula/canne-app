@@ -97,7 +97,6 @@ export async function POST(request: NextRequest) {
     // Create or get customer
     const customerEmail = orderData.deliveryDetails.email || `customer_${Date.now()}@temp.com`;
     const nameParts = orderData.deliveryDetails.name.split(' ');
-    const marketingOptIn = !!orderData.deliveryDetails.emailUpdates;
     
     const { data: customer, error: customerError } = await supabase
       .from('customers')
@@ -105,12 +104,10 @@ export async function POST(request: NextRequest) {
         email: customerEmail,
         first_name: nameParts[0] || '',
         last_name: nameParts.slice(1).join(' ') || '',
-        name: orderData.deliveryDetails.name,
         phone: orderData.deliveryDetails.phone || '',
         address: orderData.deliveryDetails.address || '',
         city: orderData.deliveryDetails.city || 'Washington',
-        zip_code: orderData.deliveryDetails.zipCode || '',
-        marketing_opt_in: marketingOptIn
+        zip_code: orderData.deliveryDetails.zipCode || ''
       }, {
         onConflict: 'email'
       })
@@ -126,15 +123,6 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('✅ Customer created/found:', customer.id);
-
-    // Update marketing_subscribed_at if opt-in is new
-    if (marketingOptIn && !customer.marketing_subscribed_at) {
-      await supabase
-        .from('customers')
-        .update({ marketing_subscribed_at: new Date().toISOString() })
-        .eq('id', customer.id);
-      console.log('✅ Marketing subscription timestamp updated');
-    }
 
     // Calculate totals
     const subtotal = orderData.items.reduce((sum: number, item: OrderItem) => {
@@ -223,17 +211,6 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('✅ Order items created successfully');
-
-    // Send email and SMS notifications (fire-and-forget)
-    notifyCustomer({ 
-      customer, 
-      order, 
-      orderNumber, 
-      subtotal, 
-      deliveryFee, 
-      total,
-      items: orderData.items 
-    }).catch(err => console.error('❌ Notification error:', err));
 
     // Send Discord notification
     try {
