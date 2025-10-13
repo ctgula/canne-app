@@ -963,6 +963,43 @@ export default function CheckoutPage() {
                 </AnimatePresence>
               </div>
 
+              {/* Marketing Opt-In */}
+              <div className="space-y-3">
+                <label htmlFor="emailOptIn" className="block cursor-pointer">
+                  <div className="flex items-start gap-4 p-6 rounded-2xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 hover:border-purple-300 dark:hover:border-purple-500 transition-all duration-200 shadow-sm hover:shadow-md">
+                    <Controller
+                      control={form.control}
+                      name="emailOptIn"
+                      render={({ field }) => (
+                        <Checkbox
+                          id="emailOptIn"
+                          name={field.name}
+                          checked={!!field.value}
+                          onCheckedChange={(v) => {
+                            field.onChange(v);
+                            setDeliveryDetails((prev) => ({ ...prev, emailUpdates: !!v }));
+                          }}
+                          onBlur={field.onBlur}
+                          ref={field.ref}
+                        />
+                      )}
+                    />
+                    <div className="text-sm text-gray-800 dark:text-gray-100">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-2xl">📬</span>
+                        <span className="font-semibold text-base">Order Updates & Notifications</span>
+                      </div>
+                      <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                        <strong>Yes</strong> — send me order updates by SMS & email. Msg & data rates may apply. Reply STOP to opt-out.
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                        Optional but recommended for delivery updates and exclusive offers.
+                      </p>
+                    </div>
+                  </div>
+                </label>
+              </div>
+
             </form>
           </div>
 

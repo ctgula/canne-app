@@ -1,6 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 export const runtime = 'nodejs';
 import { createClient } from '@supabase/supabase-js';
+import sg from '@sendgrid/mail';
+import Twilio from 'twilio';
+
+// Initialize SendGrid and Twilio
+if (process.env.SENDGRID_API_KEY) {
+  sg.setApiKey(process.env.SENDGRID_API_KEY);
+}
+
+let twilioClient: ReturnType<typeof Twilio> | null = null;
+if (process.env.TWILIO_SID && process.env.TWILIO_TOKEN) {
+  twilioClient = Twilio(process.env.TWILIO_SID, process.env.TWILIO_TOKEN);
+}
 
 // Type definitions
 interface OrderItem {
@@ -30,6 +42,7 @@ interface DeliveryDetails {
   zipCode: string;
   timePreference: string;
   specialInstructions?: string;
+  emailUpdates?: boolean; // Marketing opt-in
 }
 
 interface OrderData {
@@ -84,6 +97,7 @@ export async function POST(request: NextRequest) {
     // Create or get customer
     const customerEmail = orderData.deliveryDetails.email || `customer_${Date.now()}@temp.com`;
     const nameParts = orderData.deliveryDetails.name.split(' ');
+    const marketingOptIn = !!orderData.deliveryDetails.emailUpdates;
     
     const { data: customer, error: customerError } = await supabase
       .from('customers')
@@ -91,10 +105,12 @@ export async function POST(request: NextRequest) {
         email: customerEmail,
         first_name: nameParts[0] || '',
         last_name: nameParts.slice(1).join(' ') || '',
+        name: orderData.deliveryDetails.name,
         phone: orderData.deliveryDetails.phone || '',
         address: orderData.deliveryDetails.address || '',
         city: orderData.deliveryDetails.city || 'Washington',
-        zip_code: orderData.deliveryDetails.zipCode || ''
+        zip_code: orderData.deliveryDetails.zipCode || '',
+        marketing_opt_in: marketingOptIn
       }, {
         onConflict: 'email'
       })
@@ -110,6 +126,15 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('✅ Customer created/found:', customer.id);
+
+    // Update marketing_subscribed_at if opt-in is new
+    if (marketingOptIn && !customer.marketing_subscribed_at) {
+      await supabase
+        .from('customers')
+        .update({ marketing_subscribed_at: new Date().toISOString() })
+        .eq('id', customer.id);
+      console.log('✅ Marketing subscription timestamp updated');
+    }
 
     // Calculate totals
     const subtotal = orderData.items.reduce((sum: number, item: OrderItem) => {
@@ -199,6 +224,17 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ Order items created successfully');
 
+    // Send email and SMS notifications (fire-and-forget)
+    notifyCustomer({ 
+      customer, 
+      order, 
+      orderNumber, 
+      subtotal, 
+      deliveryFee, 
+      total,
+      items: orderData.items 
+    }).catch(err => console.error('❌ Notification error:', err));
+
     // Send Discord notification
     try {
       const webhookUrl = process.env.DISCORD_WEBHOOK;
@@ -284,5 +320,193 @@ export async function POST(request: NextRequest) {
       success: false, 
       error: 'Internal server error. Please try again.' 
     }, { status: 500 });
+  }
+}
+
+// =============================================================================
+// NOTIFICATION FUNCTIONS
+// =============================================================================
+
+/**
+ * Send email and SMS notifications to customer
+ * Fire-and-forget - errors are logged but don't fail the order
+ */
+async function notifyCustomer({ 
+  customer, 
+  order, 
+  orderNumber, 
+  subtotal, 
+  deliveryFee, 
+  total,
+  items 
+}: any) {
+  // Email notification
+  if (process.env.SENDGRID_API_KEY && process.env.EMAIL_FROM) {
+    try {
+      const itemsList = items.map((item: OrderItem) => 
+        `${item.product.name} x${item.quantity} - $${(item.product.price * item.quantity).toFixed(2)}`
+      ).join('\n');
+
+      const msg = {
+        to: customer.email,
+        from: process.env.EMAIL_FROM,
+        subject: `Order ${orderNumber} confirmed ✅`,
+        text: `Hi ${customer.name || customer.first_name || 'there'}!
+
+Thank you for your order with Cannè Art Collective.
+
+Order Number: ${orderNumber}
+Order Total: $${total.toFixed(2)}
+
+Items:
+${itemsList}
+
+Subtotal: $${subtotal.toFixed(2)}
+Delivery: ${deliveryFee === 0 ? 'FREE' : `$${deliveryFee.toFixed(2)}`}
+Total: $${total.toFixed(2)}
+
+Delivery Address:
+${order.delivery_address_line1}
+${order.delivery_city}, ${order.delivery_state} ${order.delivery_zip}
+
+Preferred Time: ${order.preferred_time}
+
+We'll notify you when your driver is assigned. Expected delivery within your selected timeframe.
+
+Questions? Reply to this email or contact us at support@canne.app
+
+Thank you for supporting local art!
+- The Cannè Team`,
+        html: `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <div style="background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%); padding: 30px; text-align: center; border-radius: 12px 12px 0 0;">
+    <h1 style="color: white; margin: 0; font-size: 28px;">Order Confirmed! ✅</h1>
+  </div>
+  
+  <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 12px 12px;">
+    <p style="font-size: 16px; margin-top: 0;">Hi <strong>${customer.name || customer.first_name || 'there'}</strong>!</p>
+    
+    <p>Thank you for your order with <strong>Cannè Art Collective</strong>.</p>
+    
+    <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #8b5cf6;">
+      <p style="margin: 0 0 10px 0; font-size: 14px; color: #6b7280;">Order Number</p>
+      <p style="margin: 0; font-size: 20px; font-weight: bold; color: #8b5cf6;">${orderNumber}</p>
+    </div>
+    
+    <h3 style="color: #1f2937; margin-top: 25px;">Order Items</h3>
+    <div style="background: white; padding: 15px; border-radius: 8px;">
+      ${items.map((item: OrderItem) => `
+        <div style="padding: 10px 0; border-bottom: 1px solid #e5e7eb;">
+          <strong>${item.product.name}</strong> x${item.quantity}<br>
+          <span style="color: #6b7280; font-size: 14px;">${item.strain?.name || 'Moroccan Peach'} • ${item.strain?.type || 'sativa'}</span>
+          <div style="text-align: right; margin-top: 5px;">$${(item.product.price * item.quantity).toFixed(2)}</div>
+        </div>
+      `).join('')}
+      
+      <div style="padding: 15px 0 5px 0; font-size: 14px; color: #6b7280;">
+        <div style="display: flex; justify-content: space-between; margin: 5px 0;">
+          <span>Subtotal:</span>
+          <span>$${subtotal.toFixed(2)}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin: 5px 0;">
+          <span>Delivery:</span>
+          <span>${deliveryFee === 0 ? 'FREE' : `$${deliveryFee.toFixed(2)}`}</span>
+        </div>
+      </div>
+      
+      <div style="padding: 15px 0 0 0; border-top: 2px solid #e5e7eb; font-size: 18px; font-weight: bold; display: flex; justify-content: space-between;">
+        <span>Total:</span>
+        <span style="color: #8b5cf6;">$${total.toFixed(2)}</span>
+      </div>
+    </div>
+    
+    <h3 style="color: #1f2937; margin-top: 25px;">Delivery Details</h3>
+    <div style="background: white; padding: 15px; border-radius: 8px;">
+      <p style="margin: 5px 0;"><strong>Address:</strong><br>${order.delivery_address_line1}<br>${order.delivery_city}, ${order.delivery_state} ${order.delivery_zip}</p>
+      <p style="margin: 5px 0;"><strong>Preferred Time:</strong> ${order.preferred_time}</p>
+    </div>
+    
+    <div style="background: #eff6ff; border: 1px solid #bfdbfe; padding: 15px; border-radius: 8px; margin: 20px 0;">
+      <p style="margin: 0; color: #1e40af; font-size: 14px;">💡 <strong>What's Next?</strong> We'll notify you when your driver is assigned. Expected delivery within your selected timeframe.</p>
+    </div>
+    
+    <p style="font-size: 14px; color: #6b7280; margin-top: 30px;">
+      Questions? Reply to this email or contact us at <a href="mailto:support@canne.app" style="color: #8b5cf6;">support@canne.app</a>
+    </p>
+    
+    <p style="font-size: 14px; color: #6b7280;">
+      Thank you for supporting local art!<br>
+      <strong>- The Cannè Team</strong>
+    </p>
+  </div>
+</body>
+</html>`
+      };
+
+      await sg.send(msg);
+      console.log('✅ Email notification sent to:', customer.email);
+      
+      // Log successful notification
+      await logNotification(customer.id, order.id, 'email', 'sent', { provider: 'sendgrid' });
+    } catch (error: any) {
+      console.error('❌ Email notification failed:', error?.message || error);
+      await logNotification(customer.id, order.id, 'email', 'failed', { error: error?.message || String(error) });
+    }
+  }
+
+  // SMS notification (if customer has phone and hasn't opted out)
+  if (twilioClient && process.env.TWILIO_FROM && customer.phone && !customer.sms_opt_out) {
+    try {
+      // Format phone to E.164 if needed
+      let phone = customer.phone.replace(/\D/g, '');
+      if (!phone.startsWith('1') && phone.length === 10) {
+        phone = '1' + phone;
+      }
+      if (!phone.startsWith('+')) {
+        phone = '+' + phone;
+      }
+
+      await twilioClient.messages.create({
+        body: `Cannè: Order ${orderNumber} confirmed! Total: $${total.toFixed(2)}. We'll text you when your driver is assigned. Reply STOP to opt-out.`,
+        from: process.env.TWILIO_FROM,
+        to: phone
+      });
+      
+      console.log('✅ SMS notification sent to:', phone);
+      await logNotification(customer.id, order.id, 'sms', 'sent', { provider: 'twilio', phone });
+    } catch (error: any) {
+      console.error('❌ SMS notification failed:', error?.message || error);
+      await logNotification(customer.id, order.id, 'sms', 'failed', { error: error?.message || String(error) });
+    }
+  }
+}
+
+/**
+ * Log notification attempt to database
+ */
+async function logNotification(
+  customer_id: string, 
+  order_id: string, 
+  channel: 'email' | 'sms', 
+  status: 'sent' | 'failed',
+  provider_response: any
+) {
+  try {
+    await supabase.from('notification_logs').insert([{
+      customer_id,
+      order_id,
+      channel,
+      status,
+      provider_response,
+      error_message: status === 'failed' ? provider_response.error : null
+    }]);
+  } catch (error) {
+    console.warn('⚠️ Failed to log notification:', error);
   }
 }

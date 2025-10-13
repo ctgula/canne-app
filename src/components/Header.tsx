@@ -7,6 +7,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useCartStore } from '@/services/CartService';
 import Image from 'next/image';
 import CartDisplay from './CartDisplay';
+import SearchModal from './SearchModal';
 
 interface HeaderProps {
   scrollToCollection?: () => void;
@@ -17,6 +18,7 @@ export default function Header({ scrollToCollection }: HeaderProps) {
   const isDarkMode = theme === 'dark';
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const cartRef = useRef<HTMLDivElement>(null);
   
   // Force close mobile menu on component mount and on any route change
@@ -33,6 +35,19 @@ export default function Header({ scrollToCollection }: HeaderProps) {
     
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  
+  // Keyboard shortcut for search (Cmd+K / Ctrl+K)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsSearchOpen(true);
+      }
+    };
+    
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
   
   // Get cart data from our store
@@ -129,16 +144,20 @@ export default function Header({ scrollToCollection }: HeaderProps) {
               );
             })}
             
-            <div className="flex items-center space-x-2 ml-6 pl-6 border-l border-gray-200">
+            <div className="flex items-center space-x-2 ml-6 pl-6 border-l border-gray-200 dark:border-gray-700">
               <button 
-                className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all duration-200"
-                title="Search"
+                onClick={() => setIsSearchOpen(true)}
+                className="flex items-center gap-2 p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all duration-200 group"
+                title="Search (⌘K)"
               >
                 <Search size={18} />
+                <span className="hidden xl:flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300">
+                  <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-[10px] font-mono">⌘K</kbd>
+                </span>
               </button>
               <button 
                 onClick={toggleCart} 
-                className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all duration-200 group"
+                className="relative p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all duration-200 group"
                 title={getItemCount() > 0 ? `Cart (${getItemCount()} items) - Subtotal: $${getTotal()}` : "Shopping cart"}
               >
                 <ShoppingBag size={18} />
@@ -160,7 +179,7 @@ export default function Header({ scrollToCollection }: HeaderProps) {
           <div className="lg:hidden flex items-center space-x-2">
             <button 
               onClick={toggleCart} 
-              className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all duration-200 group"
+              className="relative p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all duration-200 group"
               title={getItemCount() > 0 ? `Cart (${getItemCount()} items) - Subtotal: $${getTotal()}` : "Shopping cart"}
             >
               <ShoppingBag size={20} />
@@ -172,14 +191,14 @@ export default function Header({ scrollToCollection }: HeaderProps) {
             </button>
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2 rounded-xl hover:bg-gray-100 transition-all duration-200"
+              className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
               aria-label="Toggle menu"
               aria-expanded={isMenuOpen}
             >
               {isMenuOpen ? (
-                <X className="h-6 w-6 text-gray-700" />
+                <X className="h-6 w-6 text-gray-700 dark:text-gray-300" />
               ) : (
-                <Menu className="h-6 w-6 text-gray-700" />
+                <Menu className="h-6 w-6 text-gray-700 dark:text-gray-300" />
               )}
             </button>
           </div>
@@ -196,15 +215,15 @@ export default function Header({ scrollToCollection }: HeaderProps) {
       {/* Mobile Navigation */}
       {isMenuOpen && (
         <div
-          className="fixed inset-0 z-[60] flex lg:hidden"
+          className="fixed inset-0 z-[60] flex lg:hidden animate-in fade-in duration-200"
           onClick={() => setIsMenuOpen(false)}
         >
-          {/* Backdrop */}
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-xl" />
+          {/* Backdrop with optimized blur */}
+          <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-black/70 to-black/60 backdrop-blur-md" />
 
-          {/* Panel */}
+          {/* Panel with slide-in animation */}
           <nav
-            className="relative ml-auto w-full max-w-none sm:max-w-xs h-full bg-white dark:bg-gray-900 shadow-xl px-6 pt-20 space-y-6 overflow-y-auto transform transition-transform duration-300 ease-in-out"
+            className="relative ml-auto w-full max-w-none sm:max-w-sm h-full bg-white dark:bg-gray-900 shadow-2xl px-6 pt-20 pb-6 space-y-6 overflow-y-auto transform transition-all duration-300 ease-out animate-in slide-in-from-right"
             onClick={e => e.stopPropagation()}
           >
             {/* Close Button */}
@@ -285,6 +304,10 @@ export default function Header({ scrollToCollection }: HeaderProps) {
               </h3>
               <div className="grid grid-cols-2 gap-3">
                 <button 
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    setIsSearchOpen(true);
+                  }}
                   className="flex items-center justify-center gap-2 p-3 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-xl transition-colors"
                   title="Search"
                 >
@@ -343,6 +366,9 @@ export default function Header({ scrollToCollection }: HeaderProps) {
           </nav>
         </div>
       )}
+      
+      {/* Search Modal */}
+      <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </>
   );
 }

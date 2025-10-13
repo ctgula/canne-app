@@ -167,15 +167,8 @@ export default function ProductsPresenter() {
                 };
               });
 
-              const parts: string[] = [];
-              if (product.strain) parts.push(product.strain);
-              if (typeof product.thc_min === 'number' && typeof product.thc_max === 'number') {
-                parts.push(`${product.thc_min}–${product.thc_max}% THC`);
-              }
-              const giftByTier: Record<string, string> = { Starter: '3.5g', Classic: '7g', Black: '14g', Ultra: '28g' };
-              const gift = product.gift_grams || giftByTier[product.tier as keyof typeof giftByTier] || '';
-              if (gift) parts.push(`Includes Cannè art stickers + ${gift} complimentary gift`);
-              const description = parts.join(' • ');
+              // Use the actual product description from the database
+              const description = product.description || '';
 
               return (
                 <div 
