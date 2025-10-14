@@ -13,26 +13,40 @@ export async function POST(req: Request) {
     const supabase = createClient(supabaseUrl, supabaseKey);
     const { short_code, cashapp_handle, screenshot_url } = await req.json();
 
-    // Fetch order details before updating
-    const { data: orderData, error: fetchError } = await supabase
+    // Fetch payment record
+    const { data: paymentData, error: paymentError } = await supabase
       .from("cashapp_payments")
-      .select(`
-        *,
-        orders (
-          order_number,
-          total,
-          customer_name,
-          customer_phone,
-          delivery_address_line1,
-          delivery_city
-        )
-      `)
+      .select("*")
       .eq("short_code", short_code)
       .single();
 
-    if (fetchError) {
-      console.error('Error fetching order:', fetchError);
-      return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+    if (paymentError || !paymentData) {
+      console.error('❌ Error fetching payment:', paymentError);
+      return NextResponse.json({ error: 'Payment record not found' }, { status: 404 });
+    }
+
+    console.log('✅ Payment record found:', { 
+      short_code: paymentData.short_code, 
+      amount: paymentData.amount_cents,
+      status: paymentData.status,
+      has_order: !!paymentData.order_id
+    });
+
+    // Get order details if order_id exists (optional - payment may not have order yet)
+    let orderDetails = null;
+    if (paymentData.order_id) {
+      const { data: orderData, error: orderError } = await supabase
+        .from("orders")
+        .select("order_number, total, customer_id, customers(first_name, last_name, phone), delivery_address_line1, delivery_city")
+        .eq("id", paymentData.order_id)
+        .single();
+
+      if (!orderError && orderData) {
+        orderDetails = orderData;
+        console.log('✅ Linked order found:', orderData.order_number);
+      }
+    } else {
+      console.log('ℹ️ No order linked to payment yet (payment-first flow)');
     }
 
     // Update payment status
@@ -55,64 +69,88 @@ export async function POST(req: Request) {
       const webhookUrl = process.env.DISCORD_WEBHOOK;
       
       if (webhookUrl) {
-        const order = Array.isArray(orderData.orders) ? orderData.orders[0] : orderData.orders;
-        const amount = orderData.amount_cents / 100;
+        const amount = paymentData.amount_cents / 100;
+        
+        // Build customer name from order details if available
+        let customerName = 'Not yet provided';
+        let customerPhone = paymentData.customer_phone || 'Not provided';
+        
+        if (orderDetails) {
+          const customers = orderDetails as any;
+          if (customers.customers) {
+            customerName = `${customers.customers.first_name || ''} ${customers.customers.last_name || ''}`.trim();
+            customerPhone = customers.customers.phone || customerPhone;
+          }
+        }
         
         const embed = {
           title: "💳 Payment Submitted for Verification",
+          description: orderDetails 
+            ? `Order **${orderDetails.order_number}** - Customer has submitted payment proof`
+            : `New payment submission **${short_code}** - No order linked yet`,
           color: 0xF59E0B, // Orange/amber for pending verification
           fields: [
             {
-              name: "Order Number",
-              value: order?.order_number || short_code,
-              inline: true
-            },
-            {
-              name: "Amount",
+              name: "💰 Amount",
               value: `$${amount.toFixed(2)}`,
               inline: true
             },
             {
-              name: "Short Code",
-              value: short_code,
+              name: "🔑 Short Code",
+              value: `\`${short_code}\``,
               inline: true
             },
             {
-              name: "Customer",
-              value: order?.customer_name || 'N/A',
+              name: "📊 Status",
+              value: "🔍 **VERIFYING**",
               inline: true
             },
             {
-              name: "Phone",
-              value: order?.customer_phone || 'N/A',
+              name: "👤 Customer",
+              value: customerName,
               inline: true
             },
             {
-              name: "Status",
-              value: "🔍 VERIFYING",
+              name: "📱 Phone",
+              value: customerPhone,
+              inline: true
+            },
+            {
+              name: "📦 Order",
+              value: orderDetails ? `✅ Linked` : '⏳ Not created yet',
               inline: true
             }
           ],
           footer: {
-            text: "Cannè Payment System • Verify payment in Cash App and update status"
+            text: "Cannè Payment System • Verify payment in Cash App and mark as paid in admin panel"
           },
           timestamp: new Date().toISOString()
         };
 
-        // Add optional fields if provided
+        // Add Cash App handle if provided
         if (cashapp_handle) {
           embed.fields.push({
-            name: "Cash App Handle",
+            name: "💵 Cash App",
             value: cashapp_handle,
             inline: true
           });
         }
 
+        // Add screenshot link if provided
         if (screenshot_url) {
           embed.fields.push({
-            name: "Screenshot",
+            name: "📸 Proof",
             value: `[View Screenshot](${screenshot_url})`,
             inline: true
+          });
+        }
+
+        // Add delivery address if order exists
+        if (orderDetails?.delivery_address_line1) {
+          embed.fields.push({
+            name: "📍 Delivery",
+            value: `${orderDetails.delivery_address_line1}, ${orderDetails.delivery_city || 'DC'}`,
+            inline: false
           });
         }
 
@@ -120,15 +158,19 @@ export async function POST(req: Request) {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            content: `@everyone New payment requires verification!`,
             embeds: [embed]
           })
         });
 
         if (response.ok) {
-          console.log('✅ Discord notification sent for payment submission');
+          console.log('✅ Discord notification sent successfully');
         } else {
-          console.error('❌ Discord notification failed:', await response.text());
+          const errorText = await response.text();
+          console.error('❌ Discord webhook failed:', response.status, errorText);
         }
+      } else {
+        console.warn('⚠️ DISCORD_WEBHOOK not configured - notification skipped');
       }
     } catch (discordError) {
       console.error('❌ Discord notification error:', discordError);
