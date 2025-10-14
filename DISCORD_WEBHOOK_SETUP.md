@@ -1,41 +1,56 @@
 # Discord Webhook Setup for Cannè Order Notifications
 
-## Issue
-Discord notifications are not being sent because the `DISCORD_WEBHOOK` environment variable is missing.
-
-## Solution
-
-### 1. Create Discord Webhook
-1. Go to your Discord server
-2. Right-click on the channel where you want order notifications
-3. Select "Edit Channel" → "Integrations" → "Webhooks"
-4. Click "New Webhook"
-5. Name it "Cannè Order Bot"
-6. Copy the webhook URL
-
-### 2. Add to Environment Variables
-Add this line to your `.env.local` file:
-
-```bash
-# Discord webhook for order notifications
-DISCORD_WEBHOOK=https://discord.com/api/webhooks/YOUR_WEBHOOK_ID/YOUR_WEBHOOK_TOKEN
+## ✅ Webhook URL Configured
+```
+https://canary.discord.com/api/webhooks/1427448787596742698/LGa107la7ZAvY6kI-sXU4YyF-LUnxZB_eudCmJaLtEbsAQpaT68VqldWsohVG8cuq4tF
 ```
 
-### 3. Current Environment Variables Needed
-Your `.env.local` should contain:
+## 🚀 Setup for Vercel (Production)
 
+### Step 1: Add Environment Variable in Vercel Dashboard
+1. Go to your Vercel project: https://vercel.com/dashboard
+2. Select your `canne-app` project
+3. Go to **Settings** → **Environment Variables**
+4. Add a new variable:
+   - **Name:** `DISCORD_WEBHOOK`
+   - **Value:** `https://canary.discord.com/api/webhooks/1427448787596742698/LGa107la7ZAvY6kI-sXU4YyF-LUnxZB_eudCmJaLtEbsAQpaT68VqldWsohVG8cuq4tF`
+   - **Environments:** Check all (Production, Preview, Development)
+5. Click **Save**
+
+### Step 2: Redeploy Your Application
+After adding the environment variable, you need to redeploy:
+- Option A: Go to **Deployments** tab → Click "..." on latest deployment → **Redeploy**
+- Option B: Push a new commit to trigger automatic deployment
+- Option C: Use Vercel CLI: `vercel --prod`
+
+### Step 3: Verify Environment Variable
+After deployment, you can verify the variable is set:
+```bash
+vercel env ls
+```
+
+---
+
+## 💻 Local Development Setup
+
+### Add to `.env.local` file:
+```bash
+# Discord webhook for order notifications
+DISCORD_WEBHOOK=https://canary.discord.com/api/webhooks/1427448787596742698/LGa107la7ZAvY6kI-sXU4YyF-LUnxZB_eudCmJaLtEbsAQpaT68VqldWsohVG8cuq4tF
+```
+
+### Complete `.env.local` should contain:
 ```bash
 # Supabase Configuration
 NEXT_PUBLIC_SUPABASE_URL=https://radtljksnoznrsyntazx.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhZHRsamtzbm96bnJzeW50YXp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI3MTMzNjIsImV4cCI6MjA2ODI4OTM2Mn0.6-vJou7LmXIwHv4l9qJp-ZKdf9gH4iWkouseg8E1TW0
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
 
-# Discord webhook for order notifications
-DISCORD_WEBHOOK=https://discord.com/api/webhooks/YOUR_WEBHOOK_ID/YOUR_WEBHOOK_TOKEN
+# Discord webhook for order notifications  
+DISCORD_WEBHOOK=https://canary.discord.com/api/webhooks/1427448787596742698/LGa107la7ZAvY6kI-sXU4YyF-LUnxZB_eudCmJaLtEbsAQpaT68VqldWsohVG8cuq4tF
 ```
 
-### 4. Restart Development Server
-After adding the webhook URL, restart your development server:
+### Restart Development Server
 ```bash
 npm run dev
 ```
