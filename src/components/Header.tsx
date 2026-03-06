@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import { Search, Menu, X, Sun, Moon, Home, Info, Shield, ShoppingBag, Sparkles } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -16,6 +17,7 @@ interface HeaderProps {
 export default function Header({ scrollToCollection }: HeaderProps) {
   const { theme, toggleTheme } = useTheme();
   const isDarkMode = theme === 'dark';
+  const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -118,7 +120,6 @@ export default function Header({ scrollToCollection }: HeaderProps) {
               { href: '/i71', label: 'I-71 Compliance', icon: Shield },
               { href: '/about', label: 'About', icon: Info }
             ].map(({ href, label, icon: Icon, featured }) => {
-              const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
               const isActive = pathname === href;
               
               return (
@@ -256,7 +257,6 @@ export default function Header({ scrollToCollection }: HeaderProps) {
                 { href: '/i71', label: 'I-71 Compliance', icon: Shield, description: 'Legal information' },
                 { href: '/about', label: 'About Us', icon: Info, description: 'Our story & mission' }
               ].map(({ href, label, icon: Icon, featured, description }) => {
-                const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
                 const isActive = pathname === href;
                 
                 return (

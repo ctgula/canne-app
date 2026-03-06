@@ -1,6 +1,7 @@
 'use client';
 
 import Header from '@/components/Header';
+import Image from 'next/image';
 import { motion, useAnimation, useInView, Variants } from 'framer-motion';
 import { Brush, CreditCard, Package, Sparkles } from 'lucide-react';
 import React, { useRef, useEffect } from 'react';
@@ -137,7 +138,7 @@ export default function HowItWorksPage() {
               >
                 {/* Logo */}
                 <motion.div variants={item} className="mb-6">
-                  <img src="/images/canne_logo_web.png" alt="Cannè Logo" className="mx-auto w-48 h-48 md:w-52 md:h-52" />
+                  <Image src="/images/canne_logo_web.png" alt="Cannè Logo" width={200} height={300} className="mx-auto h-32 md:h-40 w-auto drop-shadow-lg" priority />
                 </motion.div>
                 
                 <motion.div variants={item} className="inline-block px-4 py-1 mb-4 bg-gradient-to-r from-pink-500/10 to-purple-500/10 dark:from-pink-500/20 dark:to-purple-500/20 rounded-full">

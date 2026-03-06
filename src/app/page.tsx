@@ -84,9 +84,9 @@ export default function Home() {
                 <Image 
                   src="/images/canne_logo_web.png"
                   alt="Cannè Logo" 
-                  width={240} 
-                  height={240} 
-                  className="relative w-44 h-44 md:w-52 md:h-52 lg:w-60 lg:h-60 drop-shadow-2xl mx-auto"
+                  width={200} 
+                  height={300} 
+                  className="relative h-32 sm:h-36 md:h-44 lg:h-48 w-auto drop-shadow-2xl mx-auto"
                   priority
                 />
               </motion.div>
@@ -131,7 +131,7 @@ export default function Home() {
                     </span>
                   </button>
                 </Link>
-                <Link href="/shop" className="flex-1 sm:flex-none">
+                <Link href="/i71" className="flex-1 sm:flex-none">
                   <button className="w-full sm:w-auto px-8 py-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-600 rounded-2xl shadow-lg hover:shadow-xl font-semibold text-lg text-gray-700 dark:text-gray-200 transition-all duration-200 active:scale-95 min-h-[56px] touch-manipulation">
                     <span className="flex items-center justify-center gap-2">
                       <Shield className="w-5 h-5" />

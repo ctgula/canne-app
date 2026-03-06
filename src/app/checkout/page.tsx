@@ -8,6 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Checkbox } from '@/components/ui/checkbox';
 import Header from '@/components/Header';
 import { useCartStore } from '@/services/CartService';
+import { toast } from 'react-hot-toast';
 import { Truck, MapPin, Clock, CreditCard, ArrowLeft, CheckCircle, Shield, Lock, Smartphone } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -256,14 +257,14 @@ export default function CheckoutPage() {
     }
     
     if (validationErrors.length > 0) {
-      alert(`Please complete your information first:\n\n• ${validationErrors.join('\n• ')}`);
+      toast.error(validationErrors[0]);
       return;
     }
 
     // Initiate Cash App payment
     const success = await initiatePayment(finalTotal, deliveryDetails.phone.replace(/\D/g, ''));
     if (!success) {
-      alert('Failed to create Cash App payment. Please try again.');
+      toast.error('Failed to create Cash App payment. Please try again.');
     }
   };
 
@@ -295,7 +296,7 @@ export default function CheckoutPage() {
   };
 
   const handleApplePayError = (error: string) => {
-    alert(`Apple Pay failed: ${error}`);
+    toast.error(`Apple Pay failed: ${error}`);
   };
 
   const submitHandler = async (data: CheckboxForm) => {
@@ -345,7 +346,7 @@ export default function CheckoutPage() {
     }
     
     if (validationErrors.length > 0) {
-      alert(`Please fix the following issues:\n\n• ${validationErrors.join('\n• ')}`);
+      toast.error(validationErrors[0]);
       return;
     }
     
@@ -451,13 +452,13 @@ export default function CheckoutPage() {
       
       // Better error handling with specific messages
       if (errorMessage.includes('Price calculation mismatch')) {
-        alert(`⚠️ Pricing Error\n\n${errorMessage}\n\nThis usually happens when:\n• Cart was modified during checkout\n• Prices have been updated\n• Browser cache is outdated\n\nPlease refresh the page and try again.`);
+        toast.error('Pricing error — please refresh the page and try again.');
       } else if (errorMessage.includes('Out-of-zone address')) {
-        alert(`📍 Delivery Area Error\n\nWe currently only deliver to Washington DC (ZIP codes 20000-20199). Please check your ZIP code and try again.`);
+        toast.error('We only deliver to Washington DC (ZIP 20000-20199).');
       } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
-        alert(`🌐 Connection Error\n\nPlease check your internet connection and try again. If the problem persists, contact support at support@canne.art`);
+        toast.error('Connection error — please check your internet and try again.');
       } else {
-        alert(`❌ Order Submission Failed\n\n${errorMessage}\n\nPlease try again or contact support at support@canne.art if the issue continues.`);
+        toast.error(errorMessage || 'Order failed. Please try again or contact support@canne.art');
       }
     } finally {
       setIsSubmitting(false);
