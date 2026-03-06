@@ -24,8 +24,8 @@ const poppins = Poppins({
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  maximumScale: 5,
+  userScalable: true,
   viewportFit: 'cover',
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: '#f9fafb' },
@@ -34,6 +34,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://canne.art'),
   title: "Cannè - Digital Art & Gifts",
   description: "Premium digital artwork with complimentary gifts in Washington, D.C.",
   keywords: ["digital art", "cannabis gifts", "I-71 compliant", "Washington DC", "art collection"],
@@ -84,19 +85,11 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
   icons: {
     icon: [
-      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
       { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
       { url: '/favicon-96x96.png', sizes: '96x96', type: 'image/png' },
     ],
     apple: [
-      { url: '/apple-touch-icon-57x57.png', sizes: '57x57' },
-      { url: '/apple-touch-icon-60x60.png', sizes: '60x60' },
-      { url: '/apple-touch-icon-72x72.png', sizes: '72x72' },
-      { url: '/apple-touch-icon-76x76.png', sizes: '76x76' },
-      { url: '/apple-touch-icon-114x114.png', sizes: '114x114' },
-      { url: '/apple-touch-icon-120x120.png', sizes: '120x120' },
-      { url: '/apple-touch-icon-144x144.png', sizes: '144x144' },
-      { url: '/apple-touch-icon-152x152.png', sizes: '152x152' },
       { url: '/apple-touch-icon-180x180.png', sizes: '180x180' },
     ],
   },
@@ -141,13 +134,12 @@ export default function RootLayout({
         {/* Prevent automatic phone number detection */}
         <meta name="format-detection" content="telephone=no, date=no, address=no, email=no" />
         
-        {/* Preload critical resources */}
-        <link rel="preload" href="/images/canne_logo.svg" as="image" type="image/svg+xml" />
+        {/* Preconnect to critical origins */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         
         {/* DNS prefetch for external resources */}
-        <link rel="dns-prefetch" href="https://radtljksnoznrsyntazx.supabase.co" />
+        <link rel="dns-prefetch" href={process.env.NEXT_PUBLIC_SUPABASE_URL || ''} />
       </head>
       
       <body 
@@ -168,13 +160,7 @@ export default function RootLayout({
             __html: `
               if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/sw.js')
-                    .then(function(registration) {
-                      console.log('SW registered: ', registration);
-                    })
-                    .catch(function(registrationError) {
-                      console.log('SW registration failed: ', registrationError);
-                    });
+                  navigator.serviceWorker.register('/sw.js').catch(function() {});
                 });
               }
             `,

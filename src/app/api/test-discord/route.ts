@@ -1,23 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
-// Ensure this route runs on Node.js runtime (some providers' Edge runtime can block outbound fetches)
 export const runtime = 'nodejs';
 
 export async function GET() {
+  // Block in production — test routes must not be publicly accessible
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  }
+
   try {
     const discordWebhook = process.env.DISCORD_WEBHOOK;
     
-    // Debug information
     const debugInfo = {
       webhookExists: !!discordWebhook,
       webhookLength: discordWebhook?.length || 0,
       webhookStart: discordWebhook?.substring(0, 50) || 'undefined',
       environment: process.env.NODE_ENV,
-      vercelEnv: process.env.VERCEL_ENV,
-      vercelRegion: process.env.VERCEL_REGION,
       timestamp: new Date().toISOString()
     };
-    
-    console.log('🔍 Discord webhook debug info:', debugInfo);
     
     if (!discordWebhook) {
       return NextResponse.json({

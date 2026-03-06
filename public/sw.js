@@ -1,62 +1,38 @@
-// Service Worker for Cannè App - Apple-level mobile optimization
-const CACHE_NAME = 'canne-v1.0.0';
-const STATIC_CACHE = 'canne-static-v1.0.0';
-const DYNAMIC_CACHE = 'canne-dynamic-v1.0.0';
+// Service Worker for Cannè App
+const STATIC_CACHE = 'canne-static-v1.1.0';
+const DYNAMIC_CACHE = 'canne-dynamic-v1.1.0';
 
 // Critical resources to cache immediately
 const STATIC_ASSETS = [
   '/',
   '/shop',
-  '/checkout',
   '/manifest.json',
-  '/images/canne_logo.svg',
-  '/favicon-32x32.png',
-  '/apple-touch-icon-180x180.png',
-];
-
-// API routes to cache with network-first strategy
-const API_ROUTES = [
-  '/api/supabase',
-  '/api/place-order',
+  '/favicon-96x96.png',
 ];
 
 // Install event - cache critical resources
 self.addEventListener('install', (event) => {
-  console.log('SW: Installing...');
-  
   event.waitUntil(
     caches.open(STATIC_CACHE)
-      .then((cache) => {
-        console.log('SW: Caching static assets');
-        return cache.addAll(STATIC_ASSETS);
-      })
-      .then(() => {
-        console.log('SW: Skip waiting');
-        return self.skipWaiting();
-      })
+      .then((cache) => cache.addAll(STATIC_ASSETS))
+      .then(() => self.skipWaiting())
   );
 });
 
 // Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
-  console.log('SW: Activating...');
-  
   event.waitUntil(
     caches.keys()
       .then((cacheNames) => {
         return Promise.all(
           cacheNames.map((cacheName) => {
             if (cacheName !== STATIC_CACHE && cacheName !== DYNAMIC_CACHE) {
-              console.log('SW: Deleting old cache:', cacheName);
               return caches.delete(cacheName);
             }
           })
         );
       })
-      .then(() => {
-        console.log('SW: Claiming clients');
-        return self.clients.claim();
-      })
+      .then(() => self.clients.claim())
   );
 });
 
@@ -75,9 +51,8 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // API routes - Network first, cache fallback
-  if (API_ROUTES.some(route => url.pathname.startsWith(route))) {
-    event.respondWith(networkFirstStrategy(request));
+  // Skip API routes entirely — they should not be cached
+  if (url.pathname.startsWith('/api/')) {
     return;
   }
 
@@ -112,7 +87,6 @@ async function networkFirstStrategy(request) {
     
     return networkResponse;
   } catch (error) {
-    console.log('SW: Network failed, trying cache:', request.url);
     const cachedResponse = await caches.match(request);
     
     if (cachedResponse) {
@@ -156,15 +130,12 @@ async function cacheFirstStrategy(request) {
     
     return networkResponse;
   } catch (error) {
-    console.log('SW: Failed to fetch:', request.url);
     throw error;
   }
 }
 
 // Background sync for failed requests
 self.addEventListener('sync', (event) => {
-  console.log('SW: Background sync:', event.tag);
-  
   if (event.tag === 'background-sync') {
     event.waitUntil(doBackgroundSync());
   }
@@ -172,12 +143,10 @@ self.addEventListener('sync', (event) => {
 
 async function doBackgroundSync() {
   // Retry failed API requests when back online
-  console.log('SW: Performing background sync');
 }
 
 // Push notifications (for future use)
 self.addEventListener('push', (event) => {
-  console.log('SW: Push received');
   
   const options = {
     body: event.data?.text() || 'New update available!',
@@ -209,7 +178,6 @@ self.addEventListener('push', (event) => {
 
 // Handle notification clicks
 self.addEventListener('notificationclick', (event) => {
-  console.log('SW: Notification click received.');
   
   event.notification.close();
   

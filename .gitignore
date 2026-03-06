@@ -39,3 +39,70 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Development artifacts — do not ship to production
+*.bak
+*.backup
+*.sql
+*.mjs
+dev-server.log
+*.log
+
+# Debug/test files
+debug-*.html
+debug-*.js
+fix-*.html
+fix-*.mjs
+test-*.js
+test-*.html
+test-*.json
+test-*.md
+check-*.js
+get-*.js
+apply-*.mjs
+apply-*.js
+run-*.js
+setup-*.sh
+temp_*.sql
+
+# Development documentation (keep README.md)
+ACTION_PLAN_*.md
+ADMIN_*.md
+API_*.md
+CART_*.md
+CASHAPP_*.md
+CONTACT_*.md
+DEPLOYMENT_*.md
+DISCORD_*.md
+DRIVERS_*.md
+EMERGENCY_*.html
+ENV_SETUP.md
+FINAL_*.md
+FIX_*.md
+FIX_*.sql
+IMPLEMENTATION_*.md
+MOBILE_*.md
+OPTIMIZATION_*.md
+ORDER_*.md
+QUICK_FIX_*.md
+README_*.md
+RUN_*.md
+VERCEL_*.md
+MCP_SETUP_CONFIG.json
+mcp_config.json
+supabase.env.example
+admin-ops-migrations.sql
+apply-optimizations.sql
+fix-discord-now.sql
+
+# Backup source files
+src/app/page.tsx.bak
+src/app/page_backup.tsx
+src/components/Header.tsx.backup
+src/app/checkout-new/
+src/app/variant-demo/
+src/app/supabase-test/
+
+# Vercel build output
+.vercel-build-output.txt
+.vercel-deploy

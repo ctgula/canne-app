@@ -50,7 +50,7 @@ export default function AboutPage() {
                 <div className="relative flex items-center justify-center h-full w-full p-6">
                   {/* Actual Cannè Logo */}
                   <Image
-                    src="/images/canne_logo.svg"
+                    src="/images/canne_logo_web.png"
                     alt="Cannè Art Collective"
                     width={160}
                     height={160}

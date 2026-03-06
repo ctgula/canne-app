@@ -95,7 +95,7 @@ export default function Header({ scrollToCollection }: HeaderProps) {
             <div className="flex items-center">
               <div className="h-10 w-10 relative mr-2 transition-all duration-300 hover:scale-105">
                 <Image 
-                  src="/images/canne_logo.svg" 
+                  src="/images/canne_logo_web.png" 
                   alt="Cannè Art Collective" 
                   width={40}
                   height={40}

@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 // Initialize the Supabase admin client with service role key for server-side operations
 // This client has admin privileges and should only be used in secure server contexts
@@ -6,26 +6,33 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-// Validate environment variables but don't throw during build
-if (!supabaseUrl && process.env.NODE_ENV !== 'development') {
-  console.error('Missing NEXT_PUBLIC_SUPABASE_URL environment variable');
-}
+let _supabaseAdmin: SupabaseClient | null = null;
 
-if (!supabaseServiceKey && process.env.NODE_ENV !== 'development') {
-  console.error('Missing SUPABASE_SERVICE_ROLE_KEY environment variable');
-}
+function getSupabaseAdmin(): SupabaseClient {
+  if (_supabaseAdmin) return _supabaseAdmin;
 
-// Create the Supabase admin client
-export const supabaseAdmin = createClient(
-  supabaseUrl || 'https://placeholder.supabase.co',
-  supabaseServiceKey || 'placeholder-key',
-  {
+  if (!supabaseUrl || !supabaseServiceKey) {
+    throw new Error(
+      'Missing Supabase environment variables. Ensure NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are set.'
+    );
+  }
+
+  _supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
     auth: {
       autoRefreshToken: false,
-      persistSession: false
-    }
-  }
-);
+      persistSession: false,
+    },
+  });
+
+  return _supabaseAdmin;
+}
+
+// Lazy-initialized admin client — crashes at call time if env vars are missing, not at import time
+export const supabaseAdmin = new Proxy({} as SupabaseClient, {
+  get(_target, prop) {
+    return (getSupabaseAdmin() as any)[prop];
+  },
+});
 
 // Export a function to validate environment variables at runtime
 export const validateSupabaseConfig = () => {

@@ -175,21 +175,6 @@ export default function CheckoutPage() {
   const hasDelivery = cartTotal >= 35;
   const finalTotal = hasDelivery ? cartTotal : cartTotal + 10;
   
-  // Debug pricing calculations
-  console.log('💰 Checkout Pricing Debug:', {
-    cartTotal: cartTotal,
-    hasDelivery: hasDelivery,
-    deliveryFee: hasDelivery ? 0 : 10,
-    finalTotal: finalTotal,
-    itemsCount: items.length,
-    items: items.map(item => ({ 
-      name: item.product.name, 
-      price: item.product.price, 
-      quantity: item.quantity,
-      subtotal: item.product.price * item.quantity 
-    })),
-    confirmedOrder: confirmedOrder
-  });
 
   // Phone validation functions
   const formatPhoneNumber = (value: string) => {
@@ -283,7 +268,6 @@ export default function CheckoutPage() {
   };
 
   const handleApplePaySuccess = async (paymentData: any) => {
-    console.log('🍎 Apple Pay payment successful:', paymentData);
     setIsOrderComplete(true);
     setOrderId(paymentData.orderNumber);
     clearCart();
@@ -311,7 +295,6 @@ export default function CheckoutPage() {
   };
 
   const handleApplePayError = (error: string) => {
-    console.error('🍎 Apple Pay error:', error);
     alert(`Apple Pay failed: ${error}`);
   };
 
@@ -368,14 +351,6 @@ export default function CheckoutPage() {
     
     setIsSubmitting(true);
 
-    // Final validation before submission
-    console.log('🚀 Starting order submission with:', {
-      cartTotal,
-      hasDelivery,
-      finalTotal,
-      itemsCount: items.length
-    });
-
     try {
       const orderItems: OrderCartItem[] = items.map(item => ({
         product: {
@@ -427,13 +402,10 @@ export default function CheckoutPage() {
         // Wait a moment for order to be fully inserted, then fetch the actual order data
         setTimeout(async () => {
           try {
-            console.log('Fetching order data for ID:', newOrderId);
             const orderResponse = await fetch(`/api/orders/${newOrderId}`);
-            console.log('Order response status:', orderResponse.status);
             
             if (orderResponse.ok) {
               const orderData = await orderResponse.json();
-              console.log('Order data received:', orderData);
               setConfirmedOrder({
                 subtotal: orderData.subtotal,
                 delivery_fee: orderData.delivery_fee,
@@ -442,11 +414,9 @@ export default function CheckoutPage() {
                 items: orderData.items || []
               });
             } else {
-              console.error('Order API response not OK:', await orderResponse.text());
               throw new Error('Failed to fetch order');
             }
           } catch (error) {
-            console.error('Failed to fetch order details:', error);
             // Fallback to calculated values if API fails
             setConfirmedOrder({
               subtotal: cartTotal,
@@ -477,7 +447,6 @@ export default function CheckoutPage() {
         throw new Error(errorMessage);
       }
     } catch (error) {
-      console.error('Error submitting order:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       
       // Better error handling with specific messages

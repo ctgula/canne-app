@@ -1,18 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 export const runtime = 'nodejs';
 import { createClient } from '@supabase/supabase-js';
-import sg from '@sendgrid/mail';
-import Twilio from 'twilio';
-
-// Initialize SendGrid and Twilio
-if (process.env.SENDGRID_API_KEY) {
-  sg.setApiKey(process.env.SENDGRID_API_KEY);
-}
-
-let twilioClient: ReturnType<typeof Twilio> | null = null;
-if (process.env.TWILIO_SID && process.env.TWILIO_TOKEN) {
-  twilioClient = Twilio(process.env.TWILIO_SID, process.env.TWILIO_TOKEN);
-}
 
 // Type definitions
 interface OrderItem {
@@ -67,10 +55,7 @@ const supabase = createClient(
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('🚀 New order submission started');
-    
     const orderData = await request.json();
-    console.log('📦 Order data received:', JSON.stringify(orderData, null, 2));
 
     // Basic validation
     if (!orderData.items || orderData.items.length === 0) {
@@ -92,7 +77,6 @@ export async function POST(request: NextRequest) {
 
     // Generate order number
     const orderNumber = `CN-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
-    console.log('🔢 Generated order number:', orderNumber);
 
     // Create or get customer
     const customerEmail = orderData.deliveryDetails.email || `customer_${Date.now()}@temp.com`;
@@ -115,14 +99,13 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (customerError) {
-      console.error('❌ Customer creation failed:', customerError);
+      console.error('Customer creation failed:', customerError.message);
       return NextResponse.json({ 
         success: false, 
         error: `Failed to create customer: ${customerError.message}` 
       }, { status: 500 });
     }
 
-    console.log('✅ Customer created/found:', customer.id);
 
     // Calculate totals
     const subtotal = orderData.items.reduce((sum: number, item: OrderItem) => {
@@ -132,7 +115,6 @@ export async function POST(request: NextRequest) {
     const deliveryFee = orderData.hasDelivery ? 0 : 10;
     const total = subtotal + deliveryFee;
 
-    console.log('💰 Calculated totals:', { subtotal, deliveryFee, total, expectedTotal: orderData.total });
 
     // Validate total matches (allow small floating point differences)
     if (Math.abs(total - orderData.total) > 0.01) {
@@ -161,7 +143,6 @@ export async function POST(request: NextRequest) {
       preferred_time: orderData.deliveryDetails.timePreference || 'ASAP (60-90 min)'
     };
 
-    console.log('📝 Creating order with payload:', orderPayload);
 
     const { data: order, error: orderError } = await supabase
       .from('orders')
@@ -170,14 +151,13 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (orderError) {
-      console.error('❌ Order creation failed:', orderError);
+      console.error('Order creation failed:', orderError.message);
       return NextResponse.json({ 
         success: false, 
         error: `Failed to create order: ${orderError.message}` 
       }, { status: 500 });
     }
 
-    console.log('✅ Order created:', order.id);
 
     // Create order items
     const orderItems = orderData.items.map((item: OrderItem) => ({
@@ -192,14 +172,13 @@ export async function POST(request: NextRequest) {
       thc_high: item.strain?.thcHigh || 22
     }));
 
-    console.log('📋 Creating order items:', orderItems);
 
     const { error: itemsError } = await supabase
       .from('order_items')
       .insert(orderItems);
 
     if (itemsError) {
-      console.error('❌ Order items creation failed:', itemsError);
+      console.error('Order items creation failed:', itemsError.message);
       
       // Clean up the order if items failed
       await supabase.from('orders').delete().eq('id', order.id);
@@ -210,15 +189,11 @@ export async function POST(request: NextRequest) {
       }, { status: 500 });
     }
 
-    console.log('✅ Order items created successfully');
 
     // Send Discord notification
     try {
       const webhookUrl = process.env.DISCORD_WEBHOOK;
-      console.log('🔍 Discord webhook check:', webhookUrl ? 'CONFIGURED' : 'NOT CONFIGURED');
-      
       if (webhookUrl) {
-        console.log('📢 Sending Discord notification...');
         
         const itemsDescription = orderData.items.map((item: OrderItem) => 
           `• **${item.product.name}** x${item.quantity} - $${(item.product.price * item.quantity).toFixed(2)}\n` +
@@ -270,16 +245,11 @@ export async function POST(request: NextRequest) {
         });
         
         if (!response.ok) {
-          const errorText = await response.text();
-          console.error('❌ Discord webhook failed:', response.status, errorText);
-        } else {
-          console.log('✅ Discord notification sent successfully');
+          console.error('Discord webhook failed:', response.status);
         }
-      } else {
-        console.log('⚠️ Discord webhook URL not configured - set DISCORD_WEBHOOK environment variable');
       }
     } catch (discordError) {
-      console.error('❌ Discord notification failed with error:', discordError);
+      console.error('Discord notification error:', discordError);
       // Don't fail the order if Discord fails
     }
 
@@ -292,198 +262,10 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('❌ Unexpected error in place-order:', error);
+    console.error('Order placement error:', error);
     return NextResponse.json({ 
       success: false, 
       error: 'Internal server error. Please try again.' 
     }, { status: 500 });
-  }
-}
-
-// =============================================================================
-// NOTIFICATION FUNCTIONS
-// =============================================================================
-
-/**
- * Send email and SMS notifications to customer
- * Fire-and-forget - errors are logged but don't fail the order
- */
-async function notifyCustomer({ 
-  customer, 
-  order, 
-  orderNumber, 
-  subtotal, 
-  deliveryFee, 
-  total,
-  items 
-}: any) {
-  // Email notification
-  if (process.env.SENDGRID_API_KEY && process.env.EMAIL_FROM) {
-    try {
-      const itemsList = items.map((item: OrderItem) => 
-        `${item.product.name} x${item.quantity} - $${(item.product.price * item.quantity).toFixed(2)}`
-      ).join('\n');
-
-      const msg = {
-        to: customer.email,
-        from: process.env.EMAIL_FROM,
-        subject: `Order ${orderNumber} confirmed ✅`,
-        text: `Hi ${customer.name || customer.first_name || 'there'}!
-
-Thank you for your order with Cannè Art Collective.
-
-Order Number: ${orderNumber}
-Order Total: $${total.toFixed(2)}
-
-Items:
-${itemsList}
-
-Subtotal: $${subtotal.toFixed(2)}
-Delivery: ${deliveryFee === 0 ? 'FREE' : `$${deliveryFee.toFixed(2)}`}
-Total: $${total.toFixed(2)}
-
-Delivery Address:
-${order.delivery_address_line1}
-${order.delivery_city}, ${order.delivery_state} ${order.delivery_zip}
-
-Preferred Time: ${order.preferred_time}
-
-We'll notify you when your driver is assigned. Expected delivery within your selected timeframe.
-
-Questions? Reply to this email or contact us at support@canne.app
-
-Thank you for supporting local art!
-- The Cannè Team`,
-        html: `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-  <div style="background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%); padding: 30px; text-align: center; border-radius: 12px 12px 0 0;">
-    <h1 style="color: white; margin: 0; font-size: 28px;">Order Confirmed! ✅</h1>
-  </div>
-  
-  <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 12px 12px;">
-    <p style="font-size: 16px; margin-top: 0;">Hi <strong>${customer.name || customer.first_name || 'there'}</strong>!</p>
-    
-    <p>Thank you for your order with <strong>Cannè Art Collective</strong>.</p>
-    
-    <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #8b5cf6;">
-      <p style="margin: 0 0 10px 0; font-size: 14px; color: #6b7280;">Order Number</p>
-      <p style="margin: 0; font-size: 20px; font-weight: bold; color: #8b5cf6;">${orderNumber}</p>
-    </div>
-    
-    <h3 style="color: #1f2937; margin-top: 25px;">Order Items</h3>
-    <div style="background: white; padding: 15px; border-radius: 8px;">
-      ${items.map((item: OrderItem) => `
-        <div style="padding: 10px 0; border-bottom: 1px solid #e5e7eb;">
-          <strong>${item.product.name}</strong> x${item.quantity}<br>
-          <span style="color: #6b7280; font-size: 14px;">${item.strain?.name || 'Moroccan Peach'} • ${item.strain?.type || 'sativa'}</span>
-          <div style="text-align: right; margin-top: 5px;">$${(item.product.price * item.quantity).toFixed(2)}</div>
-        </div>
-      `).join('')}
-      
-      <div style="padding: 15px 0 5px 0; font-size: 14px; color: #6b7280;">
-        <div style="display: flex; justify-content: space-between; margin: 5px 0;">
-          <span>Subtotal:</span>
-          <span>$${subtotal.toFixed(2)}</span>
-        </div>
-        <div style="display: flex; justify-content: space-between; margin: 5px 0;">
-          <span>Delivery:</span>
-          <span>${deliveryFee === 0 ? 'FREE' : `$${deliveryFee.toFixed(2)}`}</span>
-        </div>
-      </div>
-      
-      <div style="padding: 15px 0 0 0; border-top: 2px solid #e5e7eb; font-size: 18px; font-weight: bold; display: flex; justify-content: space-between;">
-        <span>Total:</span>
-        <span style="color: #8b5cf6;">$${total.toFixed(2)}</span>
-      </div>
-    </div>
-    
-    <h3 style="color: #1f2937; margin-top: 25px;">Delivery Details</h3>
-    <div style="background: white; padding: 15px; border-radius: 8px;">
-      <p style="margin: 5px 0;"><strong>Address:</strong><br>${order.delivery_address_line1}<br>${order.delivery_city}, ${order.delivery_state} ${order.delivery_zip}</p>
-      <p style="margin: 5px 0;"><strong>Preferred Time:</strong> ${order.preferred_time}</p>
-    </div>
-    
-    <div style="background: #eff6ff; border: 1px solid #bfdbfe; padding: 15px; border-radius: 8px; margin: 20px 0;">
-      <p style="margin: 0; color: #1e40af; font-size: 14px;">💡 <strong>What's Next?</strong> We'll notify you when your driver is assigned. Expected delivery within your selected timeframe.</p>
-    </div>
-    
-    <p style="font-size: 14px; color: #6b7280; margin-top: 30px;">
-      Questions? Reply to this email or contact us at <a href="mailto:support@canne.app" style="color: #8b5cf6;">support@canne.app</a>
-    </p>
-    
-    <p style="font-size: 14px; color: #6b7280;">
-      Thank you for supporting local art!<br>
-      <strong>- The Cannè Team</strong>
-    </p>
-  </div>
-</body>
-</html>`
-      };
-
-      await sg.send(msg);
-      console.log('✅ Email notification sent to:', customer.email);
-      
-      // Log successful notification
-      await logNotification(customer.id, order.id, 'email', 'sent', { provider: 'sendgrid' });
-    } catch (error: any) {
-      console.error('❌ Email notification failed:', error?.message || error);
-      await logNotification(customer.id, order.id, 'email', 'failed', { error: error?.message || String(error) });
-    }
-  }
-
-  // SMS notification (if customer has phone and hasn't opted out)
-  if (twilioClient && process.env.TWILIO_FROM && customer.phone && !customer.sms_opt_out) {
-    try {
-      // Format phone to E.164 if needed
-      let phone = customer.phone.replace(/\D/g, '');
-      if (!phone.startsWith('1') && phone.length === 10) {
-        phone = '1' + phone;
-      }
-      if (!phone.startsWith('+')) {
-        phone = '+' + phone;
-      }
-
-      await twilioClient.messages.create({
-        body: `Cannè: Order ${orderNumber} confirmed! Total: $${total.toFixed(2)}. We'll text you when your driver is assigned. Reply STOP to opt-out.`,
-        from: process.env.TWILIO_FROM,
-        to: phone
-      });
-      
-      console.log('✅ SMS notification sent to:', phone);
-      await logNotification(customer.id, order.id, 'sms', 'sent', { provider: 'twilio', phone });
-    } catch (error: any) {
-      console.error('❌ SMS notification failed:', error?.message || error);
-      await logNotification(customer.id, order.id, 'sms', 'failed', { error: error?.message || String(error) });
-    }
-  }
-}
-
-/**
- * Log notification attempt to database
- */
-async function logNotification(
-  customer_id: string, 
-  order_id: string, 
-  channel: 'email' | 'sms', 
-  status: 'sent' | 'failed',
-  provider_response: any
-) {
-  try {
-    await supabase.from('notification_logs').insert([{
-      customer_id,
-      order_id,
-      channel,
-      status,
-      provider_response,
-      error_message: status === 'failed' ? provider_response.error : null
-    }]);
-  } catch (error) {
-    console.warn('⚠️ Failed to log notification:', error);
   }
 }

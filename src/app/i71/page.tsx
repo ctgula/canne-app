@@ -23,7 +23,7 @@ export default function CompliancePage() {
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="flex justify-center p-12 border-b border-gray-100 bg-gradient-to-r from-pink-50 to-indigo-50">
             <Image 
-              src="/images/canne_logo.svg"
+              src="/images/canne_logo_web.png"
               alt="Cannè Art Collective"
               width={200}
               height={200}

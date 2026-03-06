@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
 
 export async function GET() {
+  // Block in production — test routes must not be publicly accessible
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  }
+
   const webhookUrl = process.env.DISCORD_WEBHOOK;
   
   const diagnostics = {

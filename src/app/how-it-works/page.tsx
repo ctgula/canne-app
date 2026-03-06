@@ -137,7 +137,7 @@ export default function HowItWorksPage() {
               >
                 {/* Logo */}
                 <motion.div variants={item} className="mb-6">
-                  <img src="/images/canne_logo_web.svg" alt="Cannè Logo" className="mx-auto w-48 h-48 md:w-52 md:h-52" />
+                  <img src="/images/canne_logo_web.png" alt="Cannè Logo" className="mx-auto w-48 h-48 md:w-52 md:h-52" />
                 </motion.div>
                 
                 <motion.div variants={item} className="inline-block px-4 py-1 mb-4 bg-gradient-to-r from-pink-500/10 to-purple-500/10 dark:from-pink-500/20 dark:to-purple-500/20 rounded-full">

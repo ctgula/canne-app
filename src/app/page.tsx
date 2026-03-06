@@ -82,7 +82,7 @@ export default function Home() {
                 transition={{ duration: 0.6, ease: "easeOut" }}
               >
                 <Image 
-                  src="/images/canne_logo_web.svg"
+                  src="/images/canne_logo_web.png"
                   alt="Cannè Logo" 
                   width={240} 
                   height={240} 
