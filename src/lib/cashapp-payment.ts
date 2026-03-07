@@ -1,4 +1,5 @@
 import { useRouter } from 'next/navigation';
+import { toast } from 'react-hot-toast';
 
 export interface CashAppOrderData {
   amount_cents: number;
@@ -35,12 +36,12 @@ export async function createCashAppOrder(orderData: CashAppOrderData): Promise<s
         error: result.error,
         fullResponse: result
       });
-      alert(`Order creation failed: ${result.error || 'Unknown error'}`);
+      toast.error(`Order creation failed: ${result.error || 'Unknown error'}`);
       return null;
     }
   } catch (error) {
     console.error('❌ Network error creating Cash App order:', error);
-    alert(`Network error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    toast.error('Network error. Please check your connection and try again.');
     return null;
   }
 }
@@ -61,7 +62,7 @@ export function useCashAppPayment() {
       router.push(`/pay/${encodeURIComponent(shortCode)}`);
       return true;
     } else {
-      alert('Failed to create payment order. Please try again.');
+      toast.error('Failed to create payment order. Please try again.');
       return false;
     }
   };

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, MapPin, Shield } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 interface AgeGateProps {
   onVerified: () => void;
@@ -28,7 +29,7 @@ export default function AgeGate({ onVerified }: AgeGateProps) {
     const age = currentYear - parseInt(birthYear);
     
     if (!birthYear || age < 21) {
-      alert('You must be 21 years of age or older to access this site.');
+      toast.error('You must be 21 years of age or older to access this site.');
       return;
     }
 

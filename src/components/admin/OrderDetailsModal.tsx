@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { X, Phone, MapPin, User, Loader2 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
+import { toast } from "react-hot-toast";
 
 interface OrderDetailsModalProps {
   isOpen: boolean;
@@ -55,7 +56,7 @@ export default function OrderDetailsModal({ isOpen, orderId, onClose }: OrderDet
       await loadOrder(); // Reload order data
     } catch (e: any) {
       console.error('Error updating status:', e);
-      alert('Failed to update status');
+      toast.error('Failed to update status');
     } finally {
       setUpdating(false);
     }

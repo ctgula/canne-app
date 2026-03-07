@@ -7,6 +7,7 @@ import CopyChip from "@/components/CopyChip";
 import CountdownTimer from "@/components/CountdownTimer";
 import StatusPill from "@/components/StatusPill";
 import { motion } from "framer-motion";
+import { toast } from "react-hot-toast";
 
 const CASHTAG = process.env.NEXT_PUBLIC_CASHTAG || "cjdj1";
 
@@ -77,7 +78,7 @@ function PayPageClient({ shortCode }: { shortCode: string }) {
 
   async function submitPayment() {
     if (isExpired) {
-      alert('This order has expired. Please return to cart to place a new order.');
+      toast.error('This order has expired. Please return to cart to place a new order.');
       return;
     }
     

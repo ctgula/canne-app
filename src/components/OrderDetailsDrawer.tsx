@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, User, Phone, Mail, MapPin, CreditCard, Package, Truck, DollarSign, Clock, ExternalLink } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 interface OrderDetailsDrawerProps {
   orderId: string | null;
@@ -140,7 +141,7 @@ export default function OrderDetailsDrawer({
 
     const requiresReason = ['undelivered', 'refunded', 'canceled'].includes(selectedStatus);
     if (requiresReason && !statusReason.trim()) {
-      alert('Reason is required for this status change');
+      toast.error('Reason is required for this status change');
       return;
     }
 

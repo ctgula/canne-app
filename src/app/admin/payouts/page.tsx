@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { toast } from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { 
   DollarSign, 
@@ -62,7 +63,7 @@ export default function AdminPayoutsPage() {
     if (password === 'canne2024') {
       setIsAuthenticated(true);
     } else {
-      alert('Incorrect password');
+      toast.error('Incorrect password');
     }
   };
 
@@ -104,11 +105,11 @@ export default function AdminPayoutsPage() {
       if (response.ok) {
         fetchPayouts(); // Refresh payouts
       } else {
-        alert('Failed to mark payout as paid');
+        toast.error('Failed to mark payout as paid');
       }
     } catch (error) {
       console.error('Error marking payout as paid:', error);
-      alert('Error marking payout as paid');
+      toast.error('Error marking payout as paid');
     } finally {
       setActionLoading(null);
     }
