@@ -3,13 +3,13 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 // Initialize the Supabase admin client with service role key for server-side operations
 // This client has admin privileges and should only be used in secure server contexts
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
 let _supabaseAdmin: SupabaseClient | null = null;
 
 function getSupabaseAdmin(): SupabaseClient {
   if (_supabaseAdmin) return _supabaseAdmin;
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!supabaseUrl || !supabaseServiceKey) {
     throw new Error(
@@ -36,13 +36,15 @@ export const supabaseAdmin = new Proxy({} as SupabaseClient, {
 
 // Export a function to validate environment variables at runtime
 export const validateSupabaseConfig = () => {
-  if (!supabaseUrl) {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url) {
     throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL environment variable');
   }
-  if (!supabaseServiceKey) {
+  if (!key) {
     throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY environment variable');
   }
-  return { supabaseUrl, supabaseServiceKey };
+  return { supabaseUrl: url, supabaseServiceKey: key };
 };
 
 // Helper functions for common admin operations

@@ -1,14 +1,24 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-// Initialize the Supabase client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+let _supabase: SupabaseClient | null = null;
 
-// Get the anon key from environment variables
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+function getSupabase(): SupabaseClient {
+  if (_supabase) return _supabase;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables. Please check your .env.local file.');
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error('Missing Supabase environment variables. Please check your .env.local file.');
+  }
+
+  _supabase = createClient(supabaseUrl, supabaseAnonKey);
+  return _supabase;
 }
 
-// Create the Supabase client
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Lazy-initialized client — safe to import at build time
+export const supabase = new Proxy({} as SupabaseClient, {
+  get(_target, prop) {
+    return (getSupabase() as any)[prop];
+  },
+});

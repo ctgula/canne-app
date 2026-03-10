@@ -124,8 +124,5 @@ export const useSupabase = () => {
 
 // Typed database client
 export const useSupabaseClient = () => {
-  return supabase as unknown as ReturnType<typeof createClient<Database>>;
+  return supabase as any;
 };
-
-// Helper to import from @supabase/supabase-js without importing in every file
-import { createClient } from '@supabase/supabase-js';

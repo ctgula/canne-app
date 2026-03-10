@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 export const runtime = 'nodejs';
-import { createClient } from '@supabase/supabase-js';
+import { supabaseAdmin as supabase } from '@/lib/supabase-admin';
 
 // Type definitions
 interface OrderItem {
@@ -40,18 +40,6 @@ interface OrderData {
   hasDelivery: boolean;
   status: string;
 }
-
-// Simple, reliable Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
-  }
-);
 
 export async function POST(request: NextRequest) {
   try {

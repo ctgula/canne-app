@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase';
 import { 
   Phone, 
   User, 
@@ -122,12 +122,6 @@ export default function AdminOrdersPage() {
   const [copiedPhone, setCopiedPhone] = useState<string | null>(null);
 
   const { success: showSuccessToast, error: showErrorToast } = useToast();
-
-  // Initialize Supabase client for real-time updates
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
 
   const getValidTransitions = (currentStatus: string): string[] => {
     const transitions: Record<string, string[]> = {
