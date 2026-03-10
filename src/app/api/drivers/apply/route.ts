@@ -33,11 +33,16 @@ export async function POST(request: NextRequest) {
 
     const { name, phone, email, availability, vehicleType, cashappHandle, about } = validationResult.data;
 
+    // Sanitize inputs
+    const cleanName = name.trim();
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPhone = phone.trim();
+
     // Check if email or phone already exists
     const { data: existingApplication } = await supabase
       .from('driver_applications')
       .select('id, email, phone')
-      .or(`email.eq.${email},phone.eq.${phone}`)
+      .or(`email.eq.${cleanEmail},phone.eq.${cleanPhone}`)
       .single();
 
     if (existingApplication) {
@@ -55,13 +60,13 @@ export async function POST(request: NextRequest) {
       .from('driver_applications')
       .insert([
         {
-          name,
-          phone,
-          email,
+          name: cleanName,
+          phone: cleanPhone,
+          email: cleanEmail,
           availability,
-          vehicle_type: vehicleType || null,
-          cashapp_handle: cashappHandle || null,
-          about: about || null,
+          vehicle_type: vehicleType?.trim() || null,
+          cashapp_handle: cashappHandle?.trim() || null,
+          about: about?.trim() || null,
           status: 'new'
         }
       ])
@@ -79,8 +84,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // TODO: Send notification to admin about new application
-    // This could be an email, Discord webhook, or Slack notification
+    // Send Discord notification for new driver application
+    try {
+      const webhookUrl = process.env.DISCORD_WEBHOOK;
+      if (webhookUrl) {
+        await fetch(webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            embeds: [{
+              title: '🚗 New Driver Application',
+              color: 0x9333ea,
+              fields: [
+                { name: 'Name', value: cleanName, inline: true },
+                { name: 'Phone', value: cleanPhone, inline: true },
+                { name: 'Email', value: cleanEmail, inline: true },
+                { name: 'Availability', value: availability.join(', ') },
+                { name: 'Vehicle', value: vehicleType || 'Not specified', inline: true },
+                { name: 'Cash App', value: cashappHandle || 'Not provided', inline: true },
+              ],
+              timestamp: new Date().toISOString(),
+            }],
+          }),
+        });
+      }
+    } catch (discordError) {
+      console.error('Discord notification error:', discordError);
+    }
 
     return NextResponse.json({
       success: true,

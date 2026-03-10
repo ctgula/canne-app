@@ -75,18 +75,18 @@ export default function Home() {
               className="flex flex-col items-center text-center py-8 px-4 sm:py-12 sm:px-6"
               variants={itemVariants}
             >
-              {/* Logo - Simplified for Performance */}
+              {/* Ice Cream Logo */}
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.6, ease: "easeOut" }}
               >
                 <Image 
-                  src="/images/canne_logo_web.png"
-                  alt="Cannè Logo" 
-                  width={200} 
-                  height={300} 
-                  className="relative h-32 sm:h-36 md:h-44 lg:h-48 w-auto drop-shadow-2xl mx-auto"
+                  src="/images/ice_cream_logo.svg"
+                  alt="Cannè Art Collective" 
+                  width={400} 
+                  height={600} 
+                  className="relative h-48 sm:h-56 md:h-72 lg:h-80 w-auto drop-shadow-2xl mx-auto"
                   priority
                 />
               </motion.div>

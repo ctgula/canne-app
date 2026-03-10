@@ -12,11 +12,11 @@ export default function Footer() {
           <div className="md:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-4">
               <Image
-                src="/images/canne_logo_web.png"
+                src="/images/ice_cream_logo.svg"
                 alt="Cannè"
                 width={32}
-                height={32}
-                className="w-8 h-8"
+                height={48}
+                className="w-8 h-auto"
               />
               <div>
                 <span className="font-bold text-sm bg-gradient-to-r from-pink-500 to-purple-600 text-transparent bg-clip-text tracking-wide">CANNÈ</span>

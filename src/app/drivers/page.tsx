@@ -6,8 +6,9 @@ import { MapPin, DollarSign, Clock, Zap, TrendingUp, Shield } from 'lucide-react
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import toast, { Toaster } from 'react-hot-toast';
-import { supabase } from '@/lib/supabase';
+import toast from 'react-hot-toast';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 
 // Form validation
 const driverSchema = z.object({
@@ -37,81 +38,46 @@ export default function DriversPage() {
     }
   });
 
+  // Format phone as user types
+  const formatPhone = (value: string) => {
+    const digits = value.replace(/\D/g, '');
+    if (digits.length >= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
+    if (digits.length >= 3) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+    return digits;
+  };
+
   const onSubmit = async (data: DriverForm) => {
     setIsSubmitting(true);
-    console.log('📝 Submitting driver application:', data);
     
     try {
-      // Insert into driver_applications table
-      const { data: insertedData, error } = await supabase
-        .from('driver_applications')
-        .insert([{
-          name: data.name,
-          phone: data.phone,
-          email: data.email,
-          availability: data.availability,
-          vehicle_type: data.vehicleType || null,
-          cashapp_handle: data.cashappHandle || null,
-          status: 'pending',
-          created_at: new Date().toISOString(),
-        }])
-        .select();
+      const res = await fetch('/api/drivers/apply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
 
-      if (error) {
-        console.error('❌ Supabase error:', error);
-        throw error;
+      const result = await res.json();
+
+      if (!res.ok || !result.success) {
+        throw new Error(result.message || 'Failed to submit application');
       }
-
-      console.log('✅ Application saved to Supabase:', insertedData);
       
       setShowSuccess(true);
       reset();
-      toast.success('Application submitted! We\'ll contact you within 24 hours.', {
-        duration: 5000,
-        style: {
-          background: '#10b981',
-          color: '#fff',
-        },
-      });
-      
-      setTimeout(() => setShowSuccess(false), 5000);
-    } catch (error: any) {
-      console.error('❌ Error submitting application:', error);
-      toast.error(error.message || 'Something went wrong. Please try again.', {
-        duration: 5000,
-        style: {
-          background: '#ef4444',
-          color: '#fff',
-        },
-      });
+      toast.success('Application submitted! We\'ll contact you within 24 hours.', { duration: 5000 });
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Something went wrong. Please try again.';
+      toast.error(msg, { duration: 5000 });
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50">
-      <Toaster position="bottom-right" />
-      
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-purple-100 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-4xl">🍦</span>
-            <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
-              Cannè
-            </h1>
-          </div>
-          <a 
-            href="/"
-            className="px-4 py-2 text-sm font-medium text-purple-600 hover:text-purple-700 transition-colors"
-          >
-            Back to Home
-          </a>
-        </div>
-      </header>
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 dark:from-gray-900 dark:via-purple-950/20 dark:to-gray-900">
+      <Header />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 pt-20 py-12 sm:py-20">
         {/* Hero Section */}
         <motion.section
           initial={{ opacity: 0, y: 20 }}
@@ -129,7 +95,7 @@ export default function DriversPage() {
             </span>
           </h2>
           
-          <p className="text-xl sm:text-2xl text-gray-700 mb-8 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-xl sm:text-2xl text-gray-700 dark:text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">
             Earn <span className="font-bold text-purple-600">$20–$30/hr</span> delivering premium cannabis. 
             Flexible hours, same-day pay, no restaurant waits.
           </p>
@@ -143,7 +109,7 @@ export default function DriversPage() {
             </a>
             <a
               href="sms:2028522281"
-              className="px-8 py-4 bg-white text-purple-600 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl border-2 border-purple-200 hover:border-purple-300 transition-all"
+              className="px-8 py-4 bg-white dark:bg-gray-800 text-purple-600 dark:text-purple-400 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl border-2 border-purple-200 dark:border-purple-700 hover:border-purple-300 transition-all"
             >
               📱 Text 202-852-2281
             </a>
@@ -169,15 +135,15 @@ export default function DriversPage() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 + i * 0.1 }}
               whileHover={{ scale: 1.05, y: -4 }}
-              className="bg-white rounded-2xl p-6 shadow-lg border border-purple-100 text-center"
+              className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-purple-100 dark:border-gray-700 text-center"
             >
               <div className={`w-12 h-12 mx-auto mb-4 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center`}>
                 <stat.icon className="w-6 h-6 text-white" />
               </div>
-              <div className="text-3xl font-black bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent mb-1">
+              <div className="text-3xl font-black bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent mb-1">
                 {stat.value}
               </div>
-              <div className="text-sm text-gray-600 font-medium">{stat.label}</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400 font-medium">{stat.label}</div>
             </motion.div>
           ))}
         </motion.section>
@@ -234,11 +200,11 @@ export default function DriversPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 + i * 0.1 }}
                 whileHover={{ y: -4 }}
-                className="bg-white rounded-2xl p-6 shadow-lg border border-purple-100 hover:shadow-xl transition-all"
+                className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-purple-100 dark:border-gray-700 hover:shadow-xl transition-all"
               >
                 <div className="text-4xl mb-4">{benefit.emoji}</div>
-                <h4 className="text-xl font-bold text-gray-900 mb-2">{benefit.title}</h4>
-                <p className="text-gray-600 leading-relaxed">{benefit.desc}</p>
+                <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{benefit.title}</h4>
+                <p className="text-gray-600 dark:text-gray-400 leading-relaxed">{benefit.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -252,28 +218,28 @@ export default function DriversPage() {
           transition={{ delay: 0.5 }}
           className="max-w-2xl mx-auto"
         >
-          <div className="bg-white rounded-3xl p-8 sm:p-12 shadow-2xl border border-purple-100">
+          <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 sm:p-12 shadow-2xl border border-purple-100 dark:border-gray-700">
             <div className="text-center mb-8">
               <h3 className="text-3xl font-bold mb-2">
                 <span className="bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
                   Apply Now
                 </span>
               </h3>
-              <p className="text-gray-600">We'll get back to you within 24 hours</p>
+              <p className="text-gray-600 dark:text-gray-400">We'll get back to you within 24 hours</p>
             </div>
 
             {showSuccess ? (
               <div className="text-center py-12">
                 <div className="text-6xl mb-4">🎉</div>
-                <h4 className="text-2xl font-bold text-gray-900 mb-2">Application Submitted!</h4>
-                <p className="text-gray-600">Check your email and phone for next steps.</p>
+                <h4 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Application Submitted!</h4>
+                <p className="text-gray-600 dark:text-gray-400">Check your email and phone for next steps.</p>
               </div>
             ) : (
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 {/* Name & Phone */}
                 <div className="grid sm:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-900 mb-2">
+                    <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
                       Full Name *
                     </label>
                     <Controller
@@ -284,7 +250,8 @@ export default function DriversPage() {
                           {...field}
                           type="text"
                           placeholder="John Doe"
-                          className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition-all"
+                          autoComplete="name"
+                          className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition-all"
                         />
                       )}
                     />
@@ -292,7 +259,7 @@ export default function DriversPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-900 mb-2">
+                    <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
                       Phone Number *
                     </label>
                     <Controller
@@ -303,7 +270,10 @@ export default function DriversPage() {
                           {...field}
                           type="tel"
                           placeholder="(202) 555-1234"
-                          className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition-all"
+                          autoComplete="tel"
+                          maxLength={14}
+                          onChange={(e) => field.onChange(formatPhone(e.target.value))}
+                          className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition-all"
                         />
                       )}
                     />
@@ -313,7 +283,7 @@ export default function DriversPage() {
 
                 {/* Email */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-2">
+                  <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
                     Email Address *
                   </label>
                   <Controller
@@ -324,7 +294,8 @@ export default function DriversPage() {
                         {...field}
                         type="email"
                         placeholder="john@example.com"
-                        className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition-all"
+                        autoComplete="email"
+                        className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition-all"
                       />
                     )}
                   />
@@ -333,7 +304,7 @@ export default function DriversPage() {
 
                 {/* Availability */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-3">
+                  <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-3">
                     Availability (select all that apply) *
                   </label>
                   <Controller
@@ -342,7 +313,7 @@ export default function DriversPage() {
                     render={({ field }) => (
                       <div className="grid sm:grid-cols-2 gap-3">
                         {['Morning (8am-11am)', 'Lunch (11am-3pm)', 'Dinner (5pm-10pm)', 'Late Night (10pm-2am)'].map((shift) => (
-                          <label key={shift} className="flex items-center gap-3 p-4 rounded-xl border-2 border-gray-200 hover:border-purple-300 cursor-pointer transition-all">
+                          <label key={shift} className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${field.value?.includes(shift) ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/30' : 'border-gray-200 dark:border-gray-600 hover:border-purple-300'}`}>
                             <input
                               type="checkbox"
                               value={shift}
@@ -355,7 +326,7 @@ export default function DriversPage() {
                               }}
                               className="w-5 h-5 text-purple-600 rounded focus:ring-2 focus:ring-purple-200"
                             />
-                            <span className="text-sm font-medium text-gray-700">{shift}</span>
+                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{shift}</span>
                           </label>
                         ))}
                       </div>
@@ -366,7 +337,7 @@ export default function DriversPage() {
 
                 {/* Vehicle Type */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-2">
+                  <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
                     Vehicle Type (optional)
                   </label>
                   <Controller
@@ -375,7 +346,7 @@ export default function DriversPage() {
                     render={({ field }) => (
                       <select
                         {...field}
-                        className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition-all"
+                        className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition-all"
                       >
                         <option value="">Select vehicle type</option>
                         <option value="car">Car</option>
@@ -389,7 +360,7 @@ export default function DriversPage() {
 
                 {/* CashApp */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-2">
+                  <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
                     Cash App Handle (optional)
                   </label>
                   <Controller
@@ -400,7 +371,7 @@ export default function DriversPage() {
                         {...field}
                         type="text"
                         placeholder="$YourCashApp"
-                        className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition-all"
+                        className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition-all"
                       />
                     )}
                   />
@@ -424,21 +395,23 @@ export default function DriversPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6 }}
-          className="text-center mt-12 sm:mt-16 py-12 px-4 bg-gradient-to-r from-pink-100 via-purple-100 to-blue-100 rounded-3xl"
+          className="text-center mt-12 sm:mt-16 py-12 px-4 bg-gradient-to-r from-pink-100 via-purple-100 to-blue-100 dark:from-purple-900/30 dark:via-indigo-900/30 dark:to-blue-900/30 rounded-3xl"
         >
           <h3 className="text-2xl sm:text-3xl font-bold mb-4">
             <span className="bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
               Questions?
             </span>
           </h3>
-          <p className="text-gray-700 mb-6 text-lg">
-            Text us at <a href="sms:2028522281" className="font-bold text-purple-600 hover:text-purple-700">202-852-2281</a>
+          <p className="text-gray-700 dark:text-gray-300 mb-6 text-lg">
+            Text us at <a href="sms:2028522281" className="font-bold text-purple-600 hover:text-purple-700 dark:text-purple-400">202-852-2281</a>
           </p>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
             Discrete. Local. Reliable.
           </p>
         </motion.section>
       </main>
+
+      <Footer />
     </div>
   );
 }
