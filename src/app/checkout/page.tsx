@@ -9,13 +9,14 @@ import { Checkbox } from '@/components/ui/checkbox';
 import Header from '@/components/Header';
 import { useCartStore } from '@/services/CartService';
 import { toast } from 'react-hot-toast';
-import { Truck, MapPin, Clock, CreditCard, ArrowLeft, CheckCircle, Shield, Lock, Smartphone } from 'lucide-react';
+import { MapPin, Clock, CreditCard, ArrowLeft, CheckCircle, Lock, Smartphone } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCashAppPayment } from '@/lib/cashapp-payment';
 import ApplePayButton from '@/components/ApplePayButton';
 
 import CheckoutFAQ from './components/CheckoutFAQ';
+import Footer from '@/components/Footer';
 
 // Types for checkout
 interface DeliveryDetails {
@@ -154,8 +155,8 @@ export default function CheckoutPage() {
         <Header />
         <div className="pt-20 max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">No items to checkout</h1>
-            <p className="text-gray-600 mb-8">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">No items to checkout</h1>
+            <p className="text-gray-600 dark:text-gray-400 mb-8">
               Add some beautiful artwork to your cart before proceeding to checkout.
             </p>
             <Link href="/shop" className="inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-medium rounded-xl text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors duration-200 min-w-[200px]">
@@ -176,8 +177,8 @@ export default function CheckoutPage() {
         <Header />
         <div className="pt-20 max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">Cart is empty</h1>
-            <p className="text-gray-600 mb-8">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Cart is empty</h1>
+            <p className="text-gray-600 dark:text-gray-400 mb-8">
               Add some items to your cart before proceeding to checkout.
             </p>
             <Link href="/shop" className="inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-medium rounded-xl text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors duration-200 min-w-[200px]">
@@ -252,85 +253,71 @@ export default function CheckoutPage() {
     } catch {}
   };
 
-  const handleCashAppPayment = async (data: CheckboxForm) => {
-    // Validate ALL form fields (same as regular flow)
-    const validationErrors = [];
-    
-    if (!deliveryDetails.name.trim()) {
-      validationErrors.push('Full name is required');
-    }
-    
+  // Shared validation for all payment methods
+  const validateFormFields = (): string[] => {
+    const errors: string[] = [];
+    if (!deliveryDetails.name.trim()) errors.push('Full name is required');
     if (!deliveryDetails.email?.trim()) {
-      validationErrors.push('Email address is required');
+      errors.push('Email address is required');
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(deliveryDetails.email)) {
-      validationErrors.push('Please enter a valid email address');
+      errors.push('Please enter a valid email address');
     }
-    
-    const phoneValidationError = validatePhoneNumber(deliveryDetails.phone);
-    if (phoneValidationError) {
-      validationErrors.push(phoneValidationError);
-      setPhoneError(phoneValidationError);
-    }
-
-    if (!deliveryDetails.address.trim()) {
-      validationErrors.push('Street address is required');
-    }
-
-    if (!deliveryDetails.city.trim()) {
-      validationErrors.push('City is required');
-    }
-
+    const phoneErr = validatePhoneNumber(deliveryDetails.phone);
+    if (phoneErr) { errors.push(phoneErr); setPhoneError(phoneErr); }
+    if (!deliveryDetails.address.trim()) errors.push('Street address is required');
+    if (!deliveryDetails.city.trim()) errors.push('City is required');
     if (!deliveryDetails.zipCode.trim()) {
-      validationErrors.push('ZIP code is required');
+      errors.push('ZIP code is required');
     } else if (!/^20[0-1]\d{2}$/.test(deliveryDetails.zipCode)) {
-      validationErrors.push('Please enter a valid DC ZIP code (20000-20199)');
+      errors.push('Please enter a valid DC ZIP code (20000-20199)');
     }
+    if (items.length === 0) errors.push('Your cart is empty. Please add items before checking out.');
+    return errors;
+  };
 
-    if (items.length === 0) {
-      validationErrors.push('Your cart is empty. Please add items before checking out.');
-    }
-    
-    if (validationErrors.length > 0) {
-      toast.error(validationErrors[0]);
-      return;
-    }
+  // Shared order object builder
+  const buildOrder = (data: CheckboxForm): Omit<Order, 'id' | 'createdAt' | 'updatedAt'> => {
+    const orderItems: OrderCartItem[] = items.map(item => ({
+      product: {
+        id: item.product.id,
+        name: item.product.name,
+        description: (((item.product as any).display_tier) || item.product.tier || item.product.description || ''),
+        price: item.product.price,
+        artworkUrl: item.product.image_url || '',
+        giftSize: item.product.weight || `${((item.product as any).display_tier || item.product.tier)} tier`,
+        hasDelivery: hasDelivery
+      },
+      quantity: item.quantity,
+      strain: {
+        name: item.strain.name,
+        type: item.strain.type,
+        thcLow: item.strain.thcLow,
+        thcHigh: item.strain.thcHigh
+      }
+    }));
+    return {
+      items: orderItems,
+      deliveryDetails: {
+        ...deliveryDetails,
+        ageVerification: data.ageVerified,
+        termsAccepted: data.acceptTerms,
+        emailUpdates: !!data.emailOptIn,
+        phone: deliveryDetails.phone.replace(/\D/g, ''),
+      },
+      total: finalTotal,
+      hasDelivery: hasDelivery,
+      status: 'pending',
+    };
+  };
+
+  const handleCashAppPayment = async (data: CheckboxForm) => {
+    const validationErrors = validateFormFields();
+    if (validationErrors.length > 0) { toast.error(validationErrors[0]); return; }
 
     setIsSubmitting(true);
 
     try {
-      // Step 1: Create full order in database (preserves customer + order data)
-      const orderItems: OrderCartItem[] = items.map(item => ({
-        product: {
-          id: item.product.id,
-          name: item.product.name,
-          description: (((item.product as any).display_tier) || item.product.tier || item.product.description || ''),
-          price: item.product.price,
-          artworkUrl: item.product.image_url || '',
-          giftSize: item.product.weight || `${((item.product as any).display_tier || item.product.tier)} tier`,
-          hasDelivery: hasDelivery
-        },
-        quantity: item.quantity,
-        strain: {
-          name: item.strain.name,
-          type: item.strain.type,
-          thcLow: item.strain.thcLow,
-          thcHigh: item.strain.thcHigh
-        }
-      }));
-
-      const order: Omit<Order, 'id' | 'createdAt' | 'updatedAt'> = {
-        items: orderItems,
-        deliveryDetails: {
-          ...deliveryDetails,
-          ageVerification: data.ageVerified,
-          termsAccepted: data.acceptTerms,
-          emailUpdates: !!data.emailOptIn,
-          phone: deliveryDetails.phone.replace(/\D/g, ''),
-        },
-        total: finalTotal,
-        hasDelivery: hasDelivery,
-        status: 'pending',
-      };
+      const order = buildOrder(data);
 
       const response = await fetch('/api/place-order', {
         method: 'POST',
@@ -344,7 +331,7 @@ export default function CheckoutPage() {
         throw new Error(responseData.error || 'Failed to create order');
       }
 
-      // Step 2: Initiate Cash App payment redirect
+      // Initiate Cash App payment redirect
       const success = await initiatePayment(finalTotal, deliveryDetails.phone.replace(/\D/g, ''));
       if (!success) {
         toast.error('Order saved but Cash App redirect failed. Please contact support.');
@@ -397,89 +384,17 @@ export default function CheckoutPage() {
       return;
     }
     
-    // Comprehensive form validation with better UX
-    const validationErrors = [];
-    
-    if (!deliveryDetails.name.trim()) {
-      validationErrors.push('Full name is required');
-    }
-    
-    if (!deliveryDetails.email?.trim()) {
-      validationErrors.push('Email address is required');
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(deliveryDetails.email)) {
-      validationErrors.push('Please enter a valid email address');
-    }
-    
-    const phoneValidationError = validatePhoneNumber(deliveryDetails.phone);
-    if (phoneValidationError) {
-      validationErrors.push(phoneValidationError);
-      setPhoneError(phoneValidationError);
-    }
-    
-    if (!deliveryDetails.address.trim()) {
-      validationErrors.push('Street address is required');
-    }
-    
-    if (!deliveryDetails.city.trim()) {
-      validationErrors.push('City is required');
-    }
-    
-    if (!deliveryDetails.zipCode.trim()) {
-      validationErrors.push('ZIP code is required');
-    } else if (!/^20[0-1]\d{2}$/.test(deliveryDetails.zipCode)) {
-      validationErrors.push('Please enter a valid DC ZIP code (20000-20199)');
-    }
-    
-    if (items.length === 0) {
-      validationErrors.push('Your cart is empty. Please add items before checking out.');
-    }
-    
-    if (validationErrors.length > 0) {
-      toast.error(validationErrors[0]);
-      return;
-    }
+    const validationErrors = validateFormFields();
+    if (validationErrors.length > 0) { toast.error(validationErrors[0]); return; }
     
     setIsSubmitting(true);
 
     try {
-      const orderItems: OrderCartItem[] = items.map(item => ({
-        product: {
-          id: item.product.id,
-          name: item.product.name,
-          description: (((item.product as any).display_tier) || item.product.tier || item.product.description || ''),
-          price: item.product.price,
-          artworkUrl: item.product.image_url || '',
-          giftSize: item.product.weight || `${((item.product as any).display_tier || item.product.tier)} tier`,
-          hasDelivery: hasDelivery
-        },
-        quantity: item.quantity,
-        strain: {
-          name: item.strain.name,
-          type: item.strain.type,
-          thcLow: item.strain.thcLow,
-          thcHigh: item.strain.thcHigh
-        }
-      }));
-      
-      const order: Omit<Order, 'id' | 'createdAt' | 'updatedAt'> = {
-        items: orderItems,
-        deliveryDetails: {
-          ...deliveryDetails,
-          ageVerification: data.ageVerified,
-          termsAccepted: data.acceptTerms,
-          emailUpdates: !!data.emailOptIn,
-          phone: deliveryDetails.phone.replace(/\D/g, ''),
-        },
-        total: finalTotal,
-        hasDelivery: hasDelivery,
-        status: 'pending',
-      };
+      const order = buildOrder(data);
 
       const response = await fetch('/api/place-order', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(order),
       });
 
@@ -689,6 +604,7 @@ export default function CheckoutPage() {
             </p>
           </div>
         </div>
+        <Footer />
       </div>
     );
   }
@@ -1060,7 +976,7 @@ export default function CheckoutPage() {
           </div>
 
           {/* Order Summary and Actions */}
-          <aside className="w-full lg:w-96 lg:pl-8 lg:sticky lg:top-8 h-fit space-y-6">
+          <aside className="w-full lg:w-96 lg:pl-8 lg:sticky lg:top-24 h-fit space-y-6">
             <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Order Summary</h2>
               
@@ -1126,8 +1042,7 @@ export default function CheckoutPage() {
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Payment Method</h3>
               <div className="space-y-3">
                 {/* Apple Pay Option */}
-                <label className="flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all hover:bg-gray-50 dark:hover:bg-gray-700"
-                       style={{ borderColor: paymentMethod === 'applepay' ? '#007AFF' : '#E5E7EB' }}>
+                <label className={`flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all hover:bg-gray-50 dark:hover:bg-gray-700 ${paymentMethod === 'applepay' ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-900/20' : 'border-gray-200 dark:border-gray-600'}`}>
                   <input
                     type="radio"
                     name="paymentMethod"
@@ -1148,8 +1063,7 @@ export default function CheckoutPage() {
                 </label>
 
                 {/* Cash App Option */}
-                <label className="flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all hover:bg-gray-50 dark:hover:bg-gray-700"
-                       style={{ borderColor: paymentMethod === 'cashapp' ? '#8B5CF6' : '#E5E7EB' }}>
+                <label className={`flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all hover:bg-gray-50 dark:hover:bg-gray-700 ${paymentMethod === 'cashapp' ? 'border-purple-500 bg-purple-50/50 dark:bg-purple-900/20' : 'border-gray-200 dark:border-gray-600'}`}>
                   <input
                     type="radio"
                     name="paymentMethod"
@@ -1204,6 +1118,7 @@ export default function CheckoutPage() {
           </aside>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

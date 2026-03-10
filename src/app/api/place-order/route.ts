@@ -26,6 +26,7 @@ interface DeliveryDetails {
   phone: string;
   email: string;
   address: string;
+  apartment?: string;
   city: string;
   zipCode: string;
   timePreference: string;
@@ -54,8 +55,34 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Missing delivery details' }, { status: 400 });
     }
 
+    // Sanitize inputs
+    const dd = orderData.deliveryDetails;
+    dd.name = (dd.name || '').trim();
+    dd.email = (dd.email || '').trim().toLowerCase();
+    dd.phone = (dd.phone || '').trim();
+    dd.address = (dd.address || '').trim();
+    dd.apartment = (dd.apartment || '').trim();
+    dd.city = (dd.city || '').trim();
+    dd.zipCode = (dd.zipCode || '').trim();
+    dd.specialInstructions = (dd.specialInstructions || '').trim();
+
+    // Validate required fields
+    if (!dd.name || dd.name.length < 2) {
+      return NextResponse.json({ success: false, error: 'Full name is required' }, { status: 400 });
+    }
+    if (!dd.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(dd.email)) {
+      return NextResponse.json({ success: false, error: 'A valid email address is required' }, { status: 400 });
+    }
+    const phoneDigits = dd.phone.replace(/\D/g, '');
+    if (!phoneDigits || phoneDigits.length < 10) {
+      return NextResponse.json({ success: false, error: 'A valid phone number is required' }, { status: 400 });
+    }
+    if (!dd.address) {
+      return NextResponse.json({ success: false, error: 'Street address is required' }, { status: 400 });
+    }
+
     // Validate DC ZIP code
-    const zipCode = orderData.deliveryDetails.zipCode;
+    const zipCode = dd.zipCode;
     if (!zipCode || !/^20[0-1]\d{2}$/.test(zipCode)) {
       return NextResponse.json({ 
         success: false, 
@@ -83,20 +110,19 @@ export async function POST(request: NextRequest) {
     const orderNumber = `CN-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
 
     // Create or get customer
-    const customerEmail = orderData.deliveryDetails.email || `customer_${Date.now()}@temp.com`;
-    const nameParts = orderData.deliveryDetails.name.split(' ');
+    const nameParts = dd.name.split(' ');
     
     const { data: customer, error: customerError } = await supabase
       .from('customers')
       .upsert({
-        email: customerEmail,
-        name: orderData.deliveryDetails.name || '',
+        email: dd.email,
+        name: dd.name,
         first_name: nameParts[0] || '',
         last_name: nameParts.slice(1).join(' ') || '',
-        phone: orderData.deliveryDetails.phone || '',
-        address: orderData.deliveryDetails.address || '',
-        city: orderData.deliveryDetails.city || 'Washington',
-        zip_code: orderData.deliveryDetails.zipCode || ''
+        phone: phoneDigits,
+        address: dd.address,
+        city: dd.city || 'Washington',
+        zip_code: dd.zipCode
       }, {
         onConflict: 'email'
       })
@@ -123,9 +149,10 @@ export async function POST(request: NextRequest) {
 
     // Validate total matches (allow small floating point differences)
     if (Math.abs(total - orderData.total) > 0.01) {
+      console.error('Price mismatch:', { clientTotal: orderData.total, serverTotal: total });
       return NextResponse.json({ 
         success: false, 
-        error: `Price mismatch. Expected: $${orderData.total}, Calculated: $${total}` 
+        error: 'Price calculation mismatch — please refresh the page and try again.' 
       }, { status: 400 });
     }
 
@@ -137,15 +164,15 @@ export async function POST(request: NextRequest) {
       subtotal: subtotal,
       delivery_fee: deliveryFee,
       total: total,
-      delivery_address_line1: orderData.deliveryDetails.address,
-      delivery_address_line2: null,
-      delivery_city: orderData.deliveryDetails.city,
+      delivery_address_line1: dd.address,
+      delivery_address_line2: dd.apartment || null,
+      delivery_city: dd.city,
       delivery_state: 'DC',
-      delivery_zip: orderData.deliveryDetails.zipCode,
-      delivery_instructions: orderData.deliveryDetails.specialInstructions || null,
-      full_name: orderData.deliveryDetails.name,
-      phone: orderData.deliveryDetails.phone,
-      preferred_time: orderData.deliveryDetails.timePreference || 'ASAP (60-90 min)'
+      delivery_zip: dd.zipCode,
+      delivery_instructions: dd.specialInstructions || null,
+      full_name: dd.name,
+      phone: phoneDigits,
+      preferred_time: dd.timePreference || 'ASAP (60-90 min)'
     };
 
 
