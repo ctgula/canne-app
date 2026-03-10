@@ -1,16 +1,8 @@
 import { NextResponse } from "next/server";
-import { createClient } from '@supabase/supabase-js';
+import { supabaseAdmin as supabase } from '@/lib/supabase-admin';
 
 export async function POST(req: Request) {
   try {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    
-    if (!supabaseUrl || !supabaseKey) {
-      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
-    }
-    
-    const supabase = createClient(supabaseUrl, supabaseKey);
     const { short_code, cashapp_handle, screenshot_url } = await req.json();
 
     // Fetch payment record

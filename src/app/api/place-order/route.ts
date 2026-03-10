@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate order number
-    const orderNumber = `CN-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
+    const orderNumber = `CN-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
 
     // Create or get customer
     const customerEmail = orderData.deliveryDetails.email || `customer_${Date.now()}@temp.com`;
@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
       console.error('Customer creation failed:', customerError.message);
       return NextResponse.json({ 
         success: false, 
-        error: `Failed to create customer: ${customerError.message}` 
+        error: 'Failed to process your order. Please try again.' 
       }, { status: 500 });
     }
 
@@ -159,7 +159,7 @@ export async function POST(request: NextRequest) {
       console.error('Order creation failed:', orderError.message);
       return NextResponse.json({ 
         success: false, 
-        error: `Failed to create order: ${orderError.message}` 
+        error: 'Failed to place your order. Please try again.' 
       }, { status: 500 });
     }
 
@@ -190,7 +190,7 @@ export async function POST(request: NextRequest) {
       
       return NextResponse.json({ 
         success: false, 
-        error: `Failed to create order items: ${itemsError.message}` 
+        error: 'Failed to place your order. Please try again.' 
       }, { status: 500 });
     }
 
