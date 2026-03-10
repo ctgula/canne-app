@@ -65,9 +65,10 @@ interface OrderCartItem {
 }
 
 export default function CheckoutPage() {
-  const { items, clearCart, getTotal, hydrateCart } = useCartStore();
+  const { items, clearCart, getTotal } = useCartStore();
   const { initiatePayment } = useCashAppPayment();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [isOrderComplete, setIsOrderComplete] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<'regular' | 'cashapp' | 'applepay'>('cashapp');
@@ -92,10 +93,9 @@ export default function CheckoutPage() {
   } | null>(null);
   const [phoneError, setPhoneError] = useState<string>('');
 
-  // Hydrate cart from localStorage on component mount
   useEffect(() => {
-    hydrateCart();
-  }, [hydrateCart]);
+    setMounted(true);
+  }, []);
 
   // zod schema for required checkboxes
   const schema = z.object({
@@ -131,12 +131,28 @@ export default function CheckoutPage() {
     emailUpdates: false
   });
 
+  // Show loading skeleton until hydrated to prevent false 'empty cart' flash
+  if (!mounted && !isOrderComplete) {
+    return (
+      <div className="min-h-screen">
+        <Header />
+        <div className="pt-20 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="animate-pulse space-y-6">
+            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-48"></div>
+            <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded-2xl"></div>
+            <div className="h-48 bg-gray-200 dark:bg-gray-700 rounded-2xl"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Redirect if cart is empty
   if (items.length === 0 && !isOrderComplete) {
     return (
       <div className="min-h-screen">
         <Header />
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="pt-20 max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900 mb-4">No items to checkout</h1>
             <p className="text-gray-600 mb-8">
@@ -158,7 +174,7 @@ export default function CheckoutPage() {
     return (
       <div className="min-h-screen">
         <Header />
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="pt-20 max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900 mb-4">Cart is empty</h1>
             <p className="text-gray-600 mb-8">
@@ -545,7 +561,7 @@ export default function CheckoutPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20">
         <Header />
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="pt-20 max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle className="h-8 w-8 text-green-600" />
@@ -678,15 +694,12 @@ export default function CheckoutPage() {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.3 }}
+    <div
       className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-purple-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-purple-900/10"
     >
       <Header />
       
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="pt-20 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Link 
           href="/cart" 
           className="inline-flex items-center text-gray-600 hover:text-purple-600 mb-8 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] group"
@@ -1191,6 +1204,6 @@ export default function CheckoutPage() {
           </aside>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

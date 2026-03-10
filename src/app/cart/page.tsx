@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { getTierInfo } from '@/lib/gifting';
 import Link from 'next/link';
 import Header from '@/components/Header';
@@ -11,24 +11,38 @@ import { Minus, Plus, Trash2, ArrowRight, Truck, ShoppingBag } from 'lucide-reac
 const DELIVERY_THRESHOLD = 35; // $35 for free delivery
 
 export default function CartPage() {
-  const { items, updateQuantity, removeItem, getTotal, hydrateCart } = useCartStore();
-  const [loading, setLoading] = useState(false);
+  const { items, updateQuantity, removeItem } = useCartStore();
+  const [mounted, setMounted] = useState(false);
   
-  // Hydrate cart from localStorage when component mounts
   useEffect(() => {
-    hydrateCart();
-  }, [hydrateCart]);
+    setMounted(true);
+  }, []);
   
-  const total = getTotal();
+  const total = useMemo(() => items.reduce((t, i) => t + (i.product.price * i.quantity), 0), [items]);
   const deliveryAmountNeeded = DELIVERY_THRESHOLD - total;
   const isCloseToDelivery = deliveryAmountNeeded > 0 && deliveryAmountNeeded <= 15;
   const hasDelivery = total >= DELIVERY_THRESHOLD;
+
+  // Show loading state until mounted to prevent flash
+  if (!mounted) {
+    return (
+      <div className="min-h-screen">
+        <Header />
+        <div className="pt-20 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-48"></div>
+            <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (items.length === 0) {
     return (
       <div className="min-h-screen">
         <Header />
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="pt-20 max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center">
             <div className="w-24 h-24 bg-gradient-to-br from-pink-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <ShoppingBag className="h-12 w-12 text-pink-500" />
@@ -37,7 +51,7 @@ export default function CartPage() {
             <p className="text-gray-600 mb-8">
               Discover our beautiful digital art collection and start building your order.
             </p>
-            <Link href="/" className="btn-primary">
+            <Link href="/shop" className="btn-primary">
               Browse Art Collection
             </Link>
           </div>
@@ -50,7 +64,7 @@ export default function CartPage() {
     <div className="min-h-screen">
       <Header />
       
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="pt-20 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Your Cart</h1>
           <p className="text-gray-600">
@@ -230,7 +244,7 @@ export default function CartPage() {
 
               {/* Continue Shopping */}
               <Link 
-                href="/" 
+                href="/shop" 
                 className="btn-secondary w-full mt-3 text-center block"
               >
                 Continue Shopping

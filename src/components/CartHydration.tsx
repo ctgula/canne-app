@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useCartStore } from '@/services/CartService';
 
 /**
@@ -8,26 +8,12 @@ import { useCartStore } from '@/services/CartService';
  * This should be included in the layout to ensure cart data persists across pages
  */
 export default function CartHydration() {
-  const { hydrateCart } = useCartStore();
-  const [isMounted, setIsMounted] = useState(false);
+  const hydrateCart = useCartStore((s) => s.hydrateCart);
   
-  // Ensure we only run on client side to prevent hydration mismatches
+  // Hydrate cart immediately on mount — no delay
   useEffect(() => {
-    setIsMounted(true);
-  }, []);
+    hydrateCart();
+  }, [hydrateCart]);
   
-  // Hydrate cart once when component mounts on client side
-  useEffect(() => {
-    if (isMounted) {
-      // Small timeout to ensure proper hydration after DOM is ready
-      const timeoutId = setTimeout(() => {
-        hydrateCart();
-      }, 100);
-      
-      return () => clearTimeout(timeoutId);
-    }
-  }, [hydrateCart, isMounted]);
-  
-  // This is a utility component that doesn't render anything
   return null;
 }

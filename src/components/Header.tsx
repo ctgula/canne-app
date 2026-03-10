@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Search, Menu, X, Sun, Moon, Home, Info, Shield, ShoppingBag, Sparkles } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useCartStore } from '@/services/CartService';
@@ -52,8 +52,15 @@ export default function Header({ scrollToCollection }: HeaderProps) {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
   
-  // Get cart data from our store
-  const { getItemCount, getTotal } = useCartStore();
+  // Get cart data from our store — defer until mounted to prevent hydration flicker
+  const [mounted, setMounted] = useState(false);
+  const items = useCartStore((s) => s.items);
+  const itemCount = useMemo(() => items.reduce((c, i) => c + (i.quantity || 1), 0), [items]);
+  const cartTotal = useMemo(() => items.reduce((t, i) => t + (i.product.price * i.quantity), 0), [items]);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   
   // Optimized body scroll lock for mobile menu
   useEffect(() => {
@@ -159,18 +166,18 @@ export default function Header({ scrollToCollection }: HeaderProps) {
               <button 
                 onClick={toggleCart} 
                 className="relative p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all duration-200 group"
-                title={getItemCount() > 0 ? `Cart (${getItemCount()} items) - Subtotal: $${getTotal()}` : "Shopping cart"}
+                title={mounted && itemCount > 0 ? `Cart (${itemCount} items) - Subtotal: $${cartTotal}` : "Shopping cart"}
               >
                 <ShoppingBag size={18} />
-                {getItemCount() > 0 && (
+                {mounted && itemCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-gradient-to-r from-pink-500 to-purple-500 text-white text-xs font-bold rounded-full min-w-[20px] h-5 px-1 flex items-center justify-center shadow-lg">
-                    {getItemCount()}
+                    {itemCount}
                   </span>
                 )}
                 {/* Tooltip */}
-                {getItemCount() > 0 && (
+                {mounted && itemCount > 0 && (
                   <div className="absolute bottom-full right-0 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
-                    Subtotal: ${getTotal()}
+                    Subtotal: ${cartTotal}
                   </div>
                 )}
               </button>
@@ -181,12 +188,12 @@ export default function Header({ scrollToCollection }: HeaderProps) {
             <button 
               onClick={toggleCart} 
               className="relative p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all duration-200 group"
-              title={getItemCount() > 0 ? `Cart (${getItemCount()} items) - Subtotal: $${getTotal()}` : "Shopping cart"}
+              title={mounted && itemCount > 0 ? `Cart (${itemCount} items) - Subtotal: $${cartTotal}` : "Shopping cart"}
             >
               <ShoppingBag size={20} />
-              {getItemCount() > 0 && (
+              {mounted && itemCount > 0 && (
                 <span className="absolute -top-1 -right-1 bg-gradient-to-r from-pink-500 to-purple-500 text-white text-xs font-bold rounded-full min-w-[20px] h-5 px-1 flex items-center justify-center shadow-lg">
-                  {getItemCount()}
+                  {itemCount}
                 </span>
               )}
             </button>
@@ -343,7 +350,7 @@ export default function Header({ scrollToCollection }: HeaderProps) {
                 </div>
               </Link>
 
-              {getItemCount() > 0 && (
+              {mounted && itemCount > 0 && (
                 <button
                   onClick={() => {
                     setIsMenuOpen(false);
@@ -355,7 +362,7 @@ export default function Header({ scrollToCollection }: HeaderProps) {
                     <div className="p-1 bg-gray-100 dark:bg-zinc-700 rounded-lg group-hover:bg-gray-200 dark:group-hover:bg-zinc-600 transition-colors">
                       <ShoppingBag size={18} />
                     </div>
-                    <span>View Cart ({getItemCount()})</span>
+                    <span>View Cart ({itemCount})</span>
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400 text-center mt-1">
                     Review your selected items

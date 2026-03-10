@@ -34,19 +34,28 @@ export type ProductResponse<T = any> = {
   count?: number;
 };
 
+// Simple in-memory cache to prevent refetch flicker on page revisits
+let _productCache: { data: Product[]; timestamp: number } | null = null;
+const CACHE_TTL = 60_000; // 60 seconds
+
 /**
  * Product model class for interacting with the products table
  * Uses direct Supabase client for better reliability
  */
 export class ProductModel {
   /**
-   * Get all products
+   * Get all products (with 60s client-side cache)
    */
   static async getAll(): Promise<ProductResponse<Product[]>> {
     try {
+      // Return cached data if fresh
+      if (_productCache && Date.now() - _productCache.timestamp < CACHE_TTL) {
+        return { data: _productCache.data };
+      }
+
       const { data, error } = await supabase
         .from('products')
-        .select('id, name, tier, price, stock, strain, thc_min, thc_max, gift_grams, badges, image_url, compliance_note')
+        .select('id, name, tier, price, stock, strain, thc_min, thc_max, gift_grams, badges, image_url, compliance_note, description')
         .eq('active', true)
         .eq('is_test', false)
         .gt('stock', 0)
@@ -55,14 +64,26 @@ export class ProductModel {
 
       if (error) {
         console.error('Error fetching products:', error);
+        // Return stale cache on error if available
+        if (_productCache) return { data: _productCache.data };
         return { error: error.message };
       }
 
-      return { data: data || [] };
+      const products = (data || []) as Product[];
+      _productCache = { data: products, timestamp: Date.now() };
+      return { data: products };
     } catch (err) {
       console.error('Unexpected error fetching products:', err);
+      if (_productCache) return { data: _productCache.data };
       return { error: err instanceof Error ? err.message : 'Unknown error' };
     }
+  }
+
+  /**
+   * Invalidate the product cache (call after admin changes)
+   */
+  static invalidateCache() {
+    _productCache = null;
   }
 
   /**

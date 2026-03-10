@@ -54,12 +54,14 @@ export default function ProductsPresenter() {
   };
 
   useEffect(() => {
+    let cancelled = false;
+    
     async function loadProducts() {
-      setLoading(true);
       setError(null);
       
       try {
         const result = await ProductController.getAllProducts();
+        if (cancelled) return;
         
         if (result.error) {
           setError(result.error);
@@ -69,13 +71,14 @@ export default function ProductsPresenter() {
           setProducts(sorted);
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : String(err));
+        if (!cancelled) setError(err instanceof Error ? err.message : String(err));
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
     
     loadProducts();
+    return () => { cancelled = true; };
   }, []);
 
   // Simplified animation variants for performance
@@ -178,18 +181,20 @@ export default function ProductsPresenter() {
                 >
                   {/* Image */}
                   <div className="relative overflow-hidden rounded-t-xl">
-                    <div className="aspect-square bg-gradient-to-br from-pink-100 to-purple-100">
-                      <Image 
-                        src={product.image_url || '/images/canne-mural.svg'} 
-                        alt={`Cannè ${product.tier}`}
-                        width={400}
-                        height={400}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = '/images/canne-mural.svg';
-                        }}
-                      />
+                    <div 
+                      className="aspect-square bg-gradient-to-br from-pink-100 to-purple-100"
+                      style={{ backgroundImage: `url(/images/canne-mural.svg)`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+                    >
+                      {product.image_url && (
+                        <Image 
+                          src={product.image_url} 
+                          alt={`Cannè ${product.name}`}
+                          width={400}
+                          height={400}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          priority={product.tier.toLowerCase() === 'starter' || product.tier.toLowerCase() === 'classic'}
+                        />
+                      )}
                     </div>
                   </div>
 

@@ -1,12 +1,15 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useCartStore } from '@/services/CartService';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 
 export default function CartDisplay() {
-  const { items, removeItem, updateQuantity, clearCart, getTotal, getItemCount } = useCartStore();
+  const { items, removeItem, updateQuantity, clearCart } = useCartStore();
+  const itemCount = useMemo(() => items.reduce((c, i) => c + (i.quantity || 1), 0), [items]);
+  const total = useMemo(() => items.reduce((t, i) => t + (i.product.price * i.quantity), 0), [items]);
 
   const handleClearCart = () => {
     clearCart();
@@ -19,7 +22,7 @@ export default function CartDisplay() {
       <div className="p-4 text-center">
         <p className="text-gray-500 dark:text-gray-400 mb-4">Your cart is empty</p>
         <Link 
-          href="/#collection" 
+          href="/shop" 
           className="text-pink-500 hover:text-pink-600 dark:text-pink-400 dark:hover:text-pink-300 font-medium"
         >
           Browse our art collection
@@ -30,7 +33,7 @@ export default function CartDisplay() {
 
   return (
     <div className="p-4">
-      <h3 className="text-lg font-bold mb-4">Your Cart ({getItemCount()} items)</h3>
+      <h3 className="text-lg font-bold mb-4">Your Cart ({itemCount} items)</h3>
       
       <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
         <AnimatePresence>
@@ -97,7 +100,7 @@ export default function CartDisplay() {
       <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
         <div className="flex justify-between mb-4">
           <span>Subtotal</span>
-          <span>${getTotal().toFixed(2)}</span>
+          <span>${total.toFixed(2)}</span>
         </div>
         
         <div className="flex gap-2">
