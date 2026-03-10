@@ -1,10 +1,37 @@
-<svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect width="96" height="96" rx="16" fill="url(#gradient0_linear_1_1)"/>
-<path d="M48 72C36.9543 72 28 63.0457 28 52C28 40.9543 36.9543 32 48 32C59.0457 32 68 40.9543 68 52C68 63.0457 59.0457 72 48 72Z" fill="white"/>
-<defs>
-<linearGradient id="gradient0_linear_1_1" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse">
-<stop stop-color="#EC4899"/>
-<stop offset="1" stop-color="#581C87"/>
-</linearGradient>
-</defs>
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="60 60 280 400">
+  <defs>
+    <linearGradient id="pg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#b066ff"/>
+      <stop offset="100%" stop-color="#8833cc"/>
+    </linearGradient>
+    <linearGradient id="cg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e6b87a"/>
+      <stop offset="100%" stop-color="#b78144"/>
+    </linearGradient>
+    <linearGradient id="ctg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d6a76a"/>
+      <stop offset="100%" stop-color="#a77134"/>
+    </linearGradient>
+  </defs>
+  <circle cx="200" cy="180" r="80" fill="url(#pg)"/>
+  <path d="M140,180 C120,220 130,270 150,280 C165,288 185,280 190,260 C195,240 180,220 170,210 Z" fill="url(#pg)"/>
+  <path d="M260,180 C280,220 270,270 250,280 C235,288 215,280 210,260 C205,240 220,220 230,210 Z" fill="url(#pg)"/>
+  <path d="M180,250 C160,270 170,310 190,330 C210,350 230,340 220,310 C210,280 190,260 180,250 Z" fill="url(#pg)"/>
+  <path d="M120,260 L200,450 L280,260 Z" fill="url(#cg)" stroke="#a77134" stroke-width="1"/>
+  <path d="M120,260 L280,260 L270,245 C270,245 240,260 200,260 C160,260 130,245 130,245 Z" fill="url(#ctg)"/>
+  <g stroke="#a77134" stroke-width="1" opacity="0.5">
+    <line x1="130" y1="290" x2="270" y2="290"/>
+    <line x1="140" y1="320" x2="260" y2="320"/>
+    <line x1="150" y1="350" x2="250" y2="350"/>
+    <line x1="160" y1="380" x2="240" y2="380"/>
+    <line x1="170" y1="410" x2="230" y2="410"/>
+    <line x1="130" y1="260" x2="170" y2="410"/>
+    <line x1="160" y1="260" x2="190" y2="410"/>
+    <line x1="190" y1="260" x2="200" y2="410"/>
+    <line x1="220" y1="260" x2="210" y2="410"/>
+    <line x1="250" y1="260" x2="230" y2="410"/>
+    <line x1="280" y1="260" x2="230" y2="410"/>
+  </g>
+  <ellipse cx="170" cy="150" rx="15" ry="10" fill="white" opacity="0.4"/>
+  <ellipse cx="220" cy="160" rx="8" ry="5" fill="white" opacity="0.3"/>
 </svg>
