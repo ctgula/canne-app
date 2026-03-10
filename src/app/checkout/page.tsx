@@ -331,8 +331,8 @@ export default function CheckoutPage() {
         throw new Error(responseData.error || 'Failed to create order');
       }
 
-      // Initiate Cash App payment redirect
-      const success = await initiatePayment(finalTotal, deliveryDetails.phone.replace(/\D/g, ''));
+      // Initiate Cash App payment redirect — pass orderId to link the systems
+      const success = await initiatePayment(finalTotal, deliveryDetails.phone.replace(/\D/g, ''), responseData.orderId);
       if (!success) {
         toast.error('Order saved but Cash App redirect failed. Please contact support.');
       }

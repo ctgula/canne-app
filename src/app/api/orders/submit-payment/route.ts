@@ -55,6 +55,14 @@ export async function POST(req: Request) {
       console.error('Error updating Cash App order:', error);
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
+
+    // Sync status to linked orders table
+    if (paymentData.order_id) {
+      await supabase
+        .from('orders')
+        .update({ status: 'verifying', updated_at: new Date().toISOString() })
+        .eq('id', paymentData.order_id);
+    }
     
     // Send Discord notification
     try {

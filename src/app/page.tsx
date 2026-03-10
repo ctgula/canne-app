@@ -82,11 +82,11 @@ export default function Home() {
                 transition={{ duration: 0.6, ease: "easeOut" }}
               >
                 <Image 
-                  src="/images/ice_cream_logo.svg"
+                  src="/images/canne_logo_web.png"
                   alt="Cannè Art Collective" 
-                  width={400} 
-                  height={600} 
-                  className="relative h-48 sm:h-56 md:h-72 lg:h-80 w-auto drop-shadow-2xl mx-auto"
+                  width={300} 
+                  height={300} 
+                  className="relative h-40 sm:h-48 md:h-56 lg:h-64 w-auto drop-shadow-2xl mx-auto"
                   priority
                 />
               </motion.div>

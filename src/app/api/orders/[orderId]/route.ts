@@ -19,9 +19,12 @@ export async function GET(
     const { data: order, error } = await supabaseAdmin
       .from('orders')
       .select(`
-        id, order_number, subtotal, delivery_fee, total, status, created_at,
+        id, order_number, subtotal, delivery_fee, total, status, created_at, updated_at,
+        full_name, phone, payment_method, preferred_time,
+        delivery_address_line1, delivery_address_line2, delivery_city, delivery_state, delivery_zip,
+        delivery_instructions,
         order_items (
-          product_id, quantity, unit_price, strain, thc_low, thc_high,
+          product_id, quantity, unit_price, strain, thc_low, thc_high, name,
           products (
             tier, weight, color_theme
           )
@@ -30,15 +33,8 @@ export async function GET(
       .eq('id', orderId)
       .single();
 
-    if (error) {
+    if (error || !order) {
       console.error('Error fetching order:', error);
-      return NextResponse.json(
-        { success: false, error: 'Order not found' },
-        { status: 404 }
-      );
-    }
-
-    if (!order) {
       return NextResponse.json(
         { success: false, error: 'Order not found' },
         { status: 404 }
@@ -55,6 +51,19 @@ export async function GET(
       total: parseFloat(order.total) || 0,
       status: order.status,
       created_at: order.created_at,
+      updated_at: order.updated_at,
+      full_name: order.full_name,
+      phone: order.phone,
+      payment_method: order.payment_method,
+      preferred_time: order.preferred_time,
+      delivery_address: {
+        line1: order.delivery_address_line1,
+        line2: order.delivery_address_line2,
+        city: order.delivery_city,
+        state: order.delivery_state,
+        zip: order.delivery_zip,
+      },
+      delivery_instructions: order.delivery_instructions,
       items: order.order_items || []
     });
 

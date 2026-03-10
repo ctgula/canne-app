@@ -199,7 +199,7 @@ export async function POST(request: Request) {
     // Handle side effects before status update
     await handleSideEffects(supabase, orderData, currentStatus, new_status, reason);
 
-    // Update the order status
+    // Update the cashapp_payments status
     const { error: updateError } = await supabase
       .from('cashapp_payments')
       .update({ 
@@ -211,6 +211,25 @@ export async function POST(request: Request) {
     if (updateError) {
       console.error('Error updating order status:', updateError);
       return NextResponse.json({ error: 'Failed to update order status' }, { status: 500 });
+    }
+
+    // Sync status to linked orders table so tracking page stays current
+    if (orderData.order_id) {
+      const orderStatusMap: Record<string, string> = {
+        'awaiting_payment': 'awaiting_payment',
+        'verifying': 'verifying',
+        'paid': 'paid',
+        'assigned': 'assigned',
+        'delivered': 'delivered',
+        'undelivered': 'undelivered',
+        'refunded': 'refunded',
+        'canceled': 'canceled',
+      };
+      const mappedStatus = orderStatusMap[new_status] || new_status;
+      await supabase
+        .from('orders')
+        .update({ status: mappedStatus, updated_at: new Date().toISOString() })
+        .eq('id', orderData.order_id);
     }
 
     // Log audit trail

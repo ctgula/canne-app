@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, use } from "react";
+import { useRouter } from 'next/navigation';
 import QRCode from "qrcode";
 import { Copy, Check } from "lucide-react";
 import CopyChip from "@/components/CopyChip";
@@ -21,7 +22,8 @@ export default function PayPage({ params }: { params: Promise<{ shortCode: strin
 }
 
 function PayPageClient({ shortCode }: { shortCode: string }) {
-  const [orderData, setOrderData] = useState<{ amount_cents: number; created_at?: string; status?: string } | null>(null);
+  const router = useRouter();
+  const [orderData, setOrderData] = useState<{ amount_cents: number; created_at?: string; status?: string; order_id?: string } | null>(null);
   const [qr, setQr] = useState<string>("");
   const [handle, setHandle] = useState("");
   const [screenshotUrl, setScreenshotUrl] = useState("");
@@ -29,6 +31,7 @@ function PayPageClient({ shortCode }: { shortCode: string }) {
   const [orderStatus, setOrderStatus] = useState<string>("awaiting_payment");
   const [isExpired, setIsExpired] = useState(false);
   const [networkError, setNetworkError] = useState<string | null>(null);
+  const [linkedOrderId, setLinkedOrderId] = useState<string | null>(null);
 
   // Fetch order data and poll for status updates
   useEffect(() => {
@@ -40,6 +43,7 @@ function PayPageClient({ shortCode }: { shortCode: string }) {
           const data = await response.json();
           setOrderData(data);
           setOrderStatus(data.status || 'awaiting_payment');
+          if (data.order_id) setLinkedOrderId(data.order_id);
         } else if (response.status === 404) {
           setNetworkError('Order not found. Please check your order code.');
         } else {
@@ -98,6 +102,10 @@ function PayPageClient({ shortCode }: { shortCode: string }) {
       
       if (res.ok) {
         setOrderStatus("verifying");
+        // Redirect to tracking page after brief confirmation
+        if (linkedOrderId) {
+          setTimeout(() => router.push(`/orders/${linkedOrderId}`), 2500);
+        }
       } else {
         const { error } = await res.json();
         setNetworkError(error || "Something went wrong. Please try again.");
@@ -189,11 +197,27 @@ function PayPageClient({ shortCode }: { shortCode: string }) {
           <p className="text-gray-600">
             We're verifying your payment. You'll receive confirmation within 1-3 minutes.
           </p>
-          <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-            <p className="text-sm text-blue-800">
-              💡 <strong>Next:</strong> You'll get a text when payment is confirmed and your driver is assigned.
-            </p>
-          </div>
+          {linkedOrderId && (
+            <div className="mt-4 space-y-3">
+              <div className="flex items-center justify-center gap-2 text-sm text-purple-700">
+                <div className="w-4 h-4 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+                Redirecting to your order tracking page...
+              </div>
+              <a
+                href={`/orders/${linkedOrderId}`}
+                className="inline-block px-6 py-3 bg-gradient-to-r from-pink-600 to-purple-600 text-white rounded-xl hover:from-pink-700 hover:to-purple-700 transition-all font-semibold"
+              >
+                Track Your Order
+              </a>
+            </div>
+          )}
+          {!linkedOrderId && (
+            <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+              <p className="text-sm text-blue-800">
+                💡 <strong>Next:</strong> You'll get a text when payment is confirmed and your driver is assigned.
+              </p>
+            </div>
+          )}
         </motion.div>
       ) : orderStatus === "paid" ? (
         <motion.div 

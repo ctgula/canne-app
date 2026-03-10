@@ -12,10 +12,10 @@ export default function Footer() {
           <div className="md:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-4">
               <Image
-                src="/images/ice_cream_logo.svg"
+                src="/images/canne_logo_web.png"
                 alt="Cannè"
                 width={32}
-                height={48}
+                height={32}
                 className="w-8 h-auto"
               />
               <div>
