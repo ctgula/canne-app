@@ -86,7 +86,7 @@ export default function AdminDashboard() {
             <div>
               <p className="text-sm text-gray-600 mb-1">Revenue</p>
               <p className="text-3xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
-                ${(stats.revenue / 100).toFixed(2)}
+                ${stats.revenue.toFixed(2)}
               </p>
             </div>
             <div className="p-3 bg-purple-50 rounded-xl">

@@ -73,9 +73,7 @@ export async function POST(request: Request) {
           .from('cashapp_payments')
           .update({ 
             status: new_status,
-            updated_at: new Date().toISOString(),
-            ...(reason && { admin_notes: reason }),
-            ...(admin_action && { last_admin_action: new Date().toISOString() })
+            updated_at: new Date().toISOString()
           })
           .eq('id', order.id);
 
@@ -143,7 +141,7 @@ async function handleBulkSideEffects(supabase: any, orderData: any, currentStatu
     if (currentStatus === 'delivered' && newStatus === 'refunded') {
       await supabase
         .from('payouts')
-        .update({ status: 'blocked', blocked_reason: reason || 'Order refunded' })
+        .update({ status: 'blocked' })
         .eq('order_id', orderData.id)
         .eq('status', 'queued');
     }
@@ -151,9 +149,9 @@ async function handleBulkSideEffects(supabase: any, orderData: any, currentStatu
     if (['paid', 'assigned'].includes(currentStatus) && ['refunded', 'canceled'].includes(newStatus)) {
       await supabase
         .from('payouts')
-        .update({ status: 'reverted', blocked_reason: reason || `Order ${newStatus}` })
+        .update({ status: 'blocked' })
         .eq('order_id', orderData.id)
-        .in('status', ['queued', 'pending']);
+        .eq('status', 'queued');
     }
   } catch (error) {
     console.error('Error handling bulk side effects:', error);
@@ -164,19 +162,13 @@ async function handleBulkSideEffects(supabase: any, orderData: any, currentStatu
 async function logBulkAuditTrail(supabase: any, orderId: string, fromStatus: string, toStatus: string, reason?: string, adminAction?: boolean) {
   try {
     await supabase
-      .from('order_audit_log')
+      .from('order_status_events')
       .insert({
         order_id: orderId,
-        action: 'bulk_status_change',
-        from_status: fromStatus,
-        to_status: toStatus,
-        reason: reason,
-        admin_action: adminAction || false,
-        timestamp: new Date().toISOString(),
-        metadata: {
-          user_agent: 'admin_panel_bulk',
-          ip_address: 'internal'
-        }
+        old_status: fromStatus,
+        new_status: toStatus,
+        note: reason || 'Bulk status change',
+        changed_by: adminAction ? 'admin' : 'system'
       });
   } catch (error) {
     console.error('Error logging bulk audit trail:', error);

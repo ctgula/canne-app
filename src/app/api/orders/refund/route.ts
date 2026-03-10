@@ -41,11 +41,12 @@ export async function POST(request: Request) {
     }
 
     // If there's a driver assigned, remove the payout
-    if (orderData.driver_id) {
+    if (orderData.driver_id && orderData.order_id) {
       const { error: payoutError } = await supabase
         .from('payouts')
-        .delete()
-        .eq('order_short_code', short_code);
+        .update({ status: 'blocked' })
+        .eq('order_id', orderData.order_id)
+        .eq('status', 'queued');
 
       if (payoutError) {
         console.error('Error removing payout:', payoutError);

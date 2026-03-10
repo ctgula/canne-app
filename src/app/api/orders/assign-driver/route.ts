@@ -58,7 +58,7 @@ export async function POST(request: Request) {
       .from('payouts')
       .insert({
         driver_id: driver_id,
-        order_short_code: short_code,
+        order_id: orderData.order_id || orderData.id,
         amount_cents: basePayout,
         status: 'queued',
         created_at: new Date().toISOString()
@@ -79,7 +79,7 @@ export async function POST(request: Request) {
           name: orderData.customer_name
         },
         {
-          name: driverData.full_name,
+          name: driverData.name,
           phone: driverData.phone,
           email: driverData.email
         },
@@ -94,7 +94,7 @@ export async function POST(request: Request) {
       const notificationService = await import('@/lib/notifications').then(m => m.notificationService);
       await notificationService.notifyNewJobAssigned(
         {
-          name: driverData.full_name,
+          name: driverData.name,
           phone: driverData.phone,
           email: driverData.email
         },

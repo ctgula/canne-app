@@ -8,6 +8,7 @@ import {
   User, 
   Clock, 
   CheckCircle, 
+  XCircle,
   RefreshCw,
   CreditCard,
   Calendar,
@@ -17,31 +18,31 @@ import {
 interface Payout {
   id: string;
   driver_id: string;
-  order_short_code: string;
+  order_id: string;
   amount_cents: number;
-  status: 'queued' | 'paid';
+  status: 'queued' | 'paid' | 'blocked';
   created_at: string;
-  paid_at?: string;
-  driver_name?: string;
-  driver_phone?: string;
+  updated_at?: string;
 }
 
 interface Driver {
   id: string;
-  full_name: string;
+  name: string;
   phone: string;
   email: string;
-  is_active: boolean;
+  status: string;
 }
 
-const statusColors = {
+const statusColors: Record<string, string> = {
   queued: 'bg-yellow-100 text-yellow-800 border-yellow-200',
   paid: 'bg-green-100 text-green-800 border-green-200',
+  blocked: 'bg-red-100 text-red-800 border-red-200',
 };
 
-const statusIcons = {
+const statusIcons: Record<string, any> = {
   queued: Clock,
   paid: CheckCircle,
+  blocked: XCircle,
 };
 
 export default function AdminPayoutsPage() {
@@ -278,7 +279,7 @@ export default function AdminPayoutsPage() {
                     </div>
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900">
-                        {driverData.driver?.full_name || 'Unknown Driver'}
+                        {driverData.driver?.name || 'Unknown Driver'}
                       </h3>
                       <p className="text-gray-600">{driverData.driver?.phone}</p>
                     </div>
@@ -304,7 +305,7 @@ export default function AdminPayoutsPage() {
                         <div className="flex items-center gap-3">
                           <Package className="w-4 h-4 text-gray-500" />
                           <div>
-                            <p className="font-medium text-gray-900">Order {payout.order_short_code}</p>
+                            <p className="font-medium text-gray-900">Order {payout.order_id?.slice(0, 8) || 'N/A'}</p>
                             <p className="text-sm text-gray-500">
                               {new Date(payout.created_at).toLocaleDateString()}
                             </p>
@@ -331,9 +332,9 @@ export default function AdminPayoutsPage() {
                             </button>
                           )}
                           
-                          {payout.status === 'paid' && payout.paid_at && (
+                          {payout.status === 'paid' && payout.updated_at && (
                             <p className="text-xs text-gray-500">
-                              Paid {new Date(payout.paid_at).toLocaleDateString()}
+                              Paid {new Date(payout.updated_at).toLocaleDateString()}
                             </p>
                           )}
                         </div>

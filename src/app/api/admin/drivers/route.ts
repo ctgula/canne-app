@@ -15,29 +15,14 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from('drivers')
-      .select(`
-        *,
-        driver_assignments (
-          id,
-          order_id,
-          status,
-          assigned_at,
-          completed_at,
-          orders (
-            order_number,
-            total,
-            phone,
-            delivery_address_line1
-          )
-        )
-      `);
+      .select('*');
 
     // Apply filters
     if (search) {
-      query = query.or(`full_name.ilike.%${search}%,phone.ilike.%${search}%,email.ilike.%${search}%`);
+      query = query.or(`name.ilike.%${search}%,phone.ilike.%${search}%,email.ilike.%${search}%`);
     }
     if (active !== null) {
-      query = query.eq('is_active', active === 'true');
+      query = query.eq('status', active === 'true' ? 'available' : 'offline');
     }
 
     const { data: drivers, error } = await query.order('created_at', { ascending: false });
@@ -47,7 +32,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch drivers' }, { status: 500 });
     }
 
-    return NextResponse.json({ drivers });
+    // Transform to include is_available for frontend compatibility
+    const transformedDrivers = (drivers || []).map(d => ({
+      ...d,
+      is_available: d.status === 'available'
+    }));
+
+    return NextResponse.json({ drivers: transformedDrivers });
   } catch (error) {
     console.error('Error in GET /api/admin/drivers:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -58,17 +49,17 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { full_name, phone, email } = body;
+    const { name, phone, email, vehicle_info } = body;
 
-    if (!full_name || !phone || !email) {
-      return NextResponse.json({ error: 'Full name, phone, and email are required' }, { status: 400 });
+    if (!name || !phone) {
+      return NextResponse.json({ error: 'Name and phone are required' }, { status: 400 });
     }
 
     // Check if driver with this phone or email already exists
     const { data: existingDriver } = await supabase
       .from('drivers')
       .select('id')
-      .or(`phone.eq.${phone},email.eq.${email}`)
+      .or(`phone.eq.${phone}${email ? `,email.eq.${email}` : ''}`)
       .single();
 
     if (existingDriver) {
@@ -78,11 +69,11 @@ export async function POST(request: NextRequest) {
     const { data: driver, error } = await supabase
       .from('drivers')
       .insert({
-        full_name,
+        name,
         phone,
-        email,
-        is_active: true,
-        balance_cents: 0
+        email: email || null,
+        vehicle_info: vehicle_info || null,
+        status: 'available'
       })
       .select()
       .single();

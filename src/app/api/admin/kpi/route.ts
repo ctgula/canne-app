@@ -38,7 +38,7 @@ export async function GET() {
     const p90 = null;
     
     return NextResponse.json({
-      revenue: Math.round(revenue * 100), // Convert to cents
+      revenue: revenue,
       orders: ordersCount || 0,
       pending: pendingCount || 0,
       p90,

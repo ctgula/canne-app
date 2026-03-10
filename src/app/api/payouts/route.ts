@@ -11,7 +11,7 @@ export async function GET() {
       .from('payouts')
       .select(`
         *,
-        drivers!inner(full_name, phone, email)
+        drivers!inner(name, phone, email)
       `)
       .order('created_at', { ascending: false });
 

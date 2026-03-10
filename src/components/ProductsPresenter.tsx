@@ -245,7 +245,12 @@ export default function ProductsPresenter() {
                       {product.stock <= 0 ? 'Out of Stock' : 'Add to Cart'}
                     </button>
 
-                    {product.stock > 0 && (
+                    {product.stock > 0 && product.stock <= 5 && (
+                      <div className="flex items-center justify-center mt-3 text-sm text-amber-600 dark:text-amber-400 font-medium">
+                        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>Low Stock — Order Soon</span>
+                      </div>
+                    )}
+                    {product.stock > 5 && (
                       <div className="flex items-center justify-center mt-3 text-sm text-green-600 dark:text-green-400">
                         <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-400"></span>In Stock</span>
                       </div>

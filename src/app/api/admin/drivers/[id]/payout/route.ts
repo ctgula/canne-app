@@ -6,21 +6,15 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-// POST - Process driver payout
+// POST - Mark all queued payouts for a driver as paid (batch payout)
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const body = await request.json();
-    const { amount_cents } = body;
 
-    if (!amount_cents || amount_cents <= 0) {
-      return NextResponse.json({ error: 'Valid payout amount is required' }, { status: 400 });
-    }
-
-    // Get current driver balance
+    // Verify driver exists
     const { data: driver, error: driverError } = await supabase
       .from('drivers')
-      .select('balance_cents, name')
+      .select('id, name')
       .eq('id', id)
       .single();
 
@@ -28,59 +22,44 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json({ error: 'Driver not found' }, { status: 404 });
     }
 
-    if (driver.balance_cents < amount_cents) {
-      return NextResponse.json({ error: 'Insufficient balance for payout' }, { status: 400 });
+    // Get all queued payouts for this driver
+    const { data: queuedPayouts, error: fetchError } = await supabase
+      .from('payouts')
+      .select('id, amount_cents')
+      .eq('driver_id', id)
+      .eq('status', 'queued');
+
+    if (fetchError) {
+      console.error('Error fetching queued payouts:', fetchError);
+      return NextResponse.json({ error: 'Failed to fetch payouts' }, { status: 500 });
     }
 
-    // Start transaction
-    const { data: payout, error: payoutError } = await supabase
-      .from('driver_payouts')
-      .insert({
-        driver_id: id,
-        amount_cents,
-        status: 'completed',
-        processed_at: new Date().toISOString()
-      })
-      .select()
-      .single();
-
-    if (payoutError) {
-      console.error('Error creating payout record:', payoutError);
-      return NextResponse.json({ error: 'Failed to create payout record' }, { status: 500 });
+    if (!queuedPayouts || queuedPayouts.length === 0) {
+      return NextResponse.json({ error: 'No queued payouts for this driver' }, { status: 400 });
     }
 
-    // Update driver balance
+    const totalCents = queuedPayouts.reduce((sum, p) => sum + p.amount_cents, 0);
+
+    // Mark all queued payouts as paid
     const { error: updateError } = await supabase
-      .from('drivers')
+      .from('payouts')
       .update({ 
-        balance_cents: driver.balance_cents - amount_cents,
+        status: 'paid',
         updated_at: new Date().toISOString()
       })
-      .eq('id', id);
+      .eq('driver_id', id)
+      .eq('status', 'queued');
 
     if (updateError) {
-      console.error('Error updating driver balance:', updateError);
-      // Rollback payout record
-      await supabase.from('driver_payouts').delete().eq('id', payout.id);
-      return NextResponse.json({ error: 'Failed to update driver balance' }, { status: 500 });
+      console.error('Error marking payouts as paid:', updateError);
+      return NextResponse.json({ error: 'Failed to process payouts' }, { status: 500 });
     }
 
-    // Log the payout for audit trail
-    await supabase.from('admin_audit_log').insert({
-      action: 'driver_payout',
-      resource_type: 'driver',
-      resource_id: id,
-      details: {
-        driver_name: driver.name,
-        payout_amount: amount_cents,
-        payout_id: payout.id
-      },
-      created_at: new Date().toISOString()
-    });
-
     return NextResponse.json({ 
-      payout,
-      message: `Payout of $${(amount_cents / 100).toFixed(2)} processed successfully`
+      success: true,
+      payouts_processed: queuedPayouts.length,
+      total_paid_cents: totalCents,
+      message: `Payout of $${(totalCents / 100).toFixed(2)} processed for ${driver.name} (${queuedPayouts.length} orders)`
     });
   } catch (error) {
     console.error('Error in POST /api/admin/drivers/[id]/payout:', error);

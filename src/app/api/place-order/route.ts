@@ -75,6 +75,22 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
+    // Stock validation — prevent overselling
+    for (const item of orderData.items as OrderItem[]) {
+      const { data: inventory } = await supabase
+        .from('product_inventory')
+        .select('stock, allow_backorder')
+        .eq('product_id', item.product.id)
+        .single();
+
+      if (inventory && inventory.stock < item.quantity && !inventory.allow_backorder) {
+        return NextResponse.json({
+          success: false,
+          error: `Sorry, "${item.product.name}" is out of stock. Please remove it and try again.`
+        }, { status: 400 });
+      }
+    }
+
     // Generate order number
     const orderNumber = `CN-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
 
@@ -86,6 +102,7 @@ export async function POST(request: NextRequest) {
       .from('customers')
       .upsert({
         email: customerEmail,
+        name: orderData.deliveryDetails.name || '',
         first_name: nameParts[0] || '',
         last_name: nameParts.slice(1).join(' ') || '',
         phone: orderData.deliveryDetails.phone || '',

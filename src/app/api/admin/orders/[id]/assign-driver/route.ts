@@ -65,8 +65,8 @@ export async function POST(
         order_id: id,
         old_status: currentOrder.status,
         new_status: currentOrder.status,
-        reason: `Driver assigned: ${driver.name} (${driver.phone})`,
-        admin_user
+        note: `Driver assigned: ${driver.name} (${driver.phone})`,
+        changed_by: admin_user
       });
 
     return NextResponse.json({ 

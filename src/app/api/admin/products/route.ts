@@ -17,14 +17,14 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from('products')
-      .select('*');
+      .select('*, product_inventory(stock, low_stock_threshold, allow_backorder)');
 
     // Apply filters
     if (search) {
       query = query.or(`name.ilike.%${search}%,description.ilike.%${search}%`);
     }
     if (tier) {
-      query = query.eq('tier', tier);
+      query = query.eq('tier', tier.toLowerCase());
     }
     if (active !== null) {
       query = query.eq('is_active', active === 'true');
@@ -37,7 +37,16 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch products' }, { status: 500 });
     }
 
-    return NextResponse.json({ products });
+    // Filter low stock products client-side (can't filter nested relations in Supabase)
+    let filtered = products || [];
+    if (lowStock === 'true') {
+      filtered = filtered.filter((p: any) => {
+        const inv = Array.isArray(p.product_inventory) ? p.product_inventory[0] : null;
+        return inv && inv.stock <= (inv.low_stock_threshold || 10);
+      });
+    }
+
+    return NextResponse.json({ products: filtered });
   } catch (error) {
     console.error('Error in GET /api/admin/products:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -109,6 +118,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ 
         error: productError.code === '23505' ? 'Product slug already exists' : 'Failed to create product' 
       }, { status: 400 });
+    }
+
+    // Create product_inventory record for the new product
+    await supabase.from('product_inventory').insert({
+      product_id: product.id,
+      stock: initial_stock,
+      low_stock_threshold: low_stock_threshold,
+      allow_backorder: allow_backorder
+    });
+
+    // Also set products.stock to keep both in sync
+    if (initial_stock > 0) {
+      await supabase.from('products').update({ stock: initial_stock }).eq('id', product.id);
     }
 
     return NextResponse.json({ 

@@ -82,13 +82,16 @@ export async function POST(request: NextRequest) {
         new_stock: updatedInventory.stock
       });
 
-      // If stock hits 0 and backorder not allowed, deactivate product
+      // Sync products.stock and is_active to keep both stock systems aligned
+      const productUpdate: Record<string, any> = { stock: updatedInventory.stock };
       if (updatedInventory.stock <= 0 && !inventory.allow_backorder) {
-        await supabase
-          .from('products')
-          .update({ is_active: false })
-          .eq('id', item.product_id);
+        productUpdate.is_active = false;
+        productUpdate.active = false;
       }
+      await supabase
+        .from('products')
+        .update(productUpdate)
+        .eq('id', item.product_id);
     }
 
     // If any items have insufficient stock, return error

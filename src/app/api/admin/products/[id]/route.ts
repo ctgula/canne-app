@@ -21,11 +21,6 @@ export async function GET(
           stock,
           low_stock_threshold,
           allow_backorder
-        ),
-        product_images (
-          id,
-          url,
-          sort
         )
       `)
       .eq('id', id)
@@ -82,12 +77,18 @@ export async function PATCH(
     if (name !== undefined) productUpdates.name = name;
     if (slug !== undefined) productUpdates.slug = slug;
     if (description !== undefined) productUpdates.description = description;
-    if (price_cents !== undefined) productUpdates.price_cents = price_cents;
+    if (price_cents !== undefined) {
+      productUpdates.price_cents = price_cents;
+      productUpdates.price = price_cents / 100; // Keep price in sync
+    }
     if (tier !== undefined) productUpdates.tier = tier;
     if (strain !== undefined) productUpdates.strain = strain;
     if (thc_range !== undefined) productUpdates.thc_range = thc_range;
     if (hero_image_url !== undefined) productUpdates.hero_image_url = hero_image_url;
-    if (is_active !== undefined) productUpdates.is_active = is_active;
+    if (is_active !== undefined) {
+      productUpdates.is_active = is_active;
+      productUpdates.active = is_active; // Sync both booleans
+    }
     
     if (Object.keys(productUpdates).length > 0) {
       productUpdates.updated_at = new Date().toISOString();

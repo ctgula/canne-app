@@ -16,7 +16,8 @@ import {
   AlertTriangle,
   CheckCircle,
   XCircle,
-  Download
+  Download,
+  Minus
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import Link from 'next/link';
@@ -42,11 +43,11 @@ interface Product {
   }>;
 }
 
-const TIER_COLORS = {
-  Starter: 'bg-green-100 text-green-800',
-  Classic: 'bg-blue-100 text-blue-800',
-  Black: 'bg-gray-100 text-gray-800',
-  Ultra: 'bg-purple-100 text-purple-800'
+const TIER_COLORS: Record<string, string> = {
+  starter: 'bg-green-100 text-green-800',
+  classic: 'bg-blue-100 text-blue-800',
+  black: 'bg-gray-100 text-gray-800',
+  ultra: 'bg-purple-100 text-purple-800'
 };
 
 export default function AdminProductsPage() {
@@ -173,6 +174,37 @@ export default function AdminProductsPage() {
     } catch (error) {
       console.error('Error in bulk action:', error);
       toast.error('Bulk action failed');
+    }
+  };
+
+  const handleQuickStock = async (productId: string, adjustment: number) => {
+    try {
+      const response = await fetch(`/api/admin/products/${productId}/adjust-stock`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adjustment, reason: `Quick adjust ${adjustment > 0 ? '+' : ''}${adjustment} from products list` })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error);
+      }
+
+      const result = await response.json();
+      // Update local state instantly without full refetch
+      setProducts(prev => prev.map(p => {
+        if (p.id === productId && p.product_inventory?.[0]) {
+          return {
+            ...p,
+            product_inventory: [{ ...p.product_inventory[0], stock: result.new_stock }],
+            is_active: result.new_stock > 0 ? true : p.is_active
+          };
+        }
+        return p;
+      }));
+      toast.success(`Stock → ${result.new_stock}`);
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to adjust stock');
     }
   };
 
@@ -424,8 +456,8 @@ export default function AdminProductsPage() {
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${TIER_COLORS[product.tier]}`}>
-                        {product.tier}
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${TIER_COLORS[product.tier?.toLowerCase()] || 'bg-gray-100 text-gray-800'}`}>
+                        {product.tier ? product.tier.charAt(0).toUpperCase() + product.tier.slice(1) : 'Unknown'}
                       </span>
                       <span className="font-semibold text-lg">
                         ${(product.price_cents / 100).toFixed(2)}
@@ -439,28 +471,41 @@ export default function AdminProductsPage() {
                       </div>
                     )}
 
+                    {/* Quick Stock Controls */}
                     <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-                      <div className="flex items-center gap-2">
-                        <span className={`text-sm font-medium ${stockStatus.color}`}>
-                          {stockStatus.status}
-                        </span>
-                        {inventory && (
-                          <span className="text-sm text-gray-500">
-                            ({inventory.stock} units)
-                          </span>
-                        )}
-                      </div>
-                      
                       <div className="flex items-center gap-1">
-                        {product.is_active ? (
-                          <CheckCircle size={16} className="text-green-500" />
-                        ) : (
-                          <XCircle size={16} className="text-red-500" />
-                        )}
-                        <span className="text-xs text-gray-500">
-                          {product.is_active ? 'Active' : 'Hidden'}
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleQuickStock(product.id, -1); }}
+                          className="w-7 h-7 flex items-center justify-center rounded-md bg-gray-100 hover:bg-red-100 text-gray-600 hover:text-red-700 transition-colors text-sm font-bold"
+                          title="Decrease stock by 1"
+                        >
+                          <Minus size={14} />
+                        </button>
+                        <span className={`min-w-[3rem] text-center text-sm font-semibold ${stockStatus.color}`}>
+                          {inventory?.stock ?? 0}
                         </span>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleQuickStock(product.id, 1); }}
+                          className="w-7 h-7 flex items-center justify-center rounded-md bg-gray-100 hover:bg-green-100 text-gray-600 hover:text-green-700 transition-colors text-sm font-bold"
+                          title="Increase stock by 1"
+                        >
+                          <Plus size={14} />
+                        </button>
+                        <span className={`ml-1 text-xs ${stockStatus.color}`}>{stockStatus.status}</span>
                       </div>
+
+                      {/* Quick Toggle */}
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleToggleActive(product.id, product.is_active); }}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          product.is_active ? 'bg-green-500' : 'bg-gray-300'
+                        }`}
+                        title={product.is_active ? 'Click to hide from shop' : 'Click to show on shop'}
+                      >
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          product.is_active ? 'translate-x-6' : 'translate-x-1'
+                        }`} />
+                      </button>
                     </div>
                   </div>
                 </div>

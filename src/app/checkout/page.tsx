@@ -237,7 +237,7 @@ export default function CheckoutPage() {
   };
 
   const handleCashAppPayment = async (data: CheckboxForm) => {
-    // Validate form first
+    // Validate ALL form fields (same as regular flow)
     const validationErrors = [];
     
     if (!deliveryDetails.name.trim()) {
@@ -255,16 +255,89 @@ export default function CheckoutPage() {
       validationErrors.push(phoneValidationError);
       setPhoneError(phoneValidationError);
     }
+
+    if (!deliveryDetails.address.trim()) {
+      validationErrors.push('Street address is required');
+    }
+
+    if (!deliveryDetails.city.trim()) {
+      validationErrors.push('City is required');
+    }
+
+    if (!deliveryDetails.zipCode.trim()) {
+      validationErrors.push('ZIP code is required');
+    } else if (!/^20[0-1]\d{2}$/.test(deliveryDetails.zipCode)) {
+      validationErrors.push('Please enter a valid DC ZIP code (20000-20199)');
+    }
+
+    if (items.length === 0) {
+      validationErrors.push('Your cart is empty. Please add items before checking out.');
+    }
     
     if (validationErrors.length > 0) {
       toast.error(validationErrors[0]);
       return;
     }
 
-    // Initiate Cash App payment
-    const success = await initiatePayment(finalTotal, deliveryDetails.phone.replace(/\D/g, ''));
-    if (!success) {
-      toast.error('Failed to create Cash App payment. Please try again.');
+    setIsSubmitting(true);
+
+    try {
+      // Step 1: Create full order in database (preserves customer + order data)
+      const orderItems: OrderCartItem[] = items.map(item => ({
+        product: {
+          id: item.product.id,
+          name: item.product.name,
+          description: (((item.product as any).display_tier) || item.product.tier || item.product.description || ''),
+          price: item.product.price,
+          artworkUrl: item.product.image_url || '',
+          giftSize: item.product.weight || `${((item.product as any).display_tier || item.product.tier)} tier`,
+          hasDelivery: hasDelivery
+        },
+        quantity: item.quantity,
+        strain: {
+          name: item.strain.name,
+          type: item.strain.type,
+          thcLow: item.strain.thcLow,
+          thcHigh: item.strain.thcHigh
+        }
+      }));
+
+      const order: Omit<Order, 'id' | 'createdAt' | 'updatedAt'> = {
+        items: orderItems,
+        deliveryDetails: {
+          ...deliveryDetails,
+          ageVerification: data.ageVerified,
+          termsAccepted: data.acceptTerms,
+          emailUpdates: !!data.emailOptIn,
+          phone: deliveryDetails.phone.replace(/\D/g, ''),
+        },
+        total: finalTotal,
+        hasDelivery: hasDelivery,
+        status: 'pending',
+      };
+
+      const response = await fetch('/api/place-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(order),
+      });
+
+      const responseData = await response.json();
+
+      if (!response.ok || !responseData.success) {
+        throw new Error(responseData.error || 'Failed to create order');
+      }
+
+      // Step 2: Initiate Cash App payment redirect
+      const success = await initiatePayment(finalTotal, deliveryDetails.phone.replace(/\D/g, ''));
+      if (!success) {
+        toast.error('Order saved but Cash App redirect failed. Please contact support.');
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      toast.error(errorMessage || 'Order failed. Please try again or contact support@canne.art');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 

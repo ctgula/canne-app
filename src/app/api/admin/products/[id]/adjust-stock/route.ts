@@ -64,20 +64,19 @@ export async function POST(
       return NextResponse.json({ error: 'Failed to update inventory' }, { status: 500 });
     }
 
-    // If stock hits 0 and backorder not allowed, deactivate product
+    // Sync products.stock and is_active in one update to prevent drift
+    const productUpdate: Record<string, any> = { stock: newStock };
     if (newStock <= 0 && !inventory.allow_backorder) {
-      await supabase
-        .from('products')
-        .update({ is_active: false })
-        .eq('id', id);
+      productUpdate.is_active = false;
+      productUpdate.active = false;
+    } else if (newStock > 0) {
+      productUpdate.is_active = true;
+      productUpdate.active = true;
     }
-    // If stock becomes available again, reactivate product
-    else if (newStock > 0) {
-      await supabase
-        .from('products')
-        .update({ is_active: true })
-        .eq('id', id);
-    }
+    await supabase
+      .from('products')
+      .update(productUpdate)
+      .eq('id', id);
 
     // Log the adjustment
     await supabase

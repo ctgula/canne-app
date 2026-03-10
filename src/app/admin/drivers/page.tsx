@@ -12,13 +12,9 @@ import {
   Trash2,
   User,
   Phone,
-  MapPin,
   DollarSign,
-  Package,
-  Clock,
   CheckCircle,
   XCircle,
-  AlertTriangle,
   Car
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -29,31 +25,10 @@ interface Driver {
   name: string;
   phone: string;
   email: string;
-  is_active: boolean;
-  balance_cents: number;
+  status: string;
+  vehicle_info: string;
   created_at: string;
-  updated_at: string;
-  driver_assignments: Array<{
-    id: string;
-    order_id: string;
-    status: string;
-    assigned_at: string;
-    completed_at?: string;
-    order: {
-      order_number: string;
-      total: number;
-      customer_phone: string;
-      delivery_address: string;
-    };
-  }>;
 }
-
-const ASSIGNMENT_STATUS_COLORS = {
-  assigned: 'bg-blue-100 text-blue-800',
-  in_transit: 'bg-yellow-100 text-yellow-800',
-  delivered: 'bg-green-100 text-green-800',
-  failed: 'bg-red-100 text-red-800'
-};
 
 export default function AdminDriversPage() {
   const [drivers, setDrivers] = useState<Driver[]>([]);
@@ -91,7 +66,7 @@ export default function AdminDriversPage() {
       const response = await fetch(`/api/admin/drivers/${driverId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ is_active: !currentActive })
+        body: JSON.stringify({ status: currentActive ? 'offline' : 'available' })
       });
 
       if (!response.ok) throw new Error('Failed to update driver');
@@ -104,8 +79,8 @@ export default function AdminDriversPage() {
     }
   };
 
-  const handlePayoutDriver = async (driverId: string, amount: number) => {
-    if (!confirm(`Pay out $${(amount / 100).toFixed(2)} to this driver?`)) {
+  const handlePayoutDriver = async (driverId: string, _amount: number) => {
+    if (!confirm('Mark all queued payouts as paid for this driver?')) {
       return;
     }
 
@@ -113,12 +88,13 @@ export default function AdminDriversPage() {
       const response = await fetch(`/api/admin/drivers/${driverId}/payout`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount_cents: amount })
+        body: JSON.stringify({})
       });
 
-      if (!response.ok) throw new Error('Failed to process payout');
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Failed to process payout');
       
-      toast.success('Payout processed successfully');
+      toast.success(data.message || 'Payout processed successfully');
       fetchDrivers();
     } catch (error) {
       console.error('Error processing payout:', error);
@@ -126,19 +102,7 @@ export default function AdminDriversPage() {
     }
   };
 
-  const getDriverStats = (driver: Driver) => {
-    const assignments = driver.driver_assignments || [];
-    const activeAssignments = assignments.filter(a => ['assigned', 'in_transit'].includes(a.status));
-    const completedAssignments = assignments.filter(a => a.status === 'delivered');
-    const failedAssignments = assignments.filter(a => a.status === 'failed');
-    
-    return {
-      active: activeAssignments.length,
-      completed: completedAssignments.length,
-      failed: failedAssignments.length,
-      total: assignments.length
-    };
-  };
+  const isDriverActive = (driver: Driver) => driver.status === 'available' || driver.status === 'busy';
 
   if (loading) {
     return (
@@ -172,8 +136,8 @@ export default function AdminDriversPage() {
       onStatusFilterChange={setStatusFilter}
       statusOptions={[
         { value: 'all', label: 'All Drivers', count: drivers.length },
-        { value: 'active', label: 'Active', count: drivers.filter(d => d.is_active).length },
-        { value: 'inactive', label: 'Inactive', count: drivers.filter(d => !d.is_active).length }
+        { value: 'active', label: 'Available', count: drivers.filter(d => d.status === 'available').length },
+        { value: 'inactive', label: 'Offline', count: drivers.filter(d => d.status === 'offline').length }
       ]}
     >
       {/* Header */}
@@ -194,8 +158,7 @@ export default function AdminDriversPage() {
       {/* Drivers Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {drivers.map((driver) => {
-          const stats = getDriverStats(driver);
-          const balance = driver.balance_cents / 100;
+          const active = isDriverActive(driver);
           
           return (
             <motion.div
@@ -230,21 +193,19 @@ export default function AdminDriversPage() {
                         Edit
                       </button>
                       <button
-                        onClick={() => handleToggleActive(driver.id, driver.is_active)}
+                        onClick={() => handleToggleActive(driver.id, active)}
                         className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full text-left"
                       >
-                        {driver.is_active ? <EyeOff size={14} /> : <Eye size={14} />}
-                        {driver.is_active ? 'Deactivate' : 'Activate'}
+                        {active ? <EyeOff size={14} /> : <Eye size={14} />}
+                        {active ? 'Set Offline' : 'Set Available'}
                       </button>
-                      {balance > 0 && (
-                        <button
-                          onClick={() => handlePayoutDriver(driver.id, driver.balance_cents)}
-                          className="flex items-center gap-2 px-4 py-2 text-sm text-green-700 hover:bg-green-50 w-full text-left"
-                        >
-                          <DollarSign size={14} />
-                          Pay Out ${balance.toFixed(2)}
-                        </button>
-                      )}
+                      <button
+                        onClick={() => handlePayoutDriver(driver.id, 0)}
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-green-700 hover:bg-green-50 w-full text-left"
+                      >
+                        <DollarSign size={14} />
+                        Process Payout
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -257,66 +218,30 @@ export default function AdminDriversPage() {
                   </div>
                 </div>
 
-                {/* Stats */}
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-blue-600">{stats.active}</div>
-                    <div className="text-xs text-gray-500">Active</div>
+                {/* Vehicle Info */}
+                {driver.vehicle_info && (
+                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
+                    <Car size={14} />
+                    <span>{driver.vehicle_info}</span>
                   </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-green-600">{stats.completed}</div>
-                    <div className="text-xs text-gray-500">Completed</div>
-                  </div>
-                </div>
+                )}
 
-                {/* Balance */}
+                {/* Status */}
                 <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                  <div className="flex items-center gap-2">
-                    <DollarSign size={16} className="text-green-500" />
-                    <span className="font-semibold text-lg">
-                      ${balance.toFixed(2)}
-                    </span>
-                    <span className="text-sm text-gray-500">balance</span>
-                  </div>
-                  
                   <div className="flex items-center gap-1">
-                    {driver.is_active ? (
+                    {active ? (
                       <CheckCircle size={16} className="text-green-500" />
                     ) : (
                       <XCircle size={16} className="text-red-500" />
                     )}
-                    <span className="text-xs text-gray-500">
-                      {driver.is_active ? 'Active' : 'Inactive'}
+                    <span className={`text-sm font-medium ${active ? 'text-green-600' : 'text-gray-500'}`}>
+                      {driver.status === 'available' ? 'Available' : driver.status === 'busy' ? 'Busy' : 'Offline'}
                     </span>
                   </div>
+                  <span className="text-xs text-gray-400">
+                    Added {new Date(driver.created_at).toLocaleDateString()}
+                  </span>
                 </div>
-
-                {/* Recent Assignments */}
-                {stats.active > 0 && (
-                  <div className="mt-4 pt-4 border-t border-gray-100">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Car size={14} className="text-blue-500" />
-                      <span className="text-sm font-medium text-gray-700">
-                        {stats.active} active assignment{stats.active !== 1 ? 's' : ''}
-                      </span>
-                    </div>
-                    <div className="space-y-1">
-                      {driver.driver_assignments
-                        .filter(a => ['assigned', 'in_transit'].includes(a.status))
-                        .slice(0, 2)
-                        .map((assignment) => (
-                          <div key={assignment.id} className="flex items-center justify-between text-xs">
-                            <span className="text-gray-600 truncate">
-                              {assignment.order.order_number}
-                            </span>
-                            <span className={`px-2 py-1 rounded-full ${ASSIGNMENT_STATUS_COLORS[assignment.status as keyof typeof ASSIGNMENT_STATUS_COLORS]}`}>
-                              {assignment.status}
-                            </span>
-                          </div>
-                        ))}
-                    </div>
-                  </div>
-                )}
               </div>
             </motion.div>
           );

@@ -34,7 +34,7 @@ async function handleSideEffects(supabase: any, orderData: any, currentStatus: s
     if (currentStatus === 'delivered' && newStatus === 'refunded') {
       await supabase
         .from('payouts')
-        .update({ status: 'blocked', blocked_reason: reason || 'Order refunded' })
+        .update({ status: 'blocked' })
         .eq('order_id', orderData.id)
         .eq('status', 'queued');
     }
@@ -43,9 +43,9 @@ async function handleSideEffects(supabase: any, orderData: any, currentStatus: s
     if (['paid', 'assigned'].includes(currentStatus) && ['refunded', 'canceled'].includes(newStatus)) {
       await supabase
         .from('payouts')
-        .update({ status: 'reverted', blocked_reason: reason || `Order ${newStatus}` })
+        .update({ status: 'blocked' })
         .eq('order_id', orderData.id)
-        .in('status', ['queued', 'pending']);
+        .eq('status', 'queued');
     }
     
     // Discord notifications for admin actions
@@ -63,19 +63,13 @@ async function handleSideEffects(supabase: any, orderData: any, currentStatus: s
 async function logAuditTrail(supabase: any, orderId: string, fromStatus: string, toStatus: string, reason?: string, adminAction?: boolean) {
   try {
     await supabase
-      .from('order_audit_log')
+      .from('order_status_events')
       .insert({
         order_id: orderId,
-        action: 'status_change',
-        from_status: fromStatus,
-        to_status: toStatus,
-        reason: reason,
-        admin_action: adminAction || false,
-        timestamp: new Date().toISOString(),
-        metadata: {
-          user_agent: 'admin_panel',
-          ip_address: 'internal'
-        }
+        old_status: fromStatus,
+        new_status: toStatus,
+        note: reason || null,
+        changed_by: adminAction ? 'admin' : 'system'
       });
   } catch (error) {
     console.error('Error logging audit trail:', error);
@@ -210,9 +204,7 @@ export async function POST(request: Request) {
       .from('cashapp_payments')
       .update({ 
         status: new_status,
-        updated_at: new Date().toISOString(),
-        ...(reason && { admin_notes: reason }),
-        ...(admin_action && { last_admin_action: new Date().toISOString() })
+        updated_at: new Date().toISOString()
       })
       .eq('short_code', short_code);
 
@@ -274,7 +266,7 @@ export async function POST(request: Request) {
                   name: orderData.customer_name
                 },
                 {
-                  name: driverData.full_name,
+                  name: driverData.name,
                   phone: driverData.phone,
                   email: driverData.email
                 },

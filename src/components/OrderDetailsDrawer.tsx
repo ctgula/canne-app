@@ -16,7 +16,8 @@ interface OrderDetailsDrawerProps {
 
 interface OrderDetails {
   id: string;
-  short_code: string;
+  short_code?: string;
+  order_number?: string;
   status: string;
   total: number;
   subtotal: number;
@@ -42,7 +43,7 @@ interface OrderDetails {
   order_items: Array<{
     id: string;
     quantity: number;
-    price_cents: number;
+    unit_price: number;
     strain?: string;
     thc_low?: number;
     thc_high?: number;
@@ -63,15 +64,14 @@ interface OrderDetails {
     id: string;
     old_status: string;
     new_status: string;
-    reason?: string;
-    admin_user: string;
+    note?: string;
+    changed_by: string;
     created_at: string;
   }>;
   driver?: {
     id: string;
     name: string;
     phone: string;
-    email: string;
   };
 }
 
@@ -169,11 +169,11 @@ export default function OrderDetailsDrawer({
     }
   };
 
-  const formatCurrency = (cents: number) => {
+  const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD'
-    }).format(cents / 100);
+    }).format(amount);
   };
 
   const formatDate = (dateString: string) => {
@@ -219,7 +219,7 @@ export default function OrderDetailsDrawer({
                   </h2>
                   {order && (
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {order.short_code} • {getStatusBadge(order.status)}
+                      #{order.order_number || order.short_code} • {getStatusBadge(order.status)}
                     </p>
                   )}
                 </div>
@@ -258,8 +258,8 @@ export default function OrderDetailsDrawer({
                           <p className="font-mono">{order.id}</p>
                         </div>
                         <div>
-                          <span className="text-gray-500 dark:text-gray-400">Short Code:</span>
-                          <p className="font-mono">{order.short_code}</p>
+                          <span className="text-gray-500 dark:text-gray-400">Order #:</span>
+                          <p className="font-mono">{order.order_number || order.short_code}</p>
                         </div>
                         <div>
                           <span className="text-gray-500 dark:text-gray-400">Total:</span>
@@ -337,7 +337,7 @@ export default function OrderDetailsDrawer({
                         )}
                         <div>
                           <span className="text-gray-500 dark:text-gray-400">Note:</span>
-                          <p className="font-mono">{order.short_code}</p>
+                          <p className="font-mono">{order.order_number || order.short_code}</p>
                         </div>
                       </div>
                     </div>
@@ -365,7 +365,7 @@ export default function OrderDetailsDrawer({
                             </div>
                             <div className="text-right">
                               <p className="font-medium">×{item.quantity}</p>
-                              <p className="text-sm text-gray-500">{formatCurrency(item.price_cents)}</p>
+                              <p className="text-sm text-gray-500">{formatCurrency(item.unit_price * item.quantity)}</p>
                             </div>
                           </div>
                         ))}
@@ -437,7 +437,7 @@ export default function OrderDetailsDrawer({
                               <p className="text-sm">Status: {payout.status}</p>
                               <p className="text-xs text-gray-500">{formatDate(payout.created_at)}</p>
                             </div>
-                            <p className="font-medium">{formatCurrency(payout.amount_cents)}</p>
+                            <p className="font-medium">{formatCurrency(payout.amount_cents / 100)}</p>
                           </div>
                         ))}
                       </div>
@@ -461,10 +461,10 @@ export default function OrderDetailsDrawer({
                                 </span>
                                 <span className="text-xs text-gray-500">{formatDate(event.created_at)}</span>
                               </div>
-                              {event.reason && (
-                                <p className="text-xs text-gray-500 mt-1">{event.reason}</p>
+                              {event.note && (
+                                <p className="text-xs text-gray-500 mt-1">{event.note}</p>
                               )}
-                              <p className="text-xs text-gray-400">by {event.admin_user}</p>
+                              <p className="text-xs text-gray-400">by {event.changed_by}</p>
                             </div>
                           ))}
                         </div>

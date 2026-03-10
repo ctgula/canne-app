@@ -6,11 +6,11 @@ import { X, Phone, User, Loader2 } from 'lucide-react';
 
 type Driver = {
   id: string;
-  full_name: string;
+  name: string;
   phone: string;
-  is_active?: boolean;
-  balance_cents?: number;
-  status?: "active" | "busy" | "offline";
+  email?: string;
+  status?: "available" | "busy" | "offline";
+  vehicle_info?: string;
 };
 
 interface AssignDriverModalProps {
@@ -47,7 +47,7 @@ export default function AssignDriverModal({ isOpen, onClose, onAssign }: AssignD
   const filtered = drivers.filter(d => {
     const q = search.toLowerCase();
     return (
-      d.full_name?.toLowerCase().includes(q) ||
+      d.name?.toLowerCase().includes(q) ||
       d.phone?.toLowerCase().includes(q)
     );
   });
@@ -88,13 +88,13 @@ export default function AssignDriverModal({ isOpen, onClose, onAssign }: AssignD
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="w-9 h-9 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center"><User className="w-4 h-4"/></div>
                     <div className="min-w-0">
-                      <div className="font-medium truncate">{d.full_name || 'Driver'}</div>
+                      <div className="font-medium truncate">{d.name || 'Driver'}</div>
                       <div className="text-sm text-gray-500 truncate flex items-center gap-1"><Phone className="w-3 h-3"/>{d.phone || 'N/A'}</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${d.is_active !== false ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
-                      {d.is_active !== false ? 'Active' : 'Offline'}
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${d.status === 'available' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                      {d.status === 'available' ? 'Available' : d.status === 'busy' ? 'Busy' : 'Offline'}
                     </span>
                     <button
                       disabled={!!assigningId}

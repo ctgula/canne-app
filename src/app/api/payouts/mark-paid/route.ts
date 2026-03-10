@@ -18,7 +18,6 @@ export async function POST(request: Request) {
       .from('payouts')
       .update({ 
         status: 'paid',
-        paid_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })
       .eq('id', payout_id);

@@ -12,22 +12,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const { id } = await params;
     const { data: driver, error } = await supabase
       .from('drivers')
-      .select(`
-        *,
-        driver_assignments (
-          id,
-          order_id,
-          status,
-          assigned_at,
-          completed_at,
-          orders (
-            order_number,
-            total,
-            customer_phone,
-            delivery_address
-          )
-        )
-      `)
+      .select('*')
       .eq('id', id)
       .single();
 
@@ -48,13 +33,14 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   try {
     const { id } = await params;
     const body = await request.json();
-    const { name, phone, email, is_active } = body;
+    const { name, phone, email, vehicle_info, status } = body;
 
     const updateData: any = {};
     if (name !== undefined) updateData.name = name;
     if (phone !== undefined) updateData.phone = phone;
     if (email !== undefined) updateData.email = email;
-    if (is_active !== undefined) updateData.is_active = is_active;
+    if (vehicle_info !== undefined) updateData.vehicle_info = vehicle_info;
+    if (status !== undefined) updateData.status = status;
 
     const { data: driver, error } = await supabase
       .from('drivers')
@@ -79,16 +65,16 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    // Check if driver has any active assignments
-    const { data: activeAssignments } = await supabase
-      .from('driver_assignments')
+    // Check if driver has any active orders
+    const { data: activeOrders } = await supabase
+      .from('orders')
       .select('id')
       .eq('driver_id', id)
-      .in('status', ['assigned', 'in_transit']);
+      .not('status', 'in', '(delivered,cancelled,canceled,refunded)');
 
-    if (activeAssignments && activeAssignments.length > 0) {
+    if (activeOrders && activeOrders.length > 0) {
       return NextResponse.json({ 
-        error: 'Cannot delete driver with active assignments' 
+        error: 'Cannot delete driver with active orders' 
       }, { status: 400 });
     }
 

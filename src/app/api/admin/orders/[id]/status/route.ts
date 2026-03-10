@@ -90,8 +90,8 @@ export async function PATCH(
           order_id: id,
           old_status: oldStatus,
           new_status: newStatus,
-          reason,
-          admin_user
+          note: reason,
+          changed_by: admin_user
         });
     } catch (logError) {
       console.warn('Could not log status change (table may not exist):', logError);
@@ -147,10 +147,11 @@ async function handleStatusTransition(order: any, oldStatus: string, newStatus: 
       }
 
       // Decrement inventory atomically
+      const newStock = inventory.stock - item.quantity;
       const { error: updateError } = await supabase
         .from('product_inventory')
         .update({ 
-          stock: inventory.stock - item.quantity,
+          stock: newStock,
           updated_at: new Date().toISOString()
         })
         .eq('product_id', item.product_id);
@@ -158,6 +159,14 @@ async function handleStatusTransition(order: any, oldStatus: string, newStatus: 
       if (updateError) {
         throw new Error(`Failed to update inventory for product ${item.product_id}`);
       }
+
+      // Sync products.stock and is_active to keep both stock systems aligned
+      const productUpdate: Record<string, any> = { stock: newStock };
+      if (newStock <= 0 && !inventory.allow_backorder) {
+        productUpdate.is_active = false;
+        productUpdate.active = false;
+      }
+      await supabase.from('products').update(productUpdate).eq('id', item.product_id);
     }
 
     // Create payout if not exists
@@ -186,13 +195,17 @@ async function handleStatusTransition(order: any, oldStatus: string, newStatus: 
         .single();
       
       if (currentInventory) {
+        const restoredStock = currentInventory.stock + item.quantity;
         await supabase
           .from('product_inventory')
           .update({ 
-            stock: currentInventory.stock + item.quantity,
+            stock: restoredStock,
             updated_at: new Date().toISOString()
           })
           .eq('product_id', item.product_id);
+
+        // Sync products.stock and reactivate if stock is now available
+        await supabase.from('products').update({ stock: restoredStock, is_active: true, active: true }).eq('id', item.product_id);
       }
     }
 

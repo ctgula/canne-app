@@ -120,7 +120,7 @@ export async function GET(
     if (order.driver_id) {
       const { data: driverData } = await supabase
         .from('drivers')
-        .select('id, full_name, phone, email')
+        .select('id, name, phone')
         .eq('id', order.driver_id)
         .single();
       driver = driverData;
@@ -174,6 +174,71 @@ export async function PATCH(
       .single();
 
     if (currentOrder) {
+      const oldStatus = currentOrder.status;
+
+      // Handle inventory side effects for regular orders
+      // Decrement inventory when order is delivered (fulfillment)
+      if (status === 'delivered' && oldStatus !== 'delivered') {
+        const { data: items } = await supabase
+          .from('order_items')
+          .select('product_id, quantity')
+          .eq('order_id', id);
+
+        if (items) {
+          for (const item of items) {
+            const { data: inv } = await supabase
+              .from('product_inventory')
+              .select('stock, allow_backorder')
+              .eq('product_id', item.product_id)
+              .single();
+
+            if (inv) {
+              const newStock = inv.stock - item.quantity;
+              await supabase.from('product_inventory')
+                .update({ stock: newStock, updated_at: new Date().toISOString() })
+                .eq('product_id', item.product_id);
+
+              // Sync products.stock and active/is_active
+              const productUpdate: Record<string, any> = { stock: newStock };
+              if (newStock <= 0 && !inv.allow_backorder) {
+                productUpdate.is_active = false;
+                productUpdate.active = false;
+              }
+              await supabase.from('products').update(productUpdate).eq('id', item.product_id);
+            }
+          }
+        }
+      }
+
+      // Restock inventory when cancelling/refunding a delivered order
+      if (['cancelled', 'canceled', 'refunded'].includes(status) && oldStatus === 'delivered') {
+        const { data: items } = await supabase
+          .from('order_items')
+          .select('product_id, quantity')
+          .eq('order_id', id);
+
+        if (items) {
+          for (const item of items) {
+            const { data: inv } = await supabase
+              .from('product_inventory')
+              .select('stock')
+              .eq('product_id', item.product_id)
+              .single();
+
+            if (inv) {
+              const restoredStock = inv.stock + item.quantity;
+              await supabase.from('product_inventory')
+                .update({ stock: restoredStock, updated_at: new Date().toISOString() })
+                .eq('product_id', item.product_id);
+
+              await supabase.from('products')
+                .update({ stock: restoredStock, is_active: true, active: true })
+                .eq('id', item.product_id);
+            }
+          }
+        }
+      }
+
       // Update regular order
       const { data: order, error } = await supabase
         .from('orders')
@@ -195,10 +260,10 @@ export async function PATCH(
         .from('order_status_events')
         .insert({
           order_id: id,
-          old_status: currentOrder.status,
+          old_status: oldStatus,
           new_status: status,
-          admin_user: 'admin',
-          reason: 'Manual status change'
+          changed_by: 'admin',
+          note: 'Manual status change'
         });
 
       return NextResponse.json({ 
