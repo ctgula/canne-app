@@ -1,21 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import { 
-  Search, 
   Plus, 
-  MoreHorizontal, 
-  Edit, 
-  Eye, 
-  EyeOff, 
-  Trash2,
-  User,
   Phone,
-  DollarSign,
-  CheckCircle,
-  XCircle,
-  Car
+  Truck,
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import AdminLayout from '@/components/AdminLayout';
@@ -32,338 +21,204 @@ interface Driver {
 }
 
 export default function AdminDriversPage() {
-  return (
-    <AdminAuthGate>
-      <AdminDriversContent />
-    </AdminAuthGate>
-  );
+  return <AdminAuthGate><DriversContent /></AdminAuthGate>;
 }
 
-function AdminDriversContent() {
+function DriversContent() {
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
-  const [showDriverModal, setShowDriverModal] = useState(false);
-  const [addingDriver, setAddingDriver] = useState(false);
-  const [newDriver, setNewDriver] = useState({ name: '', phone: '', email: '' });
+  const [showModal, setShowModal] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({ name: '', phone: '', email: '' });
 
-  useEffect(() => {
-    fetchDrivers();
-  }, [searchTerm, statusFilter]);
+  useEffect(() => { fetchDrivers(); }, [searchTerm]);
 
   const fetchDrivers = async () => {
     try {
       const params = new URLSearchParams();
       if (searchTerm) params.append('search', searchTerm);
-      if (statusFilter && statusFilter !== 'all') {
-        params.append('active', statusFilter === 'active' ? 'true' : 'false');
-      }
-
-      const response = await fetch(`/api/admin/drivers?${params}`);
-      if (!response.ok) throw new Error('Failed to fetch drivers');
-      
-      const data = await response.json();
+      const res = await fetch(`/api/admin/drivers?${params}`);
+      if (!res.ok) throw new Error();
+      const data = await res.json();
       setDrivers(data.drivers || []);
-    } catch (error) {
-      console.error('Error fetching drivers:', error);
-      toast.error('Failed to load drivers');
-    } finally {
-      setLoading(false);
-    }
+    } catch { toast.error('Failed to load drivers'); }
+    finally { setLoading(false); }
   };
 
-  const handleToggleActive = async (driverId: string, currentActive: boolean) => {
+  const handleToggle = async (id: string, currentlyActive: boolean) => {
     try {
-      const response = await fetch(`/api/admin/drivers/${driverId}`, {
+      const res = await fetch(`/api/admin/drivers/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: currentActive ? 'offline' : 'available' })
+        body: JSON.stringify({ status: currentlyActive ? 'offline' : 'available' }),
       });
-
-      if (!response.ok) throw new Error('Failed to update driver');
-      
-      toast.success(`Driver ${!currentActive ? 'activated' : 'deactivated'}`);
+      if (!res.ok) throw new Error();
+      toast.success(currentlyActive ? 'Set offline' : 'Set available');
       fetchDrivers();
-    } catch (error) {
-      console.error('Error updating driver:', error);
-      toast.error('Failed to update driver');
-    }
+    } catch { toast.error('Failed to update'); }
   };
 
-  const handlePayoutDriver = async (driverId: string, _amount: number) => {
-    if (!confirm('Mark all queued payouts as paid for this driver?')) {
-      return;
-    }
-
+  const handleDelete = async (id: string) => {
+    if (!confirm('Delete this driver?')) return;
     try {
-      const response = await fetch(`/api/admin/drivers/${driverId}/payout`, {
+      const res = await fetch(`/api/admin/drivers/${id}`, { method: 'DELETE' });
+      if (!res.ok) { const e = await res.json(); throw new Error(e.error); }
+      toast.success('Driver removed');
+      fetchDrivers();
+    } catch (e) { toast.error(e instanceof Error ? e.message : 'Failed'); }
+  };
+
+  const handleAdd = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.name.trim() || !form.phone.trim()) { toast.error('Name and phone required'); return; }
+    setSaving(true);
+    try {
+      const res = await fetch('/api/admin/drivers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({})
+        body: JSON.stringify({ name: form.name.trim(), phone: form.phone.trim(), email: form.email.trim() || null }),
       });
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Failed to process payout');
-      
-      toast.success(data.message || 'Payout processed successfully');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed');
+      toast.success('Driver added');
+      setForm({ name: '', phone: '', email: '' });
+      setShowModal(false);
       fetchDrivers();
-    } catch (error) {
-      console.error('Error processing payout:', error);
-      toast.error('Failed to process payout');
-    }
+    } catch (e) { toast.error(e instanceof Error ? e.message : 'Failed'); }
+    finally { setSaving(false); }
   };
 
-  const isDriverActive = (driver: Driver) => driver.status === 'available' || driver.status === 'busy';
-
-  if (loading) {
-    return (
-      <AdminLayout 
-        searchValue={searchTerm}
-        onSearchChange={setSearchTerm}
-        statusFilter={statusFilter}
-        onStatusFilterChange={setStatusFilter}
-      >
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="bg-white rounded-lg p-6 h-64">
-                <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
-                <div className="h-3 bg-gray-200 rounded w-1/2 mb-2"></div>
-                <div className="h-3 bg-gray-200 rounded w-2/3"></div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </AdminLayout>
-    );
-  }
+  const isActive = (d: Driver) => d.status === 'available' || d.status === 'busy';
 
   return (
-    <AdminLayout 
+    <AdminLayout
       searchValue={searchTerm}
       onSearchChange={setSearchTerm}
-      statusFilter={statusFilter}
-      onStatusFilterChange={setStatusFilter}
-      statusOptions={[
-        { value: 'all', label: 'All Drivers', count: drivers.length },
-        { value: 'active', label: 'Available', count: drivers.filter(d => d.status === 'available').length },
-        { value: 'inactive', label: 'Offline', count: drivers.filter(d => d.status === 'offline').length }
-      ]}
+      searchPlaceholder="Search drivers..."
     >
       {/* Header */}
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Drivers</h1>
-          <p className="text-gray-600 mt-1">Manage delivery drivers and assignments</p>
-        </div>
+      <div className="flex items-center justify-between mb-5">
+        <h1 className="text-xl font-bold text-gray-900">Drivers</h1>
         <button
-          onClick={() => setShowDriverModal(true)}
-          className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2"
+          onClick={() => setShowModal(true)}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
         >
-          <Plus size={20} />
+          <Plus size={16} />
           Add Driver
         </button>
       </div>
 
-      {/* Drivers Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {drivers.map((driver) => {
-          const active = isDriverActive(driver);
-          
-          return (
-            <motion.div
-              key={driver.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
-            >
-              <div className="p-6">
-                {/* Header with actions */}
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                      <User size={20} className="text-purple-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900">{driver.name}</h3>
-                      <p className="text-sm text-gray-600">{driver.email}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="relative group">
-                    <button className="p-2 hover:bg-gray-100 rounded-lg">
-                      <MoreHorizontal size={16} />
-                    </button>
-                    <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 min-w-[160px]">
-                      <button
-                        onClick={() => setSelectedDriver(driver)}
-                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full text-left"
-                      >
-                        <Edit size={14} />
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleToggleActive(driver.id, active)}
-                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full text-left"
-                      >
-                        {active ? <EyeOff size={14} /> : <Eye size={14} />}
-                        {active ? 'Set Offline' : 'Set Available'}
-                      </button>
-                      <button
-                        onClick={() => handlePayoutDriver(driver.id, 0)}
-                        className="flex items-center gap-2 px-4 py-2 text-sm text-green-700 hover:bg-green-50 w-full text-left"
-                      >
-                        <DollarSign size={14} />
-                        Process Payout
-                      </button>
+      {/* List */}
+      {loading ? (
+        <div className="text-center py-16">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-3" />
+          <p className="text-sm text-gray-500">Loading...</p>
+        </div>
+      ) : drivers.length === 0 ? (
+        <div className="text-center py-16">
+          <Truck className="mx-auto h-10 w-10 text-gray-300 mb-3" />
+          <p className="text-sm text-gray-500 mb-3">No drivers yet</p>
+          <button
+            onClick={() => setShowModal(true)}
+            className="text-sm text-purple-600 font-medium hover:underline"
+          >
+            + Add your first driver
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {drivers.map(driver => {
+            const active = isActive(driver);
+            return (
+              <div key={driver.id} className="bg-white rounded-xl border border-gray-200 px-4 py-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className={`w-2 h-2 rounded-full flex-shrink-0 ${active ? 'bg-green-400' : 'bg-gray-300'}`} />
+                    <div className="min-w-0">
+                      <span className="font-semibold text-gray-900 text-sm">{driver.name}</span>
+                      <div className="flex items-center gap-2 text-xs text-gray-400">
+                        <span>{driver.phone}</span>
+                        {driver.email && <span>· {driver.email}</span>}
+                      </div>
                     </div>
                   </div>
-                </div>
-
-                {/* Contact Info */}
-                <div className="space-y-2 mb-4">
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <Phone size={14} />
-                    <span>{driver.phone}</span>
-                  </div>
-                </div>
-
-                {/* Vehicle Info */}
-                {driver.vehicle_info && (
-                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
-                    <Car size={14} />
-                    <span>{driver.vehicle_info}</span>
-                  </div>
-                )}
-
-                {/* Status */}
-                <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                  <div className="flex items-center gap-1">
-                    {active ? (
-                      <CheckCircle size={16} className="text-green-500" />
-                    ) : (
-                      <XCircle size={16} className="text-red-500" />
-                    )}
-                    <span className={`text-sm font-medium ${active ? 'text-green-600' : 'text-gray-500'}`}>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${
+                      active
+                        ? 'text-green-700 bg-green-50 border-green-200'
+                        : 'text-gray-500 bg-gray-50 border-gray-200'
+                    }`}>
                       {driver.status === 'available' ? 'Available' : driver.status === 'busy' ? 'Busy' : 'Offline'}
                     </span>
+                    <a
+                      href={`tel:${driver.phone}`}
+                      className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                      title="Call"
+                    >
+                      <Phone size={14} />
+                    </a>
+                    <button
+                      onClick={() => handleToggle(driver.id, active)}
+                      className={`text-xs px-2 py-1 rounded-md font-medium transition-colors ${
+                        active
+                          ? 'text-gray-600 bg-gray-100 hover:bg-gray-200'
+                          : 'text-green-600 bg-green-50 hover:bg-green-100'
+                      }`}
+                    >
+                      {active ? 'Set Offline' : 'Set Active'}
+                    </button>
+                    <button
+                      onClick={() => handleDelete(driver.id)}
+                      className="text-xs px-2 py-1 rounded-md font-medium text-red-500 bg-red-50 hover:bg-red-100 transition-colors"
+                    >
+                      Remove
+                    </button>
                   </div>
-                  <span className="text-xs text-gray-400">
-                    Added {new Date(driver.created_at).toLocaleDateString()}
-                  </span>
                 </div>
               </div>
-            </motion.div>
-          );
-        })}
-      </div>
-
-      {drivers.length === 0 && (
-        <div className="text-center py-12">
-          <Car size={48} className="text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No drivers found</h3>
-          <p className="text-gray-600 mb-4">Get started by adding your first driver</p>
-          <button
-            onClick={() => setShowDriverModal(true)}
-            className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors inline-flex items-center gap-2"
-          >
-            <Plus size={20} />
-            Add Driver
-          </button>
+            );
+          })}
         </div>
       )}
 
-      {/* Add Driver Modal */}
-      {showDriverModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-semibold mb-4">Add New Driver</h2>
-            <form onSubmit={async (e) => {
-              e.preventDefault();
-              if (!newDriver.name.trim() || !newDriver.phone.trim()) {
-                toast.error('Name and phone are required');
-                return;
-              }
-              setAddingDriver(true);
-              try {
-                const res = await fetch('/api/admin/drivers', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    name: newDriver.name.trim(),
-                    phone: newDriver.phone.trim(),
-                    email: newDriver.email.trim() || null,
-                  }),
-                });
-                const data = await res.json();
-                if (!res.ok) {
-                  throw new Error(data.error || 'Failed to add driver');
-                }
-                toast.success('Driver added successfully');
-                setNewDriver({ name: '', phone: '', email: '' });
-                setShowDriverModal(false);
-                fetchDrivers();
-              } catch (error) {
-                toast.error(error instanceof Error ? error.message : 'Failed to add driver');
-              } finally {
-                setAddingDriver(false);
-              }
-            }}>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={newDriver.name}
-                    onChange={(e) => setNewDriver(prev => ({ ...prev, name: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Phone Number
-                  </label>
-                  <input
-                    type="tel"
-                    required
-                    value={newDriver.phone}
-                    onChange={(e) => setNewDriver(prev => ({ ...prev, phone: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    value={newDriver.email}
-                    onChange={(e) => setNewDriver(prev => ({ ...prev, email: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  />
-                </div>
-              </div>
-              <div className="flex justify-end gap-3 mt-6">
-                <button
-                  type="button"
-                  onClick={() => { setShowDriverModal(false); setNewDriver({ name: '', phone: '', email: '' }); }}
-                  className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
-                  disabled={addingDriver}
-                >
+      {/* Add Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setShowModal(false)}>
+          <div className="bg-white rounded-xl p-5 w-full max-w-sm mx-4" onClick={e => e.stopPropagation()}>
+            <h2 className="text-lg font-bold text-gray-900 mb-4">Add Driver</h2>
+            <form onSubmit={handleAdd} className="space-y-3">
+              <input
+                type="text"
+                required
+                placeholder="Full name"
+                value={form.name}
+                onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              />
+              <input
+                type="tel"
+                required
+                placeholder="Phone number"
+                value={form.phone}
+                onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              />
+              <input
+                type="email"
+                placeholder="Email (optional)"
+                value={form.email}
+                onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              />
+              <div className="flex justify-end gap-2 pt-2">
+                <button type="button" onClick={() => { setShowModal(false); setForm({ name: '', phone: '', email: '' }); }}
+                  className="px-3 py-1.5 text-sm text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50" disabled={saving}>
                   Cancel
                 </button>
-                <button
-                  type="submit"
-                  disabled={addingDriver}
-                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
-                >
-                  {addingDriver ? 'Adding...' : 'Add Driver'}
+                <button type="submit" disabled={saving}
+                  className="px-3 py-1.5 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50">
+                  {saving ? 'Adding...' : 'Add Driver'}
                 </button>
               </div>
             </form>

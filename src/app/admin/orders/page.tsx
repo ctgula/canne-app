@@ -1,819 +1,383 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
 import { 
   Phone, 
-  User, 
-  Clock, 
   Package, 
   ChevronDown,
-  DollarSign,
-  Eye,
-  MoreHorizontal,
   MapPin,
   MessageSquare,
   RefreshCw,
-  Plus,
-  Settings as SettingsIcon,
-  BarChart3,
   Truck,
-  CheckCircle2,
-  AlertCircle,
-  XCircle,
-  Copy
 } from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
+import AdminAuthGate from '@/components/AdminAuthGate';
 import OrderDetailsDrawer from '@/components/OrderDetailsDrawer';
-import { useToast } from '@/components/Toast';
 import toast from 'react-hot-toast';
 
 interface Order {
   id: string;
   order_number: string;
-  status: 'pending' | 'delivered' | 'cancelled' | 'awaiting_payment' | 'verifying' | 'paid' | 'assigned' | 'en_route' | 'issue';
-  payment_status?: 'unpaid' | 'paid';
+  status: string;
   total: number;
-  subtotal: number;
-  delivery_fee: number;
   created_at: string;
-  updated_at: string;
   driver_id?: string;
   delivery_address_line1?: string;
   delivery_city?: string;
   delivery_state?: string;
-  customers: {
-    first_name: string;
-    last_name: string;
-    phone: string;
-    email: string;
-  };
-  order_items?: {
-    quantity: number;
-    products: {
-      name: string;
-      price_cents: number;
-    };
-  }[];
-  driver?: {
-    id: string;
-    name: string;
-    phone: string;
-  };
+  customers: { first_name: string; last_name: string; phone: string; email: string };
+  order_items?: { quantity: number; products: { name: string; price_cents: number } }[];
+  driver?: { id: string; name: string; phone: string };
 }
 
-interface Driver {
-  id: string;
-  name: string;
-  phone: string;
-  is_available: boolean;
-}
+interface Driver { id: string; name: string; phone: string; is_available: boolean }
 
-// Utility functions
-const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD'
-  }).format(amount);
+const fmt = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
+
+const timeAgo = (d: string) => {
+  if (!d) return '';
+  const s = Math.floor((Date.now() - new Date(d).getTime()) / 1000);
+  if (s < 60) return 'now';
+  if (s < 3600) return `${Math.floor(s / 60)}m`;
+  if (s < 86400) return `${Math.floor(s / 3600)}h`;
+  return `${Math.floor(s / 86400)}d`;
 };
 
-const formatDate = (dateString: string): string => {
-  if (!dateString) return 'N/A';
-  const date = new Date(dateString);
-  if (isNaN(date.getTime())) return 'Invalid Date';
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
+const STATUS_CFG: Record<string, { label: string; color: string; dot: string }> = {
+  awaiting_payment: { label: 'Awaiting', color: 'text-yellow-700 bg-yellow-50 border-yellow-200', dot: 'bg-yellow-400' },
+  verifying:        { label: 'Verifying', color: 'text-blue-700 bg-blue-50 border-blue-200', dot: 'bg-blue-400' },
+  paid:             { label: 'Paid', color: 'text-green-700 bg-green-50 border-green-200', dot: 'bg-green-500' },
+  assigned:         { label: 'Assigned', color: 'text-indigo-700 bg-indigo-50 border-indigo-200', dot: 'bg-indigo-400' },
+  delivered:        { label: 'Delivered', color: 'text-emerald-700 bg-emerald-50 border-emerald-200', dot: 'bg-emerald-500' },
+  cancelled:        { label: 'Cancelled', color: 'text-red-700 bg-red-50 border-red-200', dot: 'bg-red-400' },
+  issue:            { label: 'Issue', color: 'text-orange-700 bg-orange-50 border-orange-200', dot: 'bg-orange-400' },
+  refunded:         { label: 'Refunded', color: 'text-gray-600 bg-gray-50 border-gray-200', dot: 'bg-gray-400' },
 };
 
-const getTimeAgo = (dateString: string): string => {
-  if (!dateString) return 'N/A';
-  const now = new Date();
-  const date = new Date(dateString);
-  if (isNaN(date.getTime())) return 'N/A';
-  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-  
-  if (diffInSeconds < 60) return 'Just now';
-  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
-  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
-  return `${Math.floor(diffInSeconds / 86400)}d ago`;
+const ALL_STATUSES = ['awaiting_payment', 'verifying', 'paid', 'assigned', 'delivered', 'cancelled', 'issue'];
+
+const getCategory = (s: string) => {
+  if (['awaiting_payment', 'verifying'].includes(s)) return 'pending';
+  if (['paid', 'assigned'].includes(s)) return 'active';
+  if (s === 'delivered') return 'delivered';
+  return 'issues';
 };
 
 export default function AdminOrdersPage() {
+  return <AdminAuthGate><OrdersContent /></AdminAuthGate>;
+}
+
+function OrdersContent() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [password, setPassword] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [paymentFilter, setPaymentFilter] = useState('all');
-  const [openDropdowns, setOpenDropdowns] = useState<Set<string>>(new Set());
+  const [tab, setTab] = useState('all');
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [showDriverDropdown, setShowDriverDropdown] = useState<string | null>(null);
-  const [showStatusDropdown, setShowStatusDropdown] = useState<string | null>(null);
-  const [copiedPhone, setCopiedPhone] = useState<string | null>(null);
+  const [openDropdown, setOpenDropdown] = useState<{ id: string; type: 'status' | 'driver' } | null>(null);
 
-  const { success: showSuccessToast, error: showErrorToast } = useToast();
-
-  const getValidTransitions = (currentStatus: string): string[] => {
-    const transitions: Record<string, string[]> = {
-      'pending': ['delivered', 'cancelled'],
-      'delivered': [],
-      'cancelled': []
-    };
-    return transitions[currentStatus] || [];
-  };
-
-  const getValidPaymentTransitions = (currentPaymentStatus: string): string[] => {
-    const transitions: Record<string, string[]> = {
-      'unpaid': ['paid'],
-      'paid': ['unpaid'] // Allow reverting if needed
-    };
-    return transitions[currentPaymentStatus] || [];
-  };
-
-  const fetchOrders = async (showRefreshIndicator = false) => {
+  const fetchOrders = async (showRefresh = false) => {
     try {
-      if (showRefreshIndicator) setIsRefreshing(true);
-      const response = await fetch('/api/admin/orders');
-      if (!response.ok) throw new Error('Failed to fetch orders');
-      const data = await response.json();
+      if (showRefresh) setIsRefreshing(true);
+      const res = await fetch('/api/admin/orders');
+      if (!res.ok) throw new Error();
+      const data = await res.json();
       setOrders(data.orders || []);
-      if (showRefreshIndicator) showSuccessToast('Orders refreshed');
-    } catch (error) {
-      console.error('Error fetching orders:', error);
-      showErrorToast('Failed to load orders');
-    } finally {
-      setLoading(false);
-      if (showRefreshIndicator) setIsRefreshing(false);
-    }
+    } catch { toast.error('Failed to load orders'); }
+    finally { setLoading(false); setIsRefreshing(false); }
   };
 
   const fetchDrivers = async () => {
     try {
-      const response = await fetch('/api/admin/drivers');
-      if (response.ok) {
-        const data = await response.json();
-        setDrivers(data.drivers || []);
-      }
-    } catch (error) {
-      console.error('Error fetching drivers:', error);
-    }
+      const res = await fetch('/api/admin/drivers');
+      if (res.ok) { const d = await res.json(); setDrivers(d.drivers || []); }
+    } catch {}
   };
+
+  useEffect(() => { fetchOrders(); fetchDrivers(); }, []);
+
+  useEffect(() => {
+    const sub = supabase
+      .channel('admin-orders')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => fetchOrders())
+      .subscribe();
+    return () => { sub.unsubscribe(); };
+  }, []);
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {
+    setOpenDropdown(null);
     try {
-      const response = await fetch(`/api/admin/orders/${orderId}`, {
+      const res = await fetch(`/api/admin/orders/${orderId}`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
       });
-
-      if (response.ok) {
-        showSuccessToast(`Order status updated to ${newStatus}`);
-        fetchOrders(); // Refresh the orders list
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update status');
-      }
-    } catch (error) {
-      console.error('Error updating status:', error);
-      showErrorToast(error instanceof Error ? error.message : 'Failed to update order status');
-    }
-  };
-
-  const handlePaymentStatusChange = async (orderId: string, currentPaymentStatus: string, newPaymentStatus: string) => {
-    try {
-      const response = await fetch(`/api/admin/orders/${orderId}/payment-status`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          payment_status: newPaymentStatus,
-          reason: `Payment status changed from ${currentPaymentStatus} to ${newPaymentStatus}`,
-          admin_user: 'admin'
-        }),
-      });
-
-      if (response.ok) {
-        showSuccessToast(`Payment status updated to ${newPaymentStatus}`);
-        fetchOrders(); // Refresh the orders list
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update payment status');
-      }
-    } catch (error) {
-      console.error('Error updating payment status:', error);
-      showErrorToast(error instanceof Error ? error.message : 'Failed to update payment status');
-    }
+      if (!res.ok) { const e = await res.json(); throw new Error(e.error); }
+      toast.success(`Status → ${(STATUS_CFG[newStatus]?.label || newStatus)}`);
+      fetchOrders();
+    } catch (e) { toast.error(e instanceof Error ? e.message : 'Failed to update'); }
   };
 
   const handleAssignDriver = async (orderId: string, driverId: string) => {
+    setOpenDropdown(null);
     try {
-      const response = await fetch(`/api/admin/orders/${orderId}/assign-driver`, {
+      const res = await fetch(`/api/admin/orders/${orderId}/assign-driver`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ driver_id: driverId })
+        body: JSON.stringify({ driver_id: driverId }),
       });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to assign driver');
-      }
-
-      showSuccessToast('Driver assigned successfully');
-      fetchOrders(); // Refresh orders
-    } catch (error) {
-      console.error('Error assigning driver:', error);
-      showErrorToast(error instanceof Error ? error.message : 'Failed to assign driver');
-    }
+      if (!res.ok) { const e = await res.json(); throw new Error(e.error); }
+      toast.success('Driver assigned');
+      fetchOrders();
+    } catch (e) { toast.error(e instanceof Error ? e.message : 'Failed'); }
   };
 
-  const openOrderDetails = (orderId: string) => {
-    setSelectedOrderId(orderId);
-    setIsDrawerOpen(true);
-  };
-
-  const copyToClipboard = async (text: string, orderId: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopiedPhone(orderId);
-      showSuccessToast('Phone copied!');
-      setTimeout(() => setCopiedPhone(null), 2000);
-    } catch (err) {
-      showErrorToast('Failed to copy');
-    }
-  };
-
-  const getStatusCategory = (status: string): string => {
-    // Pending: Orders waiting for payment or verification
-    if (['awaiting_payment', 'verifying'].includes(status)) return 'pending';
-    // Active: Paid and being processed/delivered
-    if (['paid', 'assigned'].includes(status)) return 'active';
-    // Delivered: Successfully completed
-    if (status === 'delivered') return 'delivered';
-    // Issues: Cancelled, problems with driver/order/delivery/customer
-    if (['cancelled', 'issue', 'refunded', 'undelivered'].includes(status)) return 'issues';
-    return 'pending';
-  };
-
-  const getStatusColor = (status: string) => {
-    const category = getStatusCategory(status);
-    switch (category) {
-      case 'active': return 'bg-blue-500';
-      case 'pending': return 'bg-yellow-500';
-      case 'delivered': return 'bg-green-500';
-      case 'issues': return 'bg-red-500';
-      default: return 'bg-gray-500';
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    const category = getStatusCategory(status);
-    switch (category) {
-      case 'active': return <Truck className="w-4 h-4" />;
-      case 'pending': return <Clock className="w-4 h-4" />;
-      case 'delivered': return <CheckCircle2 className="w-4 h-4" />;
-      case 'issues': return <AlertCircle className="w-4 h-4" />;
-      default: return <Package className="w-4 h-4" />;
-    }
-  };
-
-  const handleLogin = async () => {
-    try {
-      const res = await fetch('/api/admin/auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
-      });
-      if (res.ok) {
-        setIsAuthenticated(true);
-        setPassword('');
-        fetchOrders();
-        fetchDrivers();
-      } else {
-        const data = await res.json();
-        showErrorToast(data.error || 'Invalid password');
-      }
-    } catch {
-      showErrorToast('Authentication failed');
-    }
-  };
-
+  // Close dropdowns on outside click
   useEffect(() => {
-    // Check if already authenticated (cookie exists) by making a test API call
-    fetch('/api/admin/tab-counts').then(res => {
-      if (res.ok) {
-        setIsAuthenticated(true);
-        fetchOrders();
-        fetchDrivers();
-      }
-    }).catch(() => {});
-  }, []);
+    if (!openDropdown) return;
+    const close = () => setOpenDropdown(null);
+    document.addEventListener('click', close);
+    return () => document.removeEventListener('click', close);
+  }, [openDropdown]);
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      // Set up real-time subscription
-      const subscription = supabase
-        .channel('orders')
-        .on('postgres_changes', 
-          { event: '*', schema: 'public', table: 'orders' },
-          () => fetchOrders()
-        )
-        .subscribe();
-
-      return () => {
-        subscription.unsubscribe();
-      };
-    }
-  }, [isAuthenticated]);
-
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg max-w-md w-full">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-center">
-            Admin Access Required
-          </h2>
-          <input
-            type="password"
-            placeholder="Enter admin password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent mb-4"
-            onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-          />
-          <button
-            onClick={handleLogin}
-            className="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition-colors font-medium"
-          >
-            Access Admin Panel
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  const filteredOrders = orders.filter(order => {
-    const matchesSearch = !searchTerm || 
-      order.order_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.customers.phone.includes(searchTerm) ||
-      `${order.customers.first_name} ${order.customers.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.customers.email.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const orderCategory = getStatusCategory(order.status);
-    const matchesStatus = statusFilter === 'all' || 
-                          statusFilter === orderCategory || 
-                          order.status === statusFilter;
-    
-    // Payment filter
-    const isPaid = ['paid', 'verifying', 'assigned', 'delivered'].includes(order.status);
-    const matchesPayment = paymentFilter === 'all' || 
-                          (paymentFilter === 'paid' && isPaid) ||
-                          (paymentFilter === 'unpaid' && !isPaid);
-    
-    return matchesSearch && matchesStatus && matchesPayment;
+  // Filter
+  const filtered = orders.filter(o => {
+    const s = searchTerm.toLowerCase();
+    const matchSearch = !s ||
+      o.order_number.toLowerCase().includes(s) ||
+      o.customers.phone.includes(searchTerm) ||
+      `${o.customers.first_name} ${o.customers.last_name}`.toLowerCase().includes(s);
+    const matchTab = tab === 'all' || getCategory(o.status) === tab;
+    return matchSearch && matchTab;
   });
 
-  const statusCounts = orders.reduce((acc, order) => {
-    acc[order.status] = (acc[order.status] || 0) + 1;
-    return acc;
+  const counts = orders.reduce((a, o) => {
+    const cat = getCategory(o.status);
+    a[cat] = (a[cat] || 0) + 1;
+    return a;
   }, {} as Record<string, number>);
 
-  const categoryCounts = orders.reduce((acc, order) => {
-    const category = getStatusCategory(order.status);
-    acc[category] = (acc[category] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-
-  const paymentCounts = orders.reduce((acc, order) => {
-    const isPaid = ['paid', 'verifying', 'assigned', 'delivered'].includes(order.status);
-    const paymentStatus = isPaid ? 'paid' : 'unpaid';
-    acc[paymentStatus] = (acc[paymentStatus] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-
-  const statusOptions = [
-    { value: 'all', label: 'All Orders', count: orders.length, icon: Package, color: 'gray' },
-    { value: 'active', label: 'Active', count: categoryCounts.active || 0, icon: Truck, color: 'blue' },
-    { value: 'pending', label: 'Pending', count: categoryCounts.pending || 0, icon: Clock, color: 'yellow' },
-    { value: 'delivered', label: 'Delivered', count: categoryCounts.delivered || 0, icon: CheckCircle2, color: 'green' },
-    { value: 'issues', label: 'Issues', count: categoryCounts.issues || 0, icon: AlertCircle, color: 'red' }
-  ];
-
-  const paymentOptions = [
-    { value: 'all', label: 'All', count: orders.length },
-    { value: 'paid', label: 'Paid', count: paymentCounts.paid || 0 },
-    { value: 'unpaid', label: 'Unpaid', count: paymentCounts.unpaid || 0 }
+  const tabs = [
+    { key: 'all', label: 'All', count: orders.length },
+    { key: 'pending', label: 'Pending', count: counts.pending || 0 },
+    { key: 'active', label: 'Active', count: counts.active || 0 },
+    { key: 'delivered', label: 'Done', count: counts.delivered || 0 },
+    { key: 'issues', label: 'Issues', count: counts.issues || 0 },
   ];
 
   return (
     <AdminLayout
       searchValue={searchTerm}
       onSearchChange={setSearchTerm}
-      statusFilter={statusFilter}
-      onStatusFilterChange={setStatusFilter}
-      statusOptions={statusOptions}
+      searchPlaceholder="Search name, phone, or order #..."
     >
-      {/* Header with Actions */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
-              Cannè Orders Dashboard
-            </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              💡 Quick search: Type customer phone number or last 4 digits
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => fetchOrders(true)}
-              disabled={isRefreshing}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all shadow-sm disabled:opacity-50"
-              title="Refresh orders"
-            >
-              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline">Refresh</span>
-            </button>
-          </div>
-        </div>
-        
-        {/* Clean Status Filter Tabs */}
-        <div className="flex flex-wrap gap-2 mb-3">
-          {statusOptions.map((option) => {
-            const isActive = statusFilter === option.value;
-            const emoji = {
-              gray: '📦',
-              blue: '🔵',
-              yellow: '🟡',
-              green: '🟢',
-              red: '⚠️'
-            }[option.color as keyof typeof emoji];
-            
-            return (
-              <button
-                key={option.value}
-                onClick={() => setStatusFilter(option.value)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold transition-all ${
-                  isActive
-                    ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg scale-105'
-                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-700 hover:shadow-md'
-                }`}
-              >
-                <span className="text-base">{emoji}</span>
-                <span>{option.label}</span>
-                {option.count > 0 && (
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
-                    isActive ? 'bg-white/30' : 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'
-                  }`}>
-                    {option.count}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-        
-        {/* Payment Filter Tabs */}
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Payment:</span>
-          <div className="flex gap-2">
-            {paymentOptions.map((option) => {
-              const isActive = paymentFilter === option.value;
-              const emoji = {
-                all: '💳',
-                paid: '✅',
-                unpaid: '⏳'
-              }[option.value];
-              
-              return (
-                <button
-                  key={option.value}
-                  onClick={() => setPaymentFilter(option.value)}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                    isActive
-                      ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-md'
-                      : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:border-green-300 dark:hover:border-green-700 hover:shadow-sm'
-                  }`}
-                >
-                  <span>{emoji}</span>
-                  <span>{option.label}</span>
-                  {option.count > 0 && (
-                    <span className={`px-1.5 py-0.5 rounded-full text-xs font-bold ${
-                      isActive ? 'bg-white/30' : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
-                    }`}>
-                      {option.count}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-xl font-bold text-gray-900">Orders</h1>
+        <button
+          onClick={() => fetchOrders(true)}
+          disabled={isRefreshing}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+          Refresh
+        </button>
       </div>
 
-      {/* Orders Grid */}
-      <div className="grid gap-6">
-        {loading ? (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-            <p className="text-gray-600 dark:text-gray-400">Loading orders...</p>
-          </div>
-        ) : filteredOrders.length === 0 ? (
-          <div className="text-center py-12">
-            <Package className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No orders found</h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              {searchTerm ? 'Try adjusting your search criteria' : 'No orders match the current filters'}
-            </p>
-          </div>
-        ) : (
-          <>
-            <div className="space-y-3">
-              {filteredOrders.map((order) => {
-              const statusColor = getStatusColor(order.status);
-              const statusEmoji = {
-                'bg-blue-500': '🔵',
-                'bg-yellow-500': '🟡',
-                'bg-green-500': '🟢',
-                'bg-red-500': '🔴',
-                'bg-gray-500': '⚪'
-              }[statusColor] || '⚪';
-              
-              return (
-                <motion.div
-                  key={order.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  onClick={() => openOrderDetails(order.id)}
-                  className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border-l-4 border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all cursor-pointer group"
-                  style={{ borderLeftColor: statusColor.replace('bg-', '#').replace('-500', '') }}
-                >
-                  <div className="p-4">
-                    {/* Compact Header */}
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-3 flex-1">
-                        <span className="text-xl">{statusEmoji}</span>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-lg font-bold text-gray-900 dark:text-white truncate">
-                            {`${order.customers.first_name} ${order.customers.last_name}`}
-                          </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
-                            {getTimeAgo(order.created_at)} • #{order.order_number}
-                          </div>
+      {/* Tabs */}
+      <div className="flex gap-1 mb-5 bg-gray-100 p-1 rounded-lg w-fit">
+        {tabs.map(t => (
+          <button
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+              tab === t.key ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            {t.label}
+            {t.count > 0 && (
+              <span className={`ml-1.5 text-xs ${tab === t.key ? 'text-purple-600' : 'text-gray-400'}`}>
+                {t.count}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* List */}
+      {loading ? (
+        <div className="text-center py-16">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-3" />
+          <p className="text-sm text-gray-500">Loading...</p>
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="text-center py-16">
+          <Package className="mx-auto h-10 w-10 text-gray-300 mb-3" />
+          <p className="text-sm text-gray-500">{searchTerm ? 'No matches' : 'No orders yet'}</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {filtered.map(order => {
+            const cfg = STATUS_CFG[order.status] || STATUS_CFG.awaiting_payment;
+            const name = `${order.customers.first_name} ${order.customers.last_name}`;
+
+            return (
+              <div
+                key={order.id}
+                onClick={() => { setSelectedOrderId(order.id); setIsDrawerOpen(true); }}
+                className="bg-white rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer"
+              >
+                <div className="px-4 py-3">
+                  {/* Row 1: customer · status · total */}
+                  <div className="flex items-center justify-between mb-2.5">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className={`w-2 h-2 rounded-full flex-shrink-0 ${cfg.dot}`} />
+                      <span className="font-semibold text-gray-900 truncate text-sm">{name}</span>
+                      <span className="text-xs text-gray-400 flex-shrink-0">#{order.order_number}</span>
+                      <span className="text-xs text-gray-400 flex-shrink-0">{timeAgo(order.created_at)}</span>
+                    </div>
+                    <div className="flex items-center gap-2.5 flex-shrink-0 ml-3">
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${cfg.color}`}>
+                        {cfg.label}
+                      </span>
+                      <span className="font-bold text-sm text-gray-900">{fmt(order.total)}</span>
+                    </div>
+                  </div>
+
+                  {/* Row 2: quick actions */}
+                  <div className="flex items-center gap-1.5">
+                    {/* Status change */}
+                    <div className="relative">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpenDropdown(
+                            openDropdown?.id === order.id && openDropdown?.type === 'status'
+                              ? null
+                              : { id: order.id, type: 'status' }
+                          );
+                        }}
+                        className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-md hover:bg-gray-100 transition-colors"
+                      >
+                        Status <ChevronDown className="w-3 h-3" />
+                      </button>
+                      {openDropdown?.id === order.id && openDropdown?.type === 'status' && (
+                        <div
+                          onClick={e => e.stopPropagation()}
+                          className="absolute z-20 left-0 mt-1 w-40 bg-white border border-gray-200 rounded-lg shadow-lg py-1"
+                        >
+                          {ALL_STATUSES.map(s => {
+                            const sc = STATUS_CFG[s];
+                            return (
+                              <button
+                                key={s}
+                                disabled={order.status === s}
+                                onClick={(e) => { e.stopPropagation(); handleStatusChange(order.id, s); }}
+                                className={`w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50 flex items-center gap-2 ${order.status === s ? 'opacity-30 cursor-default' : ''}`}
+                              >
+                                <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${sc.dot}`} />
+                                {sc.label}
+                              </button>
+                            );
+                          })}
                         </div>
-                      </div>
-                      <div className="text-right ml-4">
-                        <div className="text-xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
-                          {formatCurrency(order.total)}
-                        </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
-                          {order.status.replace('_', ' ')}
-                        </div>
-                      </div>
+                      )}
                     </div>
 
-                    {/* Compact Action Row */}
-                    <div className="flex items-center gap-2">
-                      {/* Status Change Dropdown */}
-                      <div className="relative flex-1">
+                    {/* Driver */}
+                    {order.driver ? (
+                      <span className="text-xs text-indigo-600 bg-indigo-50 border border-indigo-200 px-2 py-1 rounded-md font-medium">
+                        {order.driver.name}
+                      </span>
+                    ) : (
+                      <div className="relative">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            setShowStatusDropdown(showStatusDropdown === order.id ? null : order.id);
+                            setOpenDropdown(
+                              openDropdown?.id === order.id && openDropdown?.type === 'driver'
+                                ? null
+                                : { id: order.id, type: 'driver' }
+                            );
                           }}
-                          className="w-full px-3 py-2 text-sm bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 text-blue-700 dark:text-blue-300 rounded-lg hover:from-blue-100 hover:to-indigo-100 dark:hover:from-blue-900/30 dark:hover:to-indigo-900/30 transition-all font-medium flex items-center justify-between border border-blue-200 dark:border-blue-800"
+                          className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-purple-600 bg-purple-50 border border-purple-200 rounded-md hover:bg-purple-100 transition-colors"
                         >
-                          <span className="flex items-center gap-2 truncate">
-                            <span className="flex-shrink-0">
-                              {order.status === 'awaiting_payment' && '⏳'}
-                              {order.status === 'verifying' && '🔍'}
-                              {order.status === 'paid' && '✅'}
-                              {order.status === 'assigned' && '🚚'}
-                              {order.status === 'delivered' && '✅'}
-                              {order.status === 'issue' && '⚠️'}
-                              {order.status === 'cancelled' && '❌'}
-                              {!['awaiting_payment', 'verifying', 'paid', 'assigned', 'delivered', 'issue', 'cancelled'].includes(order.status) && '📦'}
-                            </span>
-                            <span className="truncate capitalize">{order.status.replace('_', ' ')}</span>
-                          </span>
-                          <ChevronDown className={`w-4 h-4 flex-shrink-0 transition-transform ${showStatusDropdown === order.id ? 'rotate-180' : ''}`} />
+                          <Truck className="w-3 h-3" /> Assign <ChevronDown className="w-3 h-3" />
                         </button>
-                        
-                        {showStatusDropdown === order.id && (
-                          <motion.div
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            onClick={(e) => e.stopPropagation()}
-                            className="absolute z-20 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl overflow-hidden"
+                        {openDropdown?.id === order.id && openDropdown?.type === 'driver' && (
+                          <div
+                            onClick={e => e.stopPropagation()}
+                            className="absolute z-20 left-0 mt-1 w-44 bg-white border border-gray-200 rounded-lg shadow-lg py-1"
                           >
-                            {[
-                              { value: 'awaiting_payment', label: '⏳ Awaiting Payment', color: 'yellow' },
-                              { value: 'verifying', label: '🔍 Verifying', color: 'blue' },
-                              { value: 'paid', label: '✅ Paid', color: 'green' },
-                              { value: 'assigned', label: '🚚 Assigned to Driver', color: 'blue' },
-                              { value: 'delivered', label: '✅ Delivered', color: 'green' },
-                              { value: 'issue', label: '⚠️ Issue (Driver/Order/Customer)', color: 'red' },
-                              { value: 'cancelled', label: '❌ Cancelled', color: 'red' }
-                            ].map((statusOption) => (
+                            {drivers.length === 0 ? (
+                              <div className="px-3 py-2 text-xs text-gray-500">No drivers available</div>
+                            ) : drivers.map(d => (
                               <button
-                                key={statusOption.value}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleStatusChange(order.id, statusOption.value);
-                                  setShowStatusDropdown(null);
-                                }}
-                                disabled={order.status === statusOption.value}
-                                className={`w-full px-3 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors border-b border-gray-100 dark:border-gray-700 last:border-b-0 ${
-                                  order.status === statusOption.value ? 'bg-blue-50 dark:bg-blue-900/20 opacity-50 cursor-not-allowed' : ''
-                                }`}
+                                key={d.id}
+                                onClick={(e) => { e.stopPropagation(); handleAssignDriver(order.id, d.id); }}
+                                className="w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50 flex items-center justify-between"
                               >
-                                <div className="text-sm font-medium text-gray-900 dark:text-white">
-                                  {statusOption.label}
-                                </div>
+                                <span className="font-medium text-gray-900">{d.name}</span>
+                                <span className={`w-1.5 h-1.5 rounded-full ${d.is_available ? 'bg-green-400' : 'bg-gray-300'}`} />
                               </button>
                             ))}
-                          </motion.div>
+                          </div>
                         )}
                       </div>
-                      
-                      {/* Driver Assignment Dropdown */}
-                      {!order.driver ? (
-                        <div className="relative flex-1">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setShowDriverDropdown(showDriverDropdown === order.id ? null : order.id);
-                            }}
-                            className="w-full px-3 py-2 text-sm bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 text-purple-700 dark:text-purple-300 rounded-lg hover:from-purple-100 hover:to-pink-100 dark:hover:from-purple-900/30 dark:hover:to-pink-900/30 transition-all font-medium flex items-center justify-between border border-purple-200 dark:border-purple-800"
-                          >
-                            <span className="flex items-center gap-2">
-                              <Truck className="w-4 h-4" />
-                              <span className="hidden sm:inline">Assign Driver</span>
-                              <span className="sm:hidden">Assign</span>
-                            </span>
-                            <ChevronDown className={`w-4 h-4 transition-transform ${showDriverDropdown === order.id ? 'rotate-180' : ''}`} />
-                          </button>
-                          
-                          {showDriverDropdown === order.id && drivers.length > 0 && (
-                            <motion.div
-                              initial={{ opacity: 0, y: -10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              onClick={(e) => e.stopPropagation()}
-                              className="absolute z-20 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl overflow-hidden"
-                            >
-                              {drivers.map((driver) => (
-                                <button
-                                  key={driver.id}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleAssignDriver(order.id, driver.id);
-                                    setShowDriverDropdown(null);
-                                  }}
-                                  className="w-full px-3 py-2.5 text-left hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors border-b border-gray-100 dark:border-gray-700 last:border-b-0"
-                                >
-                                  <div className="flex items-center justify-between">
-                                    <div>
-                                      <div className="text-sm font-medium text-gray-900 dark:text-white">
-                                        {driver.name}
-                                      </div>
-                                      <div className="text-xs text-gray-500 dark:text-gray-400">
-                                        {driver.phone}
-                                      </div>
-                                    </div>
-                                    <span className="text-xs">
-                                      {driver.is_available ? '🟢' : '🔴'}
-                                    </span>
-                                  </div>
-                                </button>
-                              ))}
-                            </motion.div>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="flex-1 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                          <div className="text-xs text-blue-600 dark:text-blue-400 font-medium">
-                            🚚 {order.driver.name}
-                          </div>
-                        </div>
-                      )}
-                      
-                      {/* Icon Actions */}
-                      <a
-                        href={`sms:${order.customers.phone}`}
-                        onClick={(e) => e.stopPropagation()}
-                        className="p-2.5 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-all border border-green-200 dark:border-green-800"
-                        title="Text customer"
-                      >
-                        <MessageSquare className="w-4 h-4" />
-                      </a>
-                      <a
-                        href={`tel:${order.customers.phone}`}
-                        onClick={(e) => e.stopPropagation()}
-                        className="p-2.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all border border-blue-200 dark:border-blue-800"
-                        title="Call customer"
-                      >
-                        <Phone className="w-4 h-4" />
-                      </a>
-                      {order.delivery_address_line1 && (
-                        <a
-                          href={`https://maps.google.com/?q=${encodeURIComponent(`${order.delivery_address_line1}, ${order.delivery_city}, ${order.delivery_state}`)}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="p-2.5 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-all border border-purple-200 dark:border-purple-800"
-                          title="Directions"
-                        >
-                          <MapPin className="w-4 h-4" />
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                </motion.div>
-              );
-              })}
-            </div>
+                    )}
 
-            {/* Live Summary Bar */}
-            <div className="mt-8 p-6 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-2xl border border-purple-200 dark:border-purple-800">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                <div>
-                  <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {orders.length}
+                    {/* Spacer */}
+                    <div className="flex-1" />
+
+                    {/* Contact actions */}
+                    <a
+                      href={`sms:${order.customers.phone}`}
+                      onClick={e => e.stopPropagation()}
+                      className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-md transition-colors"
+                      title="Text"
+                    >
+                      <MessageSquare className="w-3.5 h-3.5" />
+                    </a>
+                    <a
+                      href={`tel:${order.customers.phone}`}
+                      onClick={e => e.stopPropagation()}
+                      className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                      title="Call"
+                    >
+                      <Phone className="w-3.5 h-3.5" />
+                    </a>
+                    {order.delivery_address_line1 && (
+                      <a
+                        href={`https://maps.google.com/?q=${encodeURIComponent(`${order.delivery_address_line1}, ${order.delivery_city}, ${order.delivery_state}`)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={e => e.stopPropagation()}
+                        className="p-1.5 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-md transition-colors"
+                        title="Directions"
+                      >
+                        <MapPin className="w-3.5 h-3.5" />
+                      </a>
+                    )}
                   </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Total Orders</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                    {categoryCounts.delivered || 0}
-                  </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Delivered</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
-                    {formatCurrency(orders.reduce((sum, o) => sum + o.total, 0))}
-                  </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Total Revenue</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
-                    {categoryCounts.pending || 0}
-                  </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Pending</div>
                 </div>
               </div>
-            </div>
-          </>
-        )}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
-      {/* Order Details Drawer */}
+      {/* Drawer */}
       <OrderDetailsDrawer
         orderId={selectedOrderId}
         isOpen={isDrawerOpen}
-        onClose={() => {
-          setIsDrawerOpen(false);
-          setSelectedOrderId(null);
-        }}
+        onClose={() => { setIsDrawerOpen(false); setSelectedOrderId(null); }}
         onStatusChange={handleStatusChange}
         onAssignDriver={handleAssignDriver}
         drivers={drivers}
       />
-
-      {/* Sticky Quick Actions Panel - Bottom Right (Cannè Gradient) */}
-      <div className="fixed bottom-6 right-6 z-30 flex flex-col gap-3">
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => fetchOrders(true)}
-          className="p-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all"
-          title="Refresh Orders"
-        >
-          <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
-        </motion.button>
-        
-        <motion.a
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          href="/admin/drivers"
-          className="p-4 bg-white dark:bg-gray-800 text-purple-600 dark:text-purple-400 rounded-full shadow-lg border-2 border-purple-200 dark:border-purple-800 hover:shadow-xl transition-all"
-          title="Manage Drivers"
-        >
-          <Truck className="w-5 h-5" />
-        </motion.a>
-      </div>
     </AdminLayout>
   );
 }
