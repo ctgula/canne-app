@@ -16,8 +16,10 @@ export async function GET(request: NextRequest) {
     if (search) {
       query = query.or(`name.ilike.%${search}%,phone.ilike.%${search}%,email.ilike.%${search}%`);
     }
-    if (active !== null) {
-      query = query.eq('status', active === 'true' ? 'available' : 'offline');
+    if (active === 'true') {
+      query = query.eq('status', 'available');
+    } else if (active === 'false') {
+      query = query.eq('status', 'offline');
     }
 
     const { data: drivers, error } = await query.order('created_at', { ascending: false });

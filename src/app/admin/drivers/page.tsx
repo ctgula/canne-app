@@ -46,6 +46,8 @@ function AdminDriversContent() {
   const [statusFilter, setStatusFilter] = useState('');
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
   const [showDriverModal, setShowDriverModal] = useState(false);
+  const [addingDriver, setAddingDriver] = useState(false);
+  const [newDriver, setNewDriver] = useState({ name: '', phone: '', email: '' });
 
   useEffect(() => {
     fetchDrivers();
@@ -55,13 +57,15 @@ function AdminDriversContent() {
     try {
       const params = new URLSearchParams();
       if (searchTerm) params.append('search', searchTerm);
-      if (statusFilter) params.append('active', statusFilter);
+      if (statusFilter && statusFilter !== 'all') {
+        params.append('active', statusFilter === 'active' ? 'true' : 'false');
+      }
 
       const response = await fetch(`/api/admin/drivers?${params}`);
       if (!response.ok) throw new Error('Failed to fetch drivers');
       
       const data = await response.json();
-      setDrivers(data.drivers);
+      setDrivers(data.drivers || []);
     } catch (error) {
       console.error('Error fetching drivers:', error);
       toast.error('Failed to load drivers');
@@ -277,11 +281,36 @@ function AdminDriversContent() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <h2 className="text-xl font-semibold mb-4">Add New Driver</h2>
-            <form onSubmit={(e) => {
+            <form onSubmit={async (e) => {
               e.preventDefault();
-              // Handle form submission
-              setShowDriverModal(false);
-              toast.success('Driver added successfully');
+              if (!newDriver.name.trim() || !newDriver.phone.trim()) {
+                toast.error('Name and phone are required');
+                return;
+              }
+              setAddingDriver(true);
+              try {
+                const res = await fetch('/api/admin/drivers', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    name: newDriver.name.trim(),
+                    phone: newDriver.phone.trim(),
+                    email: newDriver.email.trim() || null,
+                  }),
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                  throw new Error(data.error || 'Failed to add driver');
+                }
+                toast.success('Driver added successfully');
+                setNewDriver({ name: '', phone: '', email: '' });
+                setShowDriverModal(false);
+                fetchDrivers();
+              } catch (error) {
+                toast.error(error instanceof Error ? error.message : 'Failed to add driver');
+              } finally {
+                setAddingDriver(false);
+              }
             }}>
               <div className="space-y-4">
                 <div>
@@ -291,6 +320,8 @@ function AdminDriversContent() {
                   <input
                     type="text"
                     required
+                    value={newDriver.name}
+                    onChange={(e) => setNewDriver(prev => ({ ...prev, name: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   />
                 </div>
@@ -301,6 +332,8 @@ function AdminDriversContent() {
                   <input
                     type="tel"
                     required
+                    value={newDriver.phone}
+                    onChange={(e) => setNewDriver(prev => ({ ...prev, phone: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   />
                 </div>
@@ -310,7 +343,8 @@ function AdminDriversContent() {
                   </label>
                   <input
                     type="email"
-                    required
+                    value={newDriver.email}
+                    onChange={(e) => setNewDriver(prev => ({ ...prev, email: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   />
                 </div>
@@ -318,16 +352,18 @@ function AdminDriversContent() {
               <div className="flex justify-end gap-3 mt-6">
                 <button
                   type="button"
-                  onClick={() => setShowDriverModal(false)}
+                  onClick={() => { setShowDriverModal(false); setNewDriver({ name: '', phone: '', email: '' }); }}
                   className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  disabled={addingDriver}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                  disabled={addingDriver}
+                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
                 >
-                  Add Driver
+                  {addingDriver ? 'Adding...' : 'Add Driver'}
                 </button>
               </div>
             </form>
