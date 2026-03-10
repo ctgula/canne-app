@@ -16,6 +16,7 @@ import {
   Image as ImageIcon
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import AdminAuthGate from '@/components/AdminAuthGate';
 
 interface ProductForm {
   name: string;
@@ -39,6 +40,14 @@ const TIER_OPTIONS = [
 ];
 
 export default function NewProductPage() {
+  return (
+    <AdminAuthGate>
+      <NewProductContent />
+    </AdminAuthGate>
+  );
+}
+
+function NewProductContent() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState<ProductForm>({

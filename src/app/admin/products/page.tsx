@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import Link from 'next/link';
+import AdminAuthGate from '@/components/AdminAuthGate';
 
 interface Product {
   id: string;
@@ -51,6 +52,14 @@ const TIER_COLORS: Record<string, string> = {
 };
 
 export default function AdminProductsPage() {
+  return (
+    <AdminAuthGate>
+      <AdminProductsContent />
+    </AdminAuthGate>
+  );
+}
+
+function AdminProductsContent() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');

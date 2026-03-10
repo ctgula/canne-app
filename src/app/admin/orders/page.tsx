@@ -290,14 +290,37 @@ export default function AdminOrdersPage() {
     }
   };
 
-  useEffect(() => {
-    const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123';
-    if (password === adminPassword) {
-      setIsAuthenticated(true);
-      fetchOrders();
-      fetchDrivers();
+  const handleLogin = async () => {
+    try {
+      const res = await fetch('/api/admin/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      });
+      if (res.ok) {
+        setIsAuthenticated(true);
+        setPassword('');
+        fetchOrders();
+        fetchDrivers();
+      } else {
+        const data = await res.json();
+        showErrorToast(data.error || 'Invalid password');
+      }
+    } catch {
+      showErrorToast('Authentication failed');
     }
-  }, [password]);
+  };
+
+  useEffect(() => {
+    // Check if already authenticated (cookie exists) by making a test API call
+    fetch('/api/admin/tab-counts').then(res => {
+      if (res.ok) {
+        setIsAuthenticated(true);
+        fetchOrders();
+        fetchDrivers();
+      }
+    }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -329,10 +352,10 @@ export default function AdminOrdersPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent mb-4"
-            onKeyPress={(e) => e.key === 'Enter' && setPassword(password)}
+            onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
           />
           <button
-            onClick={() => setPassword(password)}
+            onClick={handleLogin}
             className="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition-colors font-medium"
           >
             Access Admin Panel

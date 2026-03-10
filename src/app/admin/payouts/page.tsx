@@ -54,17 +54,37 @@ export default function AdminPayoutsPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
+    // Check if already authenticated via cookie
+    fetch('/api/payouts').then(res => {
+      if (res.ok) {
+        setIsAuthenticated(true);
+      }
+    }).catch(() => {});
+  }, []);
+
+  useEffect(() => {
     if (isAuthenticated) {
       fetchPayouts();
       fetchDrivers();
     }
   }, [isAuthenticated]);
 
-  const handleAuth = () => {
-    if (password === 'canne2024') {
-      setIsAuthenticated(true);
-    } else {
-      toast.error('Incorrect password');
+  const handleAuth = async () => {
+    try {
+      const res = await fetch('/api/admin/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      });
+      if (res.ok) {
+        setIsAuthenticated(true);
+        setPassword('');
+      } else {
+        const data = await res.json();
+        toast.error(data.error || 'Invalid password');
+      }
+    } catch {
+      toast.error('Authentication failed');
     }
   };
 

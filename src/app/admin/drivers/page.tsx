@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import AdminLayout from '@/components/AdminLayout';
+import AdminAuthGate from '@/components/AdminAuthGate';
 
 interface Driver {
   id: string;
@@ -31,6 +32,14 @@ interface Driver {
 }
 
 export default function AdminDriversPage() {
+  return (
+    <AdminAuthGate>
+      <AdminDriversContent />
+    </AdminAuthGate>
+  );
+}
+
+function AdminDriversContent() {
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');

@@ -3,8 +3,17 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Package, Users, Truck, DollarSign, TrendingUp, ShoppingCart } from 'lucide-react';
+import AdminAuthGate from '@/components/AdminAuthGate';
 
 export default function AdminDashboard() {
+  return (
+    <AdminAuthGate>
+      <AdminDashboardContent />
+    </AdminAuthGate>
+  );
+}
+
+function AdminDashboardContent() {
   const [stats, setStats] = useState({
     totalOrders: 0,
     pendingOrders: 0,

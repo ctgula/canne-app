@@ -18,6 +18,7 @@ import {
   History
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import AdminAuthGate from '@/components/AdminAuthGate';
 
 interface Product {
   id: string;
@@ -51,8 +52,16 @@ const TIER_OPTIONS = [
   { value: 'Ultra', label: 'Ultra', color: 'bg-purple-100 text-purple-800' }
 ];
 
-export default async function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+export default function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
+  return (
+    <AdminAuthGate>
+      <EditProductContent params={params} />
+    </AdminAuthGate>
+  );
+}
+
+function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
+  const [id, setId] = useState<string>('');
   const router = useRouter();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -62,8 +71,12 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
   const [showStockAdjust, setShowStockAdjust] = useState(false);
 
   useEffect(() => {
-    fetchProduct();
-  }, []);
+    params.then(p => setId(p.id));
+  }, [params]);
+
+  useEffect(() => {
+    if (id) fetchProduct();
+  }, [id]);
 
   const fetchProduct = async () => {
     if (!id) return;
