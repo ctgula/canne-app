@@ -172,27 +172,25 @@ export async function POST(request: Request) {
       }, { status: 400 });
     }
 
-    // Handle inventory decrement when order becomes paid
-    if (currentStatus !== 'paid' && new_status === 'paid') {
+    // Handle inventory decrement when order becomes paid (use RPC directly, not admin route)
+    if (currentStatus !== 'paid' && new_status === 'paid' && orderData.order_id) {
       try {
-        const inventoryResponse = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/admin/inventory/decrement`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ orderId: orderData.id })
-        });
+        const { data: items } = await supabase
+          .from('order_items')
+          .select('product_id, quantity')
+          .eq('order_id', orderData.order_id);
 
-        if (!inventoryResponse.ok) {
-          const inventoryError = await inventoryResponse.json();
-          return NextResponse.json({ 
-            error: `Inventory check failed: ${inventoryError.error}`,
-            insufficient_stock: inventoryError.insufficient_stock
-          }, { status: 400 });
+        if (items && items.length > 0) {
+          for (const item of items) {
+            await supabase.rpc('decrement_stock', {
+              p_product_id: item.product_id,
+              p_quantity: item.quantity,
+            });
+          }
         }
       } catch (inventoryError) {
-        console.error('Error checking inventory:', inventoryError);
-        return NextResponse.json({ 
-          error: 'Failed to validate inventory. Order not marked as paid.' 
-        }, { status: 500 });
+        console.error('Error decrementing inventory:', inventoryError);
+        // Log but don't block — admin can reconcile manually
       }
     }
 

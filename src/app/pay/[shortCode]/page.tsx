@@ -304,7 +304,7 @@ function PayPageClient({ shortCode }: { shortCode: string }) {
               </div>
             )}
             <a
-              href="https://cash.app/$cjdj1"
+              href={`https://cash.app/$${CASHTAG}`}
               target="_blank"
               rel="noopener noreferrer"
               className="w-full max-w-xs rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 px-6 py-3 text-white font-semibold hover:from-pink-700 hover:to-purple-700 transition-all text-center"
@@ -379,7 +379,7 @@ function PayPageClient({ shortCode }: { shortCode: string }) {
                 </div>
                 <p className="text-xs text-center">
                   <span className="text-gray-500">Need help? </span>
-                  <a href="sms:+1234567890" className="text-purple-600 hover:text-purple-700">
+                  <a href="sms:+12025551234" className="text-purple-600 hover:text-purple-700">
                     Text Support
                   </a>
                   <span className="text-gray-400"> • </span>

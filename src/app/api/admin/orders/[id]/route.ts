@@ -222,6 +222,14 @@ export async function PATCH(
         return NextResponse.json({ error: 'Failed to update order' }, { status: 500 });
       }
 
+      // Sync status to linked cashapp_payments so /pay page stays current
+      if (order.short_code) {
+        await supabase
+          .from('cashapp_payments')
+          .update({ status, updated_at: new Date().toISOString() })
+          .eq('short_code', order.short_code);
+      }
+
       // Log status change event
       await supabase
         .from('order_status_events')

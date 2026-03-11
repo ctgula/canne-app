@@ -1,29 +1,20 @@
 import { NextResponse } from "next/server";
-import { createClient } from '@supabase/supabase-js';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 
 export async function GET(req: Request, { params }: { params: Promise<{ shortCode: string }> }) {
   try {
     const resolvedParams = await params;
     const shortCode = resolvedParams.shortCode;
-    
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    
-    if (!supabaseUrl || !supabaseKey) {
-      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
-    }
-    
-    const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from("cashapp_payments")
-      .select("*")
+      .select("id, short_code, amount_cents, status, order_id, created_at, expires_at")
       .eq("short_code", shortCode)
       .single();
 
     if (error) {
       console.error('Error fetching Cash App order:', error);
-      return NextResponse.json({ error: error.message }, { status: 404 });
+      return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
     
     return NextResponse.json(data);

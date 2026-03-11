@@ -12,15 +12,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate UNIQUE short code: phone last 4 + global sequential counter
+    // Generate UNIQUE short code: phone last 4 + random hex (no race condition)
     const phoneLast4 = customer_phone ? customer_phone.slice(-4) : '0000';
-    
-    const { count: globalCount } = await supabase
-      .from('cashapp_payments')
-      .select('*', { count: 'exact', head: true });
-    
-    const orderNumber = ((globalCount || 0) + 1).toString(36).toUpperCase().padStart(4, '0');
-    const shortCode = `${phoneLast4}-${orderNumber}`;
+    const randomPart = crypto.randomUUID().slice(0, 4).toUpperCase();
+    const shortCode = `${phoneLast4}-${randomPart}`;
     
     const now = new Date();
     const expiresAt = new Date(now.getTime() + 15 * 60 * 1000); // 15 minutes

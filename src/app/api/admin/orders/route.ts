@@ -52,6 +52,7 @@ export async function GET(request: NextRequest) {
         status,
         amount_cents,
         customer_phone,
+        order_id,
         created_at,
         updated_at
       `)
@@ -119,9 +120,12 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    // Transform Cash App payments to match order format
-    const transformedCashappOrders = (cashappPayments || []).map(payment => {
-      // Format phone as customer name if available
+    // Only include cashapp_payments that are NOT linked to an orders row (orphans).
+    // Linked payments already appear via the orders table — avoid duplicates.
+    const orphanCashappPayments = (cashappPayments || []).filter(p => !p.order_id);
+
+    // Transform orphan Cash App payments to match order format
+    const transformedCashappOrders = orphanCashappPayments.map(payment => {
       const phone = payment.customer_phone || '';
       const formattedPhone = phone ? `${phone.slice(0, 3)}-${phone.slice(3, 6)}-${phone.slice(6)}` : 'Unknown';
       
