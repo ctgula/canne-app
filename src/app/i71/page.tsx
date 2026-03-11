@@ -70,7 +70,7 @@ export default function CompliancePage() {
               <div className="mt-10 p-4 bg-pink-50 rounded-lg border border-pink-100">
                 <p className="font-medium text-gray-700">Have questions about our compliance practices?</p>
                 <p>
-                  Email us at <a href="mailto:compliance@canne.com" className="text-pink-600 hover:text-pink-700 font-medium" target="_blank" rel="noopener noreferrer">compliance@canne.com</a>
+                  Email us at <a href="mailto:compliance@canne.app" className="text-pink-600 hover:text-pink-700 font-medium" target="_blank" rel="noopener noreferrer">compliance@canne.app</a>
                 </p>
               </div>
             </div>

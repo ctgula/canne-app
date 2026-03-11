@@ -29,7 +29,7 @@ export default function PrivacyPage() {
             
             <ul className="space-y-4 list-disc pl-5">
               <li>Data stored securely in Supabase.</li>
-              <li>You may request deletion at any time (<a href="mailto:hello@canne.com" className="text-violet-600 hover:text-violet-700 underline" target="_blank" rel="noopener noreferrer">hello@canne.com</a>).</li>
+              <li>You may request deletion at any time (<a href="mailto:hello@canne.app" className="text-violet-600 hover:text-violet-700 underline" target="_blank" rel="noopener noreferrer">hello@canne.app</a>).</li>
               <li>We never sell data to third parties.</li>
             </ul>
             

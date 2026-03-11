@@ -47,7 +47,7 @@ export default function FAQPage() {
             <div className="pb-2">
               <h2 className="font-bold text-lg text-gray-900 mb-3">Can I pay cash?</h2>
               <p className="text-gray-600">
-                We currently accept card, Apple Pay, and Cash App. Cash on delivery coming soon.
+                We currently accept Cash App. More payment options coming soon.
               </p>
             </div>
           </div>

@@ -35,7 +35,7 @@ export default function AdminLoginPage() {
                 type="email"
                 id="email"
                 className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
-                placeholder="admin@canne.com"
+                placeholder="admin@canne.app"
               />
             </div>
             
