@@ -200,18 +200,8 @@ function AdminProductsContent() {
       }
 
       const result = await response.json();
-      // Update local state instantly without full refetch
-      setProducts(prev => prev.map(p => {
-        if (p.id === productId && p.product_inventory?.[0]) {
-          return {
-            ...p,
-            product_inventory: [{ ...p.product_inventory[0], stock: result.new_stock }],
-            is_active: result.new_stock > 0 ? true : p.is_active
-          };
-        }
-        return p;
-      }));
       toast.success(`Stock → ${result.new_stock}`);
+      fetchProducts();
     } catch (error: any) {
       toast.error(error.message || 'Failed to adjust stock');
     }
