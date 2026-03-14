@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin as supabase } from '@/lib/supabase-admin';
+import { assignRandomCollectibleToOrder } from '@/lib/collectible-assignment';
 
 // GET - Get single order with full relations
 export async function GET(
@@ -228,6 +229,14 @@ export async function PATCH(
           .from('cashapp_payments')
           .update({ status, updated_at: new Date().toISOString() })
           .eq('short_code', order.short_code);
+      }
+
+      // Assign collectible print when payment is confirmed
+      if (status === 'paid' && oldStatus !== 'paid') {
+        const assignment = await assignRandomCollectibleToOrder(id);
+        if (assignment.success && !assignment.alreadyAssigned) {
+          console.log(`Collectible assigned to order ${id}: ${assignment.print?.title}`);
+        }
       }
 
       // Log status change event

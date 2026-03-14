@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from '@supabase/supabase-js';
 import { notifyOrderStatusChange } from '@/lib/notifications';
+import { assignRandomCollectibleToOrder } from '@/lib/collectible-assignment';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -209,6 +210,14 @@ export async function POST(request: Request) {
     if (updateError) {
       console.error('Error updating order status:', updateError);
       return NextResponse.json({ error: 'Failed to update order status' }, { status: 500 });
+    }
+
+    // Assign collectible print when payment is confirmed
+    if (new_status === 'paid' && currentStatus !== 'paid' && orderData.order_id) {
+      const assignment = await assignRandomCollectibleToOrder(orderData.order_id);
+      if (assignment.success && !assignment.alreadyAssigned) {
+        console.log(`Collectible assigned to order ${orderData.order_id}: ${assignment.print?.title}`);
+      }
     }
 
     // Sync status to linked orders table so tracking page stays current

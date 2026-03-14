@@ -6,7 +6,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Package, CreditCard, CheckCircle, Truck, ArrowLeft, RefreshCw, MapPin, AlertCircle, User } from 'lucide-react';
+import { Package, CreditCard, CheckCircle, Truck, ArrowLeft, RefreshCw, MapPin, AlertCircle, User, Sparkles } from 'lucide-react';
 
 interface OrderData {
   id: string;
@@ -29,6 +29,8 @@ interface OrderData {
     zip?: string;
   };
   delivery_instructions?: string;
+  download_unlocked?: boolean;
+  has_collectible?: boolean;
   items: Array<{
     product_id: string;
     quantity: number;
@@ -371,6 +373,27 @@ export default function OrderTrackingPage() {
                   </div>
                 </div>
               </div>
+
+              {/* Collectible Unlock Banner */}
+              {order.has_collectible && order.download_unlocked && (
+                <Link
+                  href={`/unlock/${order.id}`}
+                  className="block bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-5 shadow-lg hover:shadow-xl transition-all group"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <Sparkles className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-white font-semibold">Your Collectible is Ready</p>
+                      <p className="text-white/70 text-sm">Tap to reveal and download your Cannè print</p>
+                    </div>
+                    <div className="text-white/60 group-hover:text-white group-hover:translate-x-1 transition-all">
+                      &rarr;
+                    </div>
+                  </div>
+                </Link>
+              )}
 
               {/* Help */}
               <div className="text-center text-sm text-gray-500 dark:text-gray-400 pb-4">

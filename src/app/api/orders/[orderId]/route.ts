@@ -22,7 +22,7 @@ export async function GET(
         id, order_number, subtotal, delivery_fee, total, status, created_at, updated_at,
         full_name, phone, payment_method, preferred_time,
         delivery_address_line1, delivery_address_line2, delivery_city, delivery_state, delivery_zip,
-        delivery_instructions,
+        delivery_instructions, download_unlocked, assigned_print_id,
         order_items (
           product_id, quantity, unit_price, strain, thc_low, thc_high, name,
           products (
@@ -64,7 +64,9 @@ export async function GET(
         zip: order.delivery_zip,
       },
       delivery_instructions: order.delivery_instructions,
-      items: order.order_items || []
+      items: order.order_items || [],
+      download_unlocked: order.download_unlocked || false,
+      has_collectible: !!order.assigned_print_id,
     });
 
   } catch (error) {
