@@ -972,6 +972,12 @@ export default function CheckoutPage() {
                   <span>Delivery</span>
                   <span className="text-right">{hasDelivery ? 'FREE' : '$10.00'}</span>
                 </div>
+                <div className="flex justify-between text-sm">
+                  <span className="flex items-center gap-1 text-purple-600 dark:text-purple-400">
+                    <span className="text-xs">✦</span> Collectible Print
+                  </span>
+                  <span className="text-right text-purple-600 dark:text-purple-400 font-medium">Included</span>
+                </div>
                 <div className="flex justify-between text-lg font-semibold text-gray-900 dark:text-white border-t border-gray-200 dark:border-gray-600 pt-2">
                   <span>Total</span>
                   <span className="text-right">${finalTotal.toFixed(2)}</span>

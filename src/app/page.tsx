@@ -210,7 +210,7 @@ export default function Home() {
                 className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-6 sm:mb-8 max-w-2xl px-2"
                 variants={itemVariants}
               >
-                I-71 compliant · 21+ only · Washington, DC
+                I-71 compliant · 21+ only · Washington, DC · Collectible print with every order
               </motion.p>
               
               {/* Mobile-Optimized CTA Section */}
@@ -402,8 +402,8 @@ export default function Home() {
                       4
                     </div>
                   </motion.div>
-                  <h3 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-3">Enjoy Responsibly</h3>
-                  <p className="text-gray-600 dark:text-gray-400 text-base leading-relaxed max-w-xs">Must be 21+. Keep gifts inside the District.</p>
+                  <h3 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-3">Unlock Your Print</h3>
+                  <p className="text-gray-600 dark:text-gray-400 text-base leading-relaxed max-w-xs">After payment, a collectible digital art print from Drop #001 is yours to download — randomly assigned, permanently yours.</p>
                 </motion.div>
               </div>
             </div>

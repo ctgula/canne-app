@@ -241,6 +241,12 @@ export default function ProductsPresenter() {
                       </select>
                     </div>
 
+                    {/* Collectible print badge */}
+                    <div className="flex items-center gap-1.5 mb-3 px-3 py-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-100 dark:border-purple-800/40">
+                      <span className="text-purple-500 text-sm">✦</span>
+                      <span className="text-xs font-medium text-purple-700 dark:text-purple-300">Includes a collectible digital print — Drop #001</span>
+                    </div>
+
                     <button
                       onClick={() => {
                         const selectedStrain = getSelectedStrain(product.id);
