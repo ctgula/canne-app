@@ -37,11 +37,16 @@ export async function POST(
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
-    // Update order with driver
+    // Auto-advance status to 'assigned' if order is paid/verifying
+    const ADVANCE_FROM = ['paid', 'verifying', 'awaiting_payment'];
+    const newStatus = ADVANCE_FROM.includes(currentOrder.status) ? 'assigned' : currentOrder.status;
+
+    // Update order with driver and (if applicable) new status
     const { data: updatedOrder, error: updateError } = await supabase
       .from('orders')
       .update({ 
         driver_id,
+        status: newStatus,
         updated_at: new Date().toISOString()
       })
       .eq('id', id)
@@ -53,13 +58,21 @@ export async function POST(
       return NextResponse.json({ error: 'Failed to assign driver' }, { status: 500 });
     }
 
-    // Log the assignment
+    // Sync status to linked cashapp_payments
+    if (updatedOrder.short_code) {
+      await supabase
+        .from('cashapp_payments')
+        .update({ status: newStatus, updated_at: new Date().toISOString() })
+        .eq('short_code', updatedOrder.short_code);
+    }
+
+    // Log the assignment + status change
     await supabase
       .from('order_status_events')
       .insert({
         order_id: id,
         old_status: currentOrder.status,
-        new_status: currentOrder.status,
+        new_status: newStatus,
         note: `Driver assigned: ${driver.name} (${driver.phone})`,
         changed_by: admin_user
       });

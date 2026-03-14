@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate order number
-    const orderNumber = `CN-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
+    const orderNumber = `CN-${crypto.randomUUID().replace(/-/g, '').slice(0, 6).toUpperCase()}`;
 
     // Create or get customer
     const nameParts = dd.name.split(' ');

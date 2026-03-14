@@ -26,6 +26,9 @@ export async function GET(request: NextRequest) {
         delivery_city,
         delivery_state,
         delivery_zip,
+        time_preference,
+        preferred_time,
+        driver_id,
         customer_id,
         customers (
           first_name,

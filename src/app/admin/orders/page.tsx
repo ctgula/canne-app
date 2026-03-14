@@ -26,6 +26,8 @@ interface Order {
   delivery_address_line1?: string;
   delivery_city?: string;
   delivery_state?: string;
+  time_preference?: string;
+  preferred_time?: string;
   customers: { first_name: string; last_name: string; phone: string; email: string };
   order_items?: { quantity: number; products: { name: string; price_cents: number } }[];
   driver?: { id: string; name: string; phone: string };
@@ -233,11 +235,11 @@ function OrdersContent() {
               >
                 <div className="px-4 py-3">
                   {/* Row 1: customer · status · total */}
-                  <div className="flex items-center justify-between mb-2.5">
+                  <div className="flex items-center justify-between mb-1.5">
                     <div className="flex items-center gap-2 min-w-0">
                       <div className={`w-2 h-2 rounded-full flex-shrink-0 ${cfg.dot}`} />
                       <span className="font-semibold text-gray-900 truncate text-sm">{name}</span>
-                      <span className="text-xs text-gray-400 flex-shrink-0">#{order.order_number}</span>
+                      <span className="text-xs text-gray-400 flex-shrink-0 font-mono">#{order.order_number}</span>
                       <span className="text-xs text-gray-400 flex-shrink-0">{timeAgo(order.created_at)}</span>
                     </div>
                     <div className="flex items-center gap-2.5 flex-shrink-0 ml-3">
@@ -247,6 +249,27 @@ function OrdersContent() {
                       <span className="font-bold text-sm text-gray-900">{fmt(order.total)}</span>
                     </div>
                   </div>
+
+                  {/* Row 2: items + address/time */}
+                  {((order.order_items && order.order_items.length > 0) || order.delivery_address_line1) && (
+                    <div className="flex items-center gap-2 mb-2 min-w-0">
+                      {order.order_items && order.order_items.length > 0 && (
+                        <span className="text-xs text-gray-500 truncate">
+                          {order.order_items.map(i => `${i.products?.name || 'Item'} ×${i.quantity}`).join(', ')}
+                        </span>
+                      )}
+                      {order.delivery_address_line1 && order.delivery_address_line1 !== 'Pending' && (
+                        <span className="text-xs text-gray-400 flex-shrink-0 truncate max-w-[140px]">
+                          · {order.delivery_address_line1}
+                        </span>
+                      )}
+                      {(order.time_preference || order.preferred_time) && (
+                        <span className="text-xs text-purple-500 flex-shrink-0 ml-auto">
+                          {order.time_preference || order.preferred_time}
+                        </span>
+                      )}
+                    </div>
+                  )}
 
                   {/* Row 2: quick actions */}
                   <div className="flex items-center gap-1.5">

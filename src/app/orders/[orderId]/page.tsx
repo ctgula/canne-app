@@ -6,7 +6,8 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Package, CreditCard, CheckCircle, Truck, ArrowLeft, RefreshCw, MapPin, AlertCircle, User, Sparkles } from 'lucide-react';
+import { Package, CreditCard, CheckCircle, Truck, ArrowLeft, RefreshCw, MapPin, AlertCircle, User, Sparkles, Radio } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 interface OrderData {
   id: string;
@@ -123,12 +124,29 @@ export default function OrderTrackingPage() {
     if (orderId) fetchOrder();
   }, [orderId]);
 
-  // Auto-refresh every 30s for active orders
+  // Supabase Realtime — instant updates when admin changes status
+  useEffect(() => {
+    if (!orderId) return;
+    const channel = supabase
+      .channel(`order-tracking-${orderId}`)
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'orders',
+        filter: `id=eq.${orderId}`,
+      }, () => {
+        fetchOrder();
+      })
+      .subscribe();
+    return () => { channel.unsubscribe(); };
+  }, [orderId]);
+
+  // Fallback poll every 60s for active orders
   useEffect(() => {
     if (!order) return;
     const terminal = ['delivered', 'completed', 'canceled', 'refunded'];
     if (terminal.includes(order.status)) return;
-    const interval = setInterval(fetchOrder, 30000);
+    const interval = setInterval(fetchOrder, 60000);
     return () => clearInterval(interval);
   }, [order?.status]);
 
@@ -192,13 +210,19 @@ export default function OrderTrackingPage() {
                   <h1 className="text-xl font-bold text-gray-900 dark:text-white">
                     Order #{order.order_number}
                   </h1>
-                  <button
-                    onClick={fetchOrder}
-                    className="p-2 text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
-                    title="Refresh status"
-                  >
-                    <RefreshCw className="w-4 h-4" />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <span className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400 font-medium">
+                      <Radio className="w-3 h-3" />
+                      Live
+                    </span>
+                    <button
+                      onClick={fetchOrder}
+                      className="p-2 text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
+                      title="Refresh status"
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   Placed {new Date(order.created_at).toLocaleDateString('en-US', {

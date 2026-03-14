@@ -102,9 +102,9 @@ function PayPageClient({ shortCode }: { shortCode: string }) {
       
       if (res.ok) {
         setOrderStatus("verifying");
-        // Redirect to tracking page after brief confirmation
+        // Redirect to tracking page immediately
         if (linkedOrderId) {
-          setTimeout(() => router.push(`/orders/${linkedOrderId}`), 2500);
+          router.push(`/orders/${linkedOrderId}`);
         }
       } else {
         const { error } = await res.json();
