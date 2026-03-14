@@ -181,7 +181,7 @@ export default function Home() {
                   alt="Cannè Art Collective" 
                   width={300} 
                   height={360} 
-                  className="relative h-40 sm:h-48 md:h-56 lg:h-64 w-auto drop-shadow-2xl mx-auto"
+                  className="relative h-56 sm:h-64 md:h-80 lg:h-96 w-auto drop-shadow-2xl mx-auto"
                   priority
                 />
               </motion.div>
