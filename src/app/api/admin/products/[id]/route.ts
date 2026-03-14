@@ -119,6 +119,14 @@ export async function PATCH(
         console.error('Error updating inventory:', inventoryError);
         return NextResponse.json({ error: 'Failed to update inventory' }, { status: 500 });
       }
+
+      // Sync products.stock so homepage stock filter stays accurate
+      if (stock !== undefined) {
+        const stockSync: any = { stock, updated_at: new Date().toISOString() };
+        if (stock <= 0) { stockSync.is_active = false; stockSync.active = false; }
+        else if (stock > 0) { stockSync.is_active = true; stockSync.active = true; }
+        await supabase.from('products').update(stockSync).eq('id', id);
+      }
     }
 
     // Log audit trail

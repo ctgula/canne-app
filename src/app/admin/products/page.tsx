@@ -17,11 +17,23 @@ import {
   CheckCircle,
   XCircle,
   Download,
-  Minus
+  Minus,
+  Leaf,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import Link from 'next/link';
 import AdminAuthGate from '@/components/AdminAuthGate';
+
+interface Strain {
+  id: string;
+  name: string;
+  type: string;
+  description?: string;
+  is_active: boolean;
+  sort_order: number;
+}
 
 interface Product {
   id: string;
@@ -67,10 +79,61 @@ function AdminProductsContent() {
   const [statusFilter, setStatusFilter] = useState('');
   const [showLowStock, setShowLowStock] = useState(false);
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
+  const [strains, setStrains] = useState<Strain[]>([]);
+  const [strainsOpen, setStrainsOpen] = useState(false);
+  const [newStrainName, setNewStrainName] = useState('');
+  const [newStrainType, setNewStrainType] = useState('sativa');
 
   useEffect(() => {
     fetchProducts();
+    fetchStrains();
   }, [searchTerm, tierFilter, statusFilter, showLowStock]);
+
+  const fetchStrains = async () => {
+    try {
+      const res = await fetch('/api/admin/strains');
+      const data = await res.json();
+      setStrains(data.strains || []);
+    } catch { /* silent */ }
+  };
+
+  const handleToggleStrain = async (strain: Strain) => {
+    try {
+      const res = await fetch(`/api/admin/strains/${strain.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_active: !strain.is_active }),
+      });
+      if (!res.ok) throw new Error();
+      toast.success(strain.is_active ? `${strain.name} hidden from shop` : `${strain.name} now live`);
+      fetchStrains();
+    } catch { toast.error('Failed to update strain'); }
+  };
+
+  const handleDeleteStrain = async (strain: Strain) => {
+    if (!confirm(`Delete "${strain.name}"? This cannot be undone.`)) return;
+    try {
+      const res = await fetch(`/api/admin/strains/${strain.id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error();
+      toast.success('Strain deleted');
+      fetchStrains();
+    } catch { toast.error('Failed to delete strain'); }
+  };
+
+  const handleAddStrain = async () => {
+    if (!newStrainName.trim()) return toast.error('Name required');
+    try {
+      const res = await fetch('/api/admin/strains', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newStrainName.trim(), type: newStrainType, sort_order: strains.length + 1 }),
+      });
+      if (!res.ok) throw new Error();
+      toast.success(`${newStrainName} added`);
+      setNewStrainName('');
+      fetchStrains();
+    } catch { toast.error('Failed to add strain'); }
+  };
 
   const fetchProducts = async () => {
     try {
@@ -281,6 +344,92 @@ function AdminProductsContent() {
             <Plus size={20} />
             Add Product
           </Link>
+        </div>
+
+        {/* Strain Management */}
+        <div className="bg-white rounded-lg shadow-sm mb-6">
+          <button
+            onClick={() => setStrainsOpen(v => !v)}
+            className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-gray-50 transition-colors rounded-lg"
+          >
+            <div className="flex items-center gap-2">
+              <Leaf size={18} className="text-green-600" />
+              <span className="font-semibold text-gray-900">Strain Menu</span>
+              <span className="text-xs text-gray-400 font-normal">— controls the strain toggle on the homepage</span>
+              <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full font-medium">
+                {strains.filter(s => s.is_active).length} live
+              </span>
+            </div>
+            {strainsOpen ? <ChevronUp size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
+          </button>
+
+          {strainsOpen && (
+            <div className="px-6 pb-6 border-t border-gray-100">
+              {/* Current strains */}
+              <div className="space-y-2 mt-4 mb-4">
+                {strains.map(strain => (
+                  <div key={strain.id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-gray-50">
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => handleToggleStrain(strain)}
+                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors flex-shrink-0 ${strain.is_active ? 'bg-green-500' : 'bg-gray-300'}`}
+                        title={strain.is_active ? 'Live — click to hide' : 'Hidden — click to show'}
+                      >
+                        <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${strain.is_active ? 'translate-x-5' : 'translate-x-1'}`} />
+                      </button>
+                      <span className="font-medium text-sm text-gray-900">{strain.name}</span>
+                      <span className="text-xs text-gray-400 bg-gray-200 px-2 py-0.5 rounded-full">{strain.type}</span>
+                      {!strain.is_active && <span className="text-xs text-gray-400 italic">hidden</span>}
+                    </div>
+                    <button
+                      onClick={() => handleDeleteStrain(strain)}
+                      className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+                      title="Delete strain"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                ))}
+                {strains.length === 0 && <p className="text-sm text-gray-400 py-2">No strains yet.</p>}
+              </div>
+
+              {/* Add new strain */}
+              <div className="flex gap-2 items-end pt-3 border-t border-gray-100">
+                <div className="flex-1">
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Strain Name</label>
+                  <input
+                    type="text"
+                    placeholder="e.g., Blue Dream"
+                    value={newStrainName}
+                    onChange={e => setNewStrainName(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && handleAddStrain()}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Type</label>
+                  <select
+                    value={newStrainType}
+                    onChange={e => setNewStrainType(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500"
+                  >
+                    <option value="sativa">Sativa</option>
+                    <option value="indica">Indica</option>
+                    <option value="hybrid">Hybrid</option>
+                    <option value="sativa-hybrid">Sativa-Hybrid</option>
+                    <option value="indica-hybrid">Indica-Hybrid</option>
+                  </select>
+                </div>
+                <button
+                  onClick={handleAddStrain}
+                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium flex items-center gap-1"
+                >
+                  <Plus size={14} />
+                  Add
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Filters */}

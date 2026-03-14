@@ -1,13 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Product } from '@/models/Product';
+import { Product, ProductModel } from '@/models/Product';
 import { ProductController } from '@/controllers/ProductController';
 import { useCartStore, StrainOption } from '@/services/CartService';
+import { supabase } from '@/lib/supabase';
 import { toast } from 'react-hot-toast';
 import Image from 'next/image';
 import { Sparkles } from 'lucide-react';
 import ArtSampleModal from './ArtSampleModal';
+
+// DB-driven strains — managed from admin, no code changes needed to add/remove
 
 /**
  * ProductsPresenter component for displaying products
@@ -19,66 +22,64 @@ export default function ProductsPresenter() {
   const [error, setError] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedTier, setSelectedTier] = useState<string>('');
-  const [selectedStrains, setSelectedStrains] = useState<Record<string, StrainOption>>({});
+  const [strains, setStrains] = useState<StrainOption[]>([]);
+  const [globalStrain, setGlobalStrain] = useState<StrainOption | null>(null);
 
   // Access cart store functions
   const { addItem } = useCartStore();
 
-  // Available strain options for all tiers
-  const strainOptions: StrainOption[] = [
-    {
-      name: "Moroccan Peach",
-      type: "sativa",
-      thcLow: 18,
-      thcHigh: 22
-    },
-    {
-      name: "Pancake Biscotti",
-      type: "indica-hybrid",
-      thcLow: 22,
-      thcHigh: 26
+  async function loadStrains() {
+    try {
+      const res = await fetch('/api/strains');
+      const data = await res.json();
+      if (data.strains?.length) {
+        const mapped: StrainOption[] = data.strains.map((s: { name: string; type: string }) => ({
+          name: s.name,
+          type: s.type,
+          thcLow: 0,
+          thcHigh: 0,
+        }));
+        setStrains(mapped);
+        setGlobalStrain(prev => prev ?? mapped[0]);
+      }
+    } catch { /* silently keep current strains */ }
+  }
+
+  async function loadProducts(bustCache = false) {
+    if (bustCache) ProductModel.invalidateCache();
+    setError(null);
+    try {
+      const result = await ProductController.getAllProducts();
+      if (result.error) {
+        setError(result.error);
+      } else if (result.data) {
+        const sorted = [...result.data].sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
+        setProducts(sorted);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setLoading(false);
     }
-  ];
-
-  // Get selected strain for a product (default to first option)
-  const getSelectedStrain = (productId: string): StrainOption => {
-    return selectedStrains[productId] || strainOptions[0];
-  };
-
-  // Update selected strain for a product
-  const updateSelectedStrain = (productId: string, strain: StrainOption) => {
-    setSelectedStrains(prev => ({
-      ...prev,
-      [productId]: strain
-    }));
-  };
+  }
 
   useEffect(() => {
-    let cancelled = false;
-    
-    async function loadProducts() {
-      setError(null);
-      
-      try {
-        const result = await ProductController.getAllProducts();
-        if (cancelled) return;
-        
-        if (result.error) {
-          setError(result.error);
-        } else if (result.data) {
-          // Ensure ascending price order (25, 45, 75, 150)
-          const sorted = [...result.data].sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
-          setProducts(sorted);
-        }
-      } catch (err) {
-        if (!cancelled) setError(err instanceof Error ? err.message : String(err));
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-    
+    loadStrains();
     loadProducts();
-    return () => { cancelled = true; };
+  }, []);
+
+  // Realtime: refetch products + strains whenever DB changes
+  useEffect(() => {
+    const channel = supabase
+      .channel('catalog-sync')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
+        loadProducts(true);
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'strains' }, () => {
+        loadStrains();
+      })
+      .subscribe();
+    return () => { channel.unsubscribe(); };
   }, []);
 
   // Simplified animation variants for performance
@@ -120,12 +121,43 @@ export default function ProductsPresenter() {
 
   return (
     <div>
-      <div className="text-center mb-12">
+      <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Cannè Art Collection</h1>
         <p className="text-lg text-gray-600 dark:text-gray-300">
-          Choose your tier — each includes exclusive digital art with complimentary cannabis gifts
+          Each tier includes exclusive digital art with a complimentary cannabis gift
         </p>
       </div>
+
+      {/* Global strain toggle — DB-driven, admin manages options */}
+      {!loading && products.length > 0 && strains.length > 0 && globalStrain && (
+        <div className="flex flex-col items-center gap-3 mb-10">
+          <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Pick your strain</p>
+          <div className="flex gap-3 flex-wrap justify-center">
+            {strains.map((s) => {
+              const active = globalStrain.name === s.name;
+              return (
+                <button
+                  key={s.name}
+                  onClick={() => setGlobalStrain(s)}
+                  className={`flex items-center gap-2 px-5 py-3 rounded-full border-2 font-semibold text-sm transition-all ${
+                    active
+                      ? 'border-purple-600 bg-purple-600 text-white shadow-md scale-105'
+                      : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20'
+                  }`}
+                >
+                  <span>{s.name}</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                    active ? 'bg-white/20 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+                  }`}>{s.type}</span>
+                </button>
+              );
+            })}
+          </div>
+          <p className="text-xs text-gray-400 dark:text-gray-500">
+            Your strain preference applies to whichever size you choose
+          </p>
+        </div>
+      )}
 
       <div>
         {loading && (
@@ -187,7 +219,7 @@ export default function ProductsPresenter() {
                     >
                       {product.image_url && (
                         <Image 
-                          src={product.image_url} 
+                          src={product.hero_image_url || product.image_url} 
                           alt={`Cannè ${product.name}`}
                           width={400}
                           height={400}
@@ -222,23 +254,16 @@ export default function ProductsPresenter() {
                       ))}
                     </div>
 
-                    {/* Strain Selector */}
-                    <div className="mb-4">
-                      <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Strain</label>
-                      <select
-                        value={getSelectedStrain(product.id).name}
-                        onChange={(e) => {
-                          const found = strainOptions.find((s) => s.name === e.target.value);
-                          if (found) updateSelectedStrain(product.id, found);
-                        }}
-                        className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      >
-                        {strainOptions.map((strain) => (
-                          <option key={strain.name} value={strain.name}>
-                            {strain.name} • {strain.type} • {strain.thcLow}–{strain.thcHigh}% THC
-                          </option>
-                        ))}
-                      </select>
+                    {/* Gift details — strain from global selection + tier THC range */}
+                    <div className="flex items-center justify-between mb-4 px-3 py-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
+                      <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                        {globalStrain?.name ?? '—'} <span className="text-gray-400">• {globalStrain?.type}</span>
+                      </span>
+                      {(product.thc_min || product.thc_max) && (
+                        <span className="text-xs font-semibold text-green-700 dark:text-green-400">
+                          {product.thc_min}–{product.thc_max}% THC
+                        </span>
+                      )}
                     </div>
 
                     {/* Collectible print badge */}
@@ -249,9 +274,15 @@ export default function ProductsPresenter() {
 
                     <button
                       onClick={() => {
-                        const selectedStrain = getSelectedStrain(product.id);
-                        addItem(product, selectedStrain);
-                        toast.success(`Added ${product.name} to cart! 🎨`);
+                        if (!globalStrain) return;
+                        // Merge global strain preference with product's tier THC range
+                        const strainForCart = {
+                          ...globalStrain,
+                          thcLow: product.thc_min ?? globalStrain.thcLow,
+                          thcHigh: product.thc_max ?? globalStrain.thcHigh,
+                        };
+                        addItem(product, strainForCart);
+                        toast.success(`${product.name} added — ${globalStrain.name}`);
                       }}
                       disabled={product.stock <= 0}
                       className={`w-full px-4 py-3 rounded-lg font-semibold transition-all text-center ${
