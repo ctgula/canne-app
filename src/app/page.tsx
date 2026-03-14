@@ -15,6 +15,88 @@ const Footer = lazy(() => import('@/components/Footer'));
 import LoadingSpinner, { ProductsGridSkeleton } from '@/components/LoadingSpinner';
 import ErrorBoundary from '@/components/ErrorBoundary';
 
+function DropAlertsSection() {
+  const [email, setEmail] = React.useState('');
+  const [status, setStatus] = React.useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [message, setMessage] = React.useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus('loading');
+    try {
+      const res = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setStatus('success');
+        setMessage(data.message || 'You\'re on the list!');
+        setEmail('');
+      } else {
+        setStatus('error');
+        setMessage(data.error || 'Something went wrong');
+      }
+    } catch {
+      setStatus('error');
+      setMessage('Network error. Please try again.');
+    }
+  };
+
+  return (
+    <section className="py-16 md:py-20 bg-gradient-to-br from-pink-500 via-purple-600 to-indigo-600">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+        >
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/20 rounded-full text-white text-sm font-medium mb-4">
+            <Zap className="w-4 h-4" />
+            Drop Alerts
+          </span>
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
+            Get notified on new drops
+          </h2>
+          <p className="text-white/80 text-lg mb-8">
+            Be the first to know when new art tiers and limited collections drop.
+          </p>
+
+          {status === 'success' ? (
+            <div className="inline-flex items-center gap-2 bg-white/20 text-white px-6 py-3 rounded-xl font-medium">
+              <Star className="w-5 h-5" />
+              {message}
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="your@email.com"
+                required
+                className="flex-1 px-4 py-3 rounded-xl bg-white/95 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/50"
+              />
+              <button
+                type="submit"
+                disabled={status === 'loading'}
+                className="px-6 py-3 bg-white text-purple-600 font-semibold rounded-xl hover:bg-white/90 disabled:opacity-60 transition-all whitespace-nowrap"
+              >
+                {status === 'loading' ? 'Signing up...' : 'Notify Me'}
+              </button>
+            </form>
+          )}
+          {status === 'error' && (
+            <p className="text-red-200 text-sm mt-2">{message}</p>
+          )}
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
 export default function Home() {
   const [isLoaded, setIsLoaded] = useState(false);
   const { scrollY } = useScroll();
@@ -82,10 +164,10 @@ export default function Home() {
                 transition={{ duration: 0.6, ease: "easeOut" }}
               >
                 <Image 
-                  src="/images/canne_logo_web.png"
+                  src="/images/canne_cone.svg"
                   alt="Cannè Art Collective" 
                   width={300} 
-                  height={300} 
+                  height={360} 
                   className="relative h-40 sm:h-48 md:h-56 lg:h-64 w-auto drop-shadow-2xl mx-auto"
                   priority
                 />
@@ -359,6 +441,9 @@ export default function Home() {
             </motion.div>
           </div>
         </section>
+
+        {/* Drop Alerts Email Capture */}
+        <DropAlertsSection />
 
         {/* Products Collection Section */}
         <section id="collection" className="py-20 md:py-28 bg-gradient-to-b from-gray-50/50 to-white dark:from-gray-800/50 dark:to-gray-900">

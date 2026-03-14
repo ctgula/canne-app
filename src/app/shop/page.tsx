@@ -3,7 +3,7 @@
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProductsPresenter from '@/components/ProductsPresenter';
-import { Shield, Truck, Clock, CheckCircle } from 'lucide-react';
+import { Shield, Truck, Clock, CheckCircle, MapPin } from 'lucide-react';
 
 export default function ShopPage() {
   return (
@@ -30,6 +30,19 @@ export default function ShopPage() {
               <span className="flex items-center gap-1.5">
                 <CheckCircle className="w-4 h-4 text-pink-500" />
                 <span>21+ verified</span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Delivery Zone Callout */}
+        <div className="bg-purple-50 dark:bg-purple-900/20 border-b border-purple-100 dark:border-purple-800">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+            <div className="flex items-center justify-center gap-2 text-sm text-purple-700 dark:text-purple-300">
+              <MapPin className="w-4 h-4 flex-shrink-0" />
+              <span>
+                <span className="font-semibold">Delivering to:</span> Shaw · Dupont · Georgetown · Logan Circle · Columbia Heights · U Street · Capitol Hill · Adams Morgan
+                <span className="ml-2 text-purple-500 dark:text-purple-400">(DC ZIP 200xx)</span>
               </span>
             </div>
           </div>

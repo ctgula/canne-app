@@ -191,11 +191,18 @@ export default function ProductsPresenter() {
                           alt={`Cannè ${product.name}`}
                           width={400}
                           height={400}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${product.stock <= 0 ? 'opacity-50 grayscale' : ''}`}
                           priority={product.tier.toLowerCase() === 'starter' || product.tier.toLowerCase() === 'classic'}
                         />
                       )}
                     </div>
+                    {product.stock <= 0 && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="bg-gray-900/80 text-white text-sm font-bold px-4 py-2 rounded-full tracking-wider uppercase">
+                          Sold Out
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Content */}

@@ -67,6 +67,7 @@ function getStatusIndex(status: string): number {
     assigned: 2,
     preparing: 2,
     // Out for delivery
+    en_route: 3,
     out_for_delivery: 3,
     in_transit: 3,
     // Completed
@@ -83,6 +84,7 @@ function getStatusMessage(status: string): string | null {
     case 'verifying': return 'We\'re verifying your payment — usually takes 1-3 minutes.';
     case 'paid': return 'Payment confirmed! A driver will be assigned shortly.';
     case 'assigned': return 'Your driver is getting ready. ETA: 30-45 minutes.';
+    case 'en_route':
     case 'out_for_delivery':
     case 'in_transit': return 'Your driver is on the way!';
     case 'delivered': return 'Your order has been delivered. Enjoy!';
