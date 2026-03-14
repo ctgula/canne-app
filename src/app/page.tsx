@@ -327,8 +327,8 @@ export default function Home() {
                       1
                     </div>
                   </motion.div>
-                  <h3 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-3">Pick Your Art</h3>
-                  <p className="text-gray-600 dark:text-gray-400 text-base leading-relaxed max-w-xs">Choose a tier; each purchase is for exclusive artwork.</p>
+                  <h3 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-3">Pick Your Strain & Tier</h3>
+                  <p className="text-gray-600 dark:text-gray-400 text-base leading-relaxed max-w-xs">Choose your strain preference, then pick a size tier — each comes with exclusive digital art.</p>
                 </motion.div>
                 
                 {/* Step 2 */}
@@ -455,38 +455,9 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Drop Alerts Email Capture */}
-        <DropAlertsSection />
-
         {/* Products Collection Section */}
         <section id="collection" className="py-20 md:py-28 bg-gradient-to-b from-gray-50/50 to-white dark:from-gray-800/50 dark:to-gray-900">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <motion.div 
-              className="text-center mb-16 md:mb-20"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true }}
-            >
-              <motion.div
-                className="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 dark:bg-purple-900/30 rounded-full text-purple-600 dark:text-purple-400 text-sm font-medium mb-4"
-                initial={{ scale: 0.8, opacity: 0 }}
-                whileInView={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.2, duration: 0.6 }}
-                viewport={{ once: true }}
-              >
-                <Sparkles className="w-4 h-4" />
-                Featured Collection
-              </motion.div>
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-purple-500 via-pink-500 to-indigo-600 text-transparent bg-clip-text mb-6">
-                Art Collection
-              </h2>
-              <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
-                Explore our curated selection of digital art. Each piece comes with a special <span className="font-bold text-green-600 dark:text-green-400">complimentary cannabis gift</span>.
-              </p>
-            </motion.div>
-            
-            {/* Products Section using MCP - Mobile Optimized */}
             <ErrorBoundary>
               <Suspense fallback={<ProductsGridSkeleton />}>
                 <ProductsPresenter />
@@ -494,6 +465,9 @@ export default function Home() {
             </ErrorBoundary>
           </div>
         </section>
+
+        {/* Drop Alerts Email Capture — after products so customer knows what they're signing up for */}
+        <DropAlertsSection />
       </main>
       
       {/* Footer */}
