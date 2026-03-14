@@ -40,10 +40,7 @@ export default function ShopPage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
             <div className="flex items-center justify-center gap-2 text-sm text-purple-700 dark:text-purple-300">
               <MapPin className="w-4 h-4 flex-shrink-0" />
-              <span>
-                <span className="font-semibold">Delivering to:</span> Shaw · Dupont · Georgetown · Logan Circle · Columbia Heights · U Street · Capitol Hill · Adams Morgan
-                <span className="ml-2 text-purple-500 dark:text-purple-400">(DC ZIP 200xx)</span>
-              </span>
+              <span>Now delivering in Downtown DC — starting with Mount Vernon Square &amp; Gallery Place</span>
             </div>
           </div>
         </div>

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Header from '@/components/Header';
 import { motion, Variants, useScroll, useTransform } from 'framer-motion';
-import { Brush, CreditCard, Package, Sparkles, ArrowDown, Star, Shield, Zap } from 'lucide-react';
+import { Brush, CreditCard, Package, Sparkles, ArrowDown, Star, Shield, Zap, MapPin } from 'lucide-react';
 
 // Lazy load heavy components for better performance
 const ProductsPresenter = lazy(() => import('@/components/ProductsPresenter'));
@@ -138,6 +138,19 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-br from-white via-pink-50/10 to-purple-50/20 dark:from-gray-900 dark:via-purple-900/10 dark:to-indigo-900/20">
       <Header scrollToCollection={scrollToCollection} />
       <main className="overflow-x-hidden pt-16">
+        {/* Launch Zone Announcement Banner */}
+        <div className="relative z-40 bg-gray-950 text-white">
+          <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-center gap-2.5">
+            <MapPin className="w-3.5 h-3.5 text-purple-400 flex-shrink-0" />
+            <p className="text-xs sm:text-sm font-medium tracking-wide">
+              Now delivering in Downtown DC
+              <span className="hidden sm:inline text-white/60"> — </span>
+              <span className="hidden sm:inline text-white/80">beginning with Mount Vernon Square, Gallery Place, and nearby areas</span>
+            </p>
+            <span className="hidden md:inline-flex items-center px-2 py-0.5 bg-purple-500/20 border border-purple-500/30 rounded-full text-purple-300 text-xs font-medium">Live Now</span>
+          </div>
+        </div>
+
         {/* Hero Section - Mobile Optimized */}
         <section className="relative min-h-[calc(100dvh-4rem)] flex items-center justify-center px-4">
           {/* Lightweight Background - Static for Performance */}
@@ -197,7 +210,7 @@ export default function Home() {
                 className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-6 sm:mb-8 max-w-2xl px-2"
                 variants={itemVariants}
               >
-                I-71 compliant • 21+ only • DC delivery available
+                I-71 compliant · 21+ only · Washington, DC
               </motion.p>
               
               {/* Mobile-Optimized CTA Section */}

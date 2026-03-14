@@ -627,14 +627,12 @@ export default function CheckoutPage() {
           Back to Cart
         </Link>
 
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-8">
-          <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0">
-            <Lock className="h-6 w-6 text-white" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white leading-tight">Secure Checkout</h1>
-            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">Your information is protected with 256-bit SSL encryption</p>
-          </div>
+        <div className="flex items-center gap-3 mb-8">
+          <Lock className="h-5 w-5 text-purple-500" />
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Checkout</h1>
+          <span className="ml-auto text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1">
+            <Lock className="w-3 h-3" /> SSL Secured
+          </span>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -642,12 +640,9 @@ export default function CheckoutPage() {
             <form onSubmit={onSubmit} noValidate className="space-y-6">
               {/* Contact Information */}
               <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center">
-                    <CreditCard className="h-5 w-5 text-white" />
-                  </div>
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Contact Information</h2>
-                </div>
+                <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-5 flex items-center gap-2">
+                  <CreditCard className="w-4 h-4 text-purple-500" /> Contact
+                </h2>
                 
                 <div className="space-y-4">
                   <div>
@@ -661,7 +656,7 @@ export default function CheckoutPage() {
                       value={deliveryDetails.name}
                       onChange={handleInputChange}
                       onFocus={handleFieldFocus}
-                      className="w-full px-4 py-4 border border-gray-200 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-base bg-gray-50 dark:bg-gray-700 dark:text-white hover:bg-white dark:hover:bg-gray-600 focus:bg-white dark:focus:bg-gray-600 shadow-sm focus:shadow-md"
+                      className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-base bg-gray-50 dark:bg-gray-700 dark:text-white hover:bg-white dark:hover:bg-gray-600 focus:bg-white dark:focus:bg-gray-600"
                       placeholder="John Doe"
                       autoComplete="name"
                     />
@@ -678,7 +673,7 @@ export default function CheckoutPage() {
                         required
                         value={deliveryDetails.email || ''}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-4 border border-gray-200 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-base bg-gray-50 dark:bg-gray-700 dark:text-white hover:bg-white dark:hover:bg-gray-600 focus:bg-white dark:focus:bg-gray-600 shadow-sm focus:shadow-md"
+                        className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-base bg-gray-50 dark:bg-gray-700 dark:text-white hover:bg-white dark:hover:bg-gray-600 focus:bg-white dark:focus:bg-gray-600"
                         placeholder="john@example.com"
                         autoComplete="email"
                       />
@@ -716,13 +711,20 @@ export default function CheckoutPage() {
 
               {/* Delivery Address */}
               <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
-                <div className="flex items-center gap-3 mb-6">
+                <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-teal-500 rounded-xl flex items-center justify-center">
                     <MapPin className="h-5 w-5 text-white" />
                   </div>
                   <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Delivery Address</h2>
                 </div>
-                
+
+                <div className="flex items-start gap-2.5 bg-purple-50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-800/50 rounded-xl px-4 py-3 mb-5">
+                  <MapPin className="w-4 h-4 text-purple-500 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-purple-700 dark:text-purple-300 leading-snug">
+                    <span className="font-semibold">Now delivering in Downtown DC</span> — beginning with Mount Vernon Square, Gallery Place, and nearby areas.
+                  </p>
+                </div>
+
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -735,7 +737,7 @@ export default function CheckoutPage() {
                       value={deliveryDetails.address}
                       onChange={handleInputChange}
                       onFocus={handleFieldFocus}
-                      className="w-full px-4 py-4 border border-gray-200 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-base bg-gray-50 dark:bg-gray-700 dark:text-white hover:bg-white dark:hover:bg-gray-600 focus:bg-white dark:focus:bg-gray-600 shadow-sm focus:shadow-md"
+                      className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-base bg-gray-50 dark:bg-gray-700 dark:text-white hover:bg-white dark:hover:bg-gray-600 focus:bg-white dark:focus:bg-gray-600"
                       placeholder="123 Main Street"
                       autoComplete="street-address"
                     />
@@ -751,7 +753,7 @@ export default function CheckoutPage() {
                       value={deliveryDetails.apartment || ''}
                       onChange={handleInputChange}
                       onFocus={handleFieldFocus}
-                      className="w-full px-4 py-4 border border-gray-200 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-base bg-gray-50 dark:bg-gray-700 dark:text-white hover:bg-white dark:hover:bg-gray-600 focus:bg-white dark:focus:bg-gray-600 shadow-sm focus:shadow-md"
+                      className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-base bg-gray-50 dark:bg-gray-700 dark:text-white hover:bg-white dark:hover:bg-gray-600 focus:bg-white dark:focus:bg-gray-600"
                       placeholder="Apt 4B, Suite 200, etc."
                       autoComplete="address-line2"
                     />
@@ -769,7 +771,7 @@ export default function CheckoutPage() {
                         value={deliveryDetails.city}
                         onChange={handleInputChange}
                         onFocus={handleFieldFocus}
-                        className="w-full px-4 py-4 border border-gray-200 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-base bg-gray-50 dark:bg-gray-700 dark:text-white hover:bg-white dark:hover:bg-gray-600 focus:bg-white dark:focus:bg-gray-600 shadow-sm focus:shadow-md"
+                        className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-base bg-gray-50 dark:bg-gray-700 dark:text-white hover:bg-white dark:hover:bg-gray-600 focus:bg-white dark:focus:bg-gray-600"
                         placeholder="Washington"
                         autoComplete="address-level2"
                       />
@@ -786,7 +788,7 @@ export default function CheckoutPage() {
                         value={deliveryDetails.zipCode}
                         onChange={handleInputChange}
                         onFocus={handleFieldFocus}
-                        className="w-full px-4 py-4 border border-gray-200 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-base bg-gray-50 dark:bg-gray-700 dark:text-white hover:bg-white dark:hover:bg-gray-600 focus:bg-white dark:focus:bg-gray-600 shadow-sm focus:shadow-md"
+                        className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-base bg-gray-50 dark:bg-gray-700 dark:text-white hover:bg-white dark:hover:bg-gray-600 focus:bg-white dark:focus:bg-gray-600"
                         placeholder="20001"
                         autoComplete="postal-code"
                         maxLength={5}
@@ -803,7 +805,7 @@ export default function CheckoutPage() {
                       name="timePreference"
                       value={deliveryDetails.timePreference}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-4 border border-gray-200 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-base bg-gray-50 dark:bg-gray-700 dark:text-white hover:bg-white dark:hover:bg-gray-600 focus:bg-white dark:focus:bg-gray-600 shadow-sm focus:shadow-md"
+                      className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-base bg-gray-50 dark:bg-gray-700 dark:text-white hover:bg-white dark:hover:bg-gray-600 focus:bg-white dark:focus:bg-gray-600"
                     >
                       <option value="ASAP (60–90 min)">ASAP (60–90 min)</option>
                       <option value="Morning (9 AM - 12 PM)">Morning (9 AM - 12 PM)</option>
@@ -822,7 +824,7 @@ export default function CheckoutPage() {
                       onChange={handleInputChange}
                       onFocus={handleFieldFocus}
                       rows={3}
-                      className="w-full px-4 py-4 border border-gray-200 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-base bg-gray-50 dark:bg-gray-700 dark:text-white hover:bg-white dark:hover:bg-gray-600 focus:bg-white dark:focus:bg-gray-600 shadow-sm focus:shadow-md resize-none"
+                      className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-base bg-gray-50 dark:bg-gray-700 dark:text-white hover:bg-white dark:hover:bg-gray-600 focus:bg-white dark:focus:bg-gray-600 resize-none"
                       placeholder="Buzzer code, gate instructions, etc."
                     />
                   </div>
