@@ -15,6 +15,7 @@ export interface Product {
   gift_grams?: string;
   badges?: string[];
   image_url: string;
+  hero_image_url?: string;
   compliance_note?: string;
   // Legacy fields for backward compatibility
   description?: string;
@@ -55,7 +56,7 @@ export class ProductModel {
 
       const { data, error } = await supabase
         .from('products')
-        .select('id, name, tier, price, stock, strain, thc_min, thc_max, gift_grams, badges, image_url, compliance_note, description')
+        .select('id, name, tier, price, stock, strain, thc_min, thc_max, gift_grams, badges, image_url, hero_image_url, compliance_note, description')
         .eq('active', true)
         .eq('is_test', false)
         .gt('stock', 0)
