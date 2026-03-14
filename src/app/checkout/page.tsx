@@ -711,12 +711,9 @@ export default function CheckoutPage() {
 
               {/* Delivery Address */}
               <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-teal-500 rounded-xl flex items-center justify-center">
-                    <MapPin className="h-5 w-5 text-white" />
-                  </div>
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Delivery Address</h2>
-                </div>
+                <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-purple-500" /> Delivery
+                </h2>
 
                 <div className="flex items-start gap-2.5 bg-purple-50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-800/50 rounded-xl px-4 py-3 mb-5">
                   <MapPin className="w-4 h-4 text-purple-500 flex-shrink-0 mt-0.5" />
@@ -831,149 +828,91 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              {/* Age Verification */}
-              <div className="space-y-3">
-                <label htmlFor="ageVerified" className="block cursor-pointer">
-                  <div className={`flex items-start gap-4 p-6 rounded-2xl border-2 transition-all duration-200 shadow-sm hover:shadow-md ${
-                    form.formState.errors.ageVerified
-                      ? 'border-red-300 bg-red-50 dark:bg-red-900/20 dark:border-red-500'
-                      : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 hover:border-purple-300 dark:hover:border-purple-500'
-                  }`}>
-                    <Controller
-                      control={form.control}
-                      name="ageVerified"
-                      render={({ field }) => (
-                        <Checkbox
-                          id="ageVerified"
-                          name={field.name}
-                          checked={!!field.value}
-                          onCheckedChange={(v) => {
-                            field.onChange(v);
-                            setDeliveryDetails((prev) => ({ ...prev, ageVerification: !!v }));
-                          }}
-                          onBlur={field.onBlur}
-                          ref={field.ref}
-                        />
-                      )}
-                    />
-                    <div className="text-sm text-gray-800 dark:text-gray-100">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-2xl">🔞</span>
-                        <span className="font-semibold text-base">21+ Age Verification *</span>
-                      </div>
-                      <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                        I certify that I am 21+ years old and located in Washington, DC to place this order.
-                      </p>
-                    </div>
+              {/* Agreements */}
+              <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-100 dark:border-gray-700 space-y-4">
+                <h2 className="text-base font-semibold text-gray-900 dark:text-white">Agreements</h2>
+
+                {/* Age Verification */}
+                <label htmlFor="ageVerified" className="flex items-start gap-3 cursor-pointer group">
+                  <Controller
+                    control={form.control}
+                    name="ageVerified"
+                    render={({ field }) => (
+                      <Checkbox
+                        id="ageVerified"
+                        name={field.name}
+                        checked={!!field.value}
+                        onCheckedChange={(v) => {
+                          field.onChange(v);
+                          setDeliveryDetails((prev) => ({ ...prev, ageVerification: !!v }));
+                        }}
+                        onBlur={field.onBlur}
+                        ref={field.ref}
+                        className="mt-0.5"
+                      />
+                    )}
+                  />
+                  <div className="text-sm leading-snug">
+                    <span className="font-medium text-gray-900 dark:text-white">I am 21+ and located in Washington, DC</span>
+                    {form.formState.errors.ageVerified && (
+                      <p className="text-red-500 text-xs mt-0.5">{form.formState.errors.ageVerified.message as string}</p>
+                    )}
                   </div>
                 </label>
-                <AnimatePresence>
-                  {form.formState.errors.ageVerified && (
-                    <motion.p
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-4 py-3 rounded-xl border border-red-200 dark:border-red-800"
-                    >
-                      <span className="text-red-500">⚠️</span>
-                      {form.formState.errors.ageVerified.message as string}
-                    </motion.p>
-                  )}
-                </AnimatePresence>
-              </div>
 
-              {/* Terms and Privacy */}
-              <div className="space-y-3">
-                <label htmlFor="acceptTerms" className="block cursor-pointer">
-                  <div className={`flex items-start gap-4 p-6 rounded-2xl border-2 transition-all duration-200 shadow-sm hover:shadow-md ${
-                    form.formState.errors.acceptTerms
-                      ? 'border-red-300 bg-red-50 dark:bg-red-900/20 dark:border-red-500'
-                      : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 hover:border-purple-300 dark:hover:border-purple-500'
-                  }`}>
-                    <Controller
-                      control={form.control}
-                      name="acceptTerms"
-                      render={({ field }) => (
-                        <Checkbox
-                          id="acceptTerms"
-                          name={field.name}
-                          checked={!!field.value}
-                          onCheckedChange={(v) => {
-                            field.onChange(v);
-                            setDeliveryDetails((prev) => ({ ...prev, termsAccepted: !!v }));
-                          }}
-                          onBlur={field.onBlur}
-                          ref={field.ref}
-                        />
-                      )}
-                    />
-                    <div className="text-sm text-gray-800 dark:text-gray-100">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-2xl">📋</span>
-                        <span className="font-semibold text-base">Terms & Privacy Agreement *</span>
-                      </div>
-                      <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                        I agree to the{' '}
-                        <a href="/terms" className="text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 underline font-medium transition-colors" target="_blank" rel="noreferrer">
-                          Terms of Service
-                        </a>{' '}
-                        and{' '}
-                        <a href="/privacy" className="text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 underline font-medium transition-colors" target="_blank" rel="noreferrer">
-                          Privacy Policy
-                        </a>
-                      </p>
-                    </div>
+                {/* Terms */}
+                <label htmlFor="acceptTerms" className="flex items-start gap-3 cursor-pointer group">
+                  <Controller
+                    control={form.control}
+                    name="acceptTerms"
+                    render={({ field }) => (
+                      <Checkbox
+                        id="acceptTerms"
+                        name={field.name}
+                        checked={!!field.value}
+                        onCheckedChange={(v) => {
+                          field.onChange(v);
+                          setDeliveryDetails((prev) => ({ ...prev, termsAccepted: !!v }));
+                        }}
+                        onBlur={field.onBlur}
+                        ref={field.ref}
+                        className="mt-0.5"
+                      />
+                    )}
+                  />
+                  <div className="text-sm leading-snug">
+                    <span className="text-gray-700 dark:text-gray-300">I agree to the{' '}
+                      <a href="/terms" className="text-purple-600 dark:text-purple-400 underline" target="_blank" rel="noreferrer">Terms</a>
+                      {' '}and{' '}
+                      <a href="/privacy" className="text-purple-600 dark:text-purple-400 underline" target="_blank" rel="noreferrer">Privacy Policy</a>
+                    </span>
+                    {form.formState.errors.acceptTerms && (
+                      <p className="text-red-500 text-xs mt-0.5">{form.formState.errors.acceptTerms.message as string}</p>
+                    )}
                   </div>
                 </label>
-                <AnimatePresence>
-                  {form.formState.errors.acceptTerms && (
-                    <motion.p
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-4 py-3 rounded-xl border border-red-200 dark:border-red-800"
-                    >
-                      <span className="text-red-500">⚠️</span>
-                      {form.formState.errors.acceptTerms.message as string}
-                    </motion.p>
-                  )}
-                </AnimatePresence>
-              </div>
 
-              {/* Marketing Opt-In */}
-              <div className="space-y-3">
-                <label htmlFor="emailOptIn" className="block cursor-pointer">
-                  <div className="flex items-start gap-4 p-6 rounded-2xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 hover:border-purple-300 dark:hover:border-purple-500 transition-all duration-200 shadow-sm hover:shadow-md">
-                    <Controller
-                      control={form.control}
-                      name="emailOptIn"
-                      render={({ field }) => (
-                        <Checkbox
-                          id="emailOptIn"
-                          name={field.name}
-                          checked={!!field.value}
-                          onCheckedChange={(v) => {
-                            field.onChange(v);
-                            setDeliveryDetails((prev) => ({ ...prev, emailUpdates: !!v }));
-                          }}
-                          onBlur={field.onBlur}
-                          ref={field.ref}
-                        />
-                      )}
-                    />
-                    <div className="text-sm text-gray-800 dark:text-gray-100">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-2xl">📬</span>
-                        <span className="font-semibold text-base">Order Updates & Notifications</span>
-                      </div>
-                      <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                        <strong>Yes</strong> — send me order updates by SMS & email. Msg & data rates may apply. Reply STOP to opt-out.
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                        Optional but recommended for delivery updates and exclusive offers.
-                      </p>
-                    </div>
-                  </div>
+                {/* Email opt-in */}
+                <label htmlFor="emailOptIn" className="flex items-start gap-3 cursor-pointer group">
+                  <Controller
+                    control={form.control}
+                    name="emailOptIn"
+                    render={({ field }) => (
+                      <Checkbox
+                        id="emailOptIn"
+                        name={field.name}
+                        checked={!!field.value}
+                        onCheckedChange={(v) => {
+                          field.onChange(v);
+                          setDeliveryDetails((prev) => ({ ...prev, emailUpdates: !!v }));
+                        }}
+                        onBlur={field.onBlur}
+                        ref={field.ref}
+                        className="mt-0.5"
+                      />
+                    )}
+                  />
+                  <span className="text-sm text-gray-500 dark:text-gray-400 leading-snug">Send me order updates &amp; drop alerts</span>
                 </label>
               </div>
 
@@ -981,9 +920,9 @@ export default function CheckoutPage() {
           </div>
 
           {/* Order Summary and Actions */}
-          <aside className="w-full lg:w-96 lg:pl-8 lg:sticky lg:top-24 h-fit space-y-6">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Order Summary</h2>
+          <aside className="w-full lg:sticky lg:top-24 h-fit space-y-5">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700">
+              <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-5">Order Summary</h2>
               
               <div className="space-y-4">
                 {items.map((item) => (
@@ -1043,46 +982,33 @@ export default function CheckoutPage() {
             <CheckoutFAQ className="lg:sticky top-24" />
 
             {/* Payment Method Selection */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Payment Method</h3>
-              <div className="space-y-3">
-                {/* Apple Pay Option */}
-                <label className={`flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all hover:bg-gray-50 dark:hover:bg-gray-700 ${paymentMethod === 'applepay' ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-900/20' : 'border-gray-200 dark:border-gray-600'}`}>
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="applepay"
-                    checked={paymentMethod === 'applepay'}
-                    onChange={() => setPaymentMethod('applepay')}
-                    className="w-4 h-4 text-blue-600"
-                  />
-                  <div className="flex items-center gap-2">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="text-gray-900 dark:text-white">
-                      <path d="M12.5 2.5c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-1 4c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-3 4c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-3 4c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
-                    </svg>
-                    <span className="font-medium text-gray-900 dark:text-white">Apple Pay</span>
-                  </div>
-                  <div className="ml-auto">
-                    <div className="text-sm text-gray-600 dark:text-gray-400">Touch ID • Face ID • Instant</div>
-                  </div>
-                </label>
-
-                {/* Cash App Option */}
-                <label className={`flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all hover:bg-gray-50 dark:hover:bg-gray-700 ${paymentMethod === 'cashapp' ? 'border-purple-500 bg-purple-50/50 dark:bg-purple-900/20' : 'border-gray-200 dark:border-gray-600'}`}>
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="cashapp"
-                    checked={paymentMethod === 'cashapp'}
-                    onChange={() => setPaymentMethod('cashapp')}
-                    className="w-4 h-4 text-purple-600"
-                  />
-                  <Smartphone className="h-5 w-5 text-green-600" />
-                  <div>
-                    <div className="font-medium text-gray-900 dark:text-white">Cash App Payment</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">Pay instantly with Cash App</div>
-                  </div>
-                </label>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-100 dark:border-gray-700">
+              <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-4">Pay with</h3>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('cashapp')}
+                  className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl border-2 text-sm font-medium transition-all ${
+                    paymentMethod === 'cashapp'
+                      ? 'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                      : 'border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-gray-300'
+                  }`}
+                >
+                  <Smartphone className="w-4 h-4" />
+                  Cash App
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('applepay')}
+                  className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl border-2 text-sm font-medium transition-all ${
+                    paymentMethod === 'applepay'
+                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
+                      : 'border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-gray-300'
+                  }`}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+                  Apple Pay
+                </button>
               </div>
             </div>
 
@@ -1104,7 +1030,7 @@ export default function CheckoutPage() {
                   disabled={!form.formState.isValid || isSubmitting}
                   whileHover={{ scale: form.formState.isValid && !isSubmitting ? 1.02 : 1 }}
                   whileTap={{ scale: form.formState.isValid && !isSubmitting ? 0.98 : 1 }}
-                  className="w-full font-semibold py-5 px-8 rounded-2xl shadow-lg hover:shadow-xl disabled:shadow-none transition-all duration-300 disabled:cursor-not-allowed text-lg flex items-center justify-center gap-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-500 text-white"
+                  className="w-full font-semibold py-4 px-8 rounded-2xl transition-all disabled:cursor-not-allowed text-base flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 disabled:from-gray-300 disabled:to-gray-400 text-white shadow-lg disabled:shadow-none"
                 >
                   {isSubmitting ? (
                     <>
