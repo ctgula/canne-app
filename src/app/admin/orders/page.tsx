@@ -51,18 +51,18 @@ const STATUS_CFG: Record<string, { label: string; color: string; dot: string }> 
   verifying:        { label: 'Verifying', color: 'text-blue-700 bg-blue-50 border-blue-200', dot: 'bg-blue-400' },
   paid:             { label: 'Paid', color: 'text-green-700 bg-green-50 border-green-200', dot: 'bg-green-500' },
   assigned:         { label: 'Assigned', color: 'text-indigo-700 bg-indigo-50 border-indigo-200', dot: 'bg-indigo-400' },
-  en_route:         { label: 'On the Way', color: 'text-teal-700 bg-teal-50 border-teal-200', dot: 'bg-teal-400' },
+  out_for_delivery: { label: 'On the Way', color: 'text-teal-700 bg-teal-50 border-teal-200', dot: 'bg-teal-400' },
   delivered:        { label: 'Delivered', color: 'text-emerald-700 bg-emerald-50 border-emerald-200', dot: 'bg-emerald-500' },
   cancelled:        { label: 'Cancelled', color: 'text-red-700 bg-red-50 border-red-200', dot: 'bg-red-400' },
   issue:            { label: 'Issue', color: 'text-orange-700 bg-orange-50 border-orange-200', dot: 'bg-orange-400' },
   refunded:         { label: 'Refunded', color: 'text-gray-600 bg-gray-50 border-gray-200', dot: 'bg-gray-400' },
 };
 
-const ALL_STATUSES = ['awaiting_payment', 'verifying', 'paid', 'assigned', 'en_route', 'delivered', 'cancelled', 'issue'];
+const ALL_STATUSES = ['awaiting_payment', 'verifying', 'paid', 'assigned', 'out_for_delivery', 'delivered', 'cancelled', 'issue'];
 
 const getCategory = (s: string) => {
   if (['awaiting_payment', 'verifying'].includes(s)) return 'pending';
-  if (['paid', 'assigned', 'en_route'].includes(s)) return 'active';
+  if (['paid', 'assigned', 'out_for_delivery'].includes(s)) return 'active';
   if (s === 'delivered') return 'delivered';
   return 'issues';
 };

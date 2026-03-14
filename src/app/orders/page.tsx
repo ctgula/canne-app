@@ -23,6 +23,8 @@ const STATUS_LABEL: Record<string, { label: string; color: string }> = {
   paid:             { label: 'Paid', color: 'text-green-700 bg-green-50 border-green-200' },
   assigned:         { label: 'Driver Assigned', color: 'text-indigo-700 bg-indigo-50 border-indigo-200' },
   en_route:         { label: 'On the Way', color: 'text-teal-700 bg-teal-50 border-teal-200' },
+  out_for_delivery:  { label: 'On the Way', color: 'text-teal-700 bg-teal-50 border-teal-200' },
+  in_transit:        { label: 'On the Way', color: 'text-teal-700 bg-teal-50 border-teal-200' },
   delivered:        { label: 'Delivered', color: 'text-emerald-700 bg-emerald-50 border-emerald-200' },
   cancelled:        { label: 'Cancelled', color: 'text-red-700 bg-red-50 border-red-200' },
   refunded:         { label: 'Refunded', color: 'text-gray-600 bg-gray-50 border-gray-200' },

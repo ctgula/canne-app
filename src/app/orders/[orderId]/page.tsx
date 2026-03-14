@@ -100,10 +100,12 @@ export default function OrderTrackingPage() {
   const orderId = params.orderId as string;
   const [order, setOrder] = useState<OrderData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchOrder = async () => {
-    setLoading(true);
+  const fetchOrder = async (isManual = false) => {
+    if (isManual) setRefreshing(true);
+    else setLoading(true);
     setError(null);
     try {
       const res = await fetch(`/api/orders/${orderId}`);
@@ -117,6 +119,7 @@ export default function OrderTrackingPage() {
       setError('Failed to load order. Please check your connection.');
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -189,7 +192,7 @@ export default function OrderTrackingPage() {
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Order Not Found</h2>
               <p className="text-gray-600 dark:text-gray-400 mb-6">{error}</p>
               <button
-                onClick={fetchOrder}
+                onClick={() => fetchOrder(true)}
                 className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors"
               >
                 <RefreshCw className="w-4 h-4" />
@@ -216,11 +219,12 @@ export default function OrderTrackingPage() {
                       Live
                     </span>
                     <button
-                      onClick={fetchOrder}
-                      className="p-2 text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
+                      onClick={() => fetchOrder(true)}
+                      disabled={refreshing}
+                      className="p-2 text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all disabled:opacity-50"
                       title="Refresh status"
                     >
-                      <RefreshCw className="w-4 h-4" />
+                      <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin text-purple-600' : ''}`} />
                     </button>
                   </div>
                 </div>

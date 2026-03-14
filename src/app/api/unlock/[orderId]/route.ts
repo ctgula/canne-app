@@ -36,7 +36,7 @@ export async function GET(
     }
 
     // Check if payment is confirmed (status = paid, delivered, assigned, en_route)
-    const paidStatuses = ['paid', 'assigned', 'en_route', 'delivered', 'completed'];
+    const paidStatuses = ['paid', 'assigned', 'en_route', 'out_for_delivery', 'in_transit', 'delivered', 'completed'];
     const isPaid = paidStatuses.includes(order.status);
 
     if (!isPaid) {
