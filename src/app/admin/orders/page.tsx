@@ -125,6 +125,7 @@ function OrdersContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
       });
+      if (res.status === 401) { toast.error('Session expired — refresh the page to log in again'); return; }
       if (!res.ok) { const e = await res.json(); throw new Error(e.error); }
       toast.success(`Status → ${(STATUS_CFG[newStatus]?.label || newStatus)}`);
       fetchOrders();
@@ -139,6 +140,7 @@ function OrdersContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ driver_id: driverId }),
       });
+      if (res.status === 401) { toast.error('Session expired — refresh the page to log in again'); return; }
       if (!res.ok) { const e = await res.json(); throw new Error(e.error); }
       toast.success('Driver assigned');
       fetchOrders();

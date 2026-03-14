@@ -119,11 +119,16 @@ export default function OrderDetailsDrawer({
     
     setLoading(true);
     setError(null);
+    setOrder(null);
     
     try {
       const response = await fetch(`/api/admin/orders/${orderId}`);
       const data = await response.json();
       
+      if (response.status === 401) {
+        setError('session_expired');
+        return;
+      }
       if (!response.ok) {
         throw new Error(data.error || 'Failed to fetch order details');
       }
@@ -243,7 +248,20 @@ export default function OrderDetailsDrawer({
 
                 {error && (
                   <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-                    <p className="text-red-800 dark:text-red-200">{error}</p>
+                    {error === 'session_expired' ? (
+                      <div className="text-center">
+                        <p className="text-red-800 dark:text-red-200 font-medium mb-2">Session expired</p>
+                        <p className="text-red-600 dark:text-red-400 text-sm mb-3">Please refresh the page and log in again.</p>
+                        <button
+                          onClick={() => window.location.reload()}
+                          className="px-4 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition-colors"
+                        >
+                          Refresh Page
+                        </button>
+                      </div>
+                    ) : (
+                      <p className="text-red-800 dark:text-red-200">{error}</p>
+                    )}
                   </div>
                 )}
 

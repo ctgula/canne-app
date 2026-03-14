@@ -32,9 +32,9 @@ export async function POST(request: NextRequest) {
     response.cookies.set('admin_session', sessionToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'lax',
       path: '/',
-      maxAge: 60 * 60 * 8, // 8 hours
+      maxAge: 60 * 60 * 24 * 30, // 30 days
     });
 
     return response;
@@ -49,7 +49,7 @@ export async function DELETE() {
   response.cookies.set('admin_session', '', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    sameSite: 'lax',
     path: '/',
     maxAge: 0,
   });
