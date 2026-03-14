@@ -20,7 +20,8 @@ import {
   Minus,
   Leaf,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Pencil
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import Link from 'next/link';
@@ -83,6 +84,8 @@ function AdminProductsContent() {
   const [strainsOpen, setStrainsOpen] = useState(false);
   const [newStrainName, setNewStrainName] = useState('');
   const [newStrainType, setNewStrainType] = useState('sativa');
+  const [editingStockId, setEditingStockId] = useState<string | null>(null);
+  const [editingStockValue, setEditingStockValue] = useState('');
 
   useEffect(() => {
     fetchProducts();
@@ -133,6 +136,23 @@ function AdminProductsContent() {
       setNewStrainName('');
       fetchStrains();
     } catch { toast.error('Failed to add strain'); }
+  };
+
+  const handleSetStock = async (productId: string, currentStock: number) => {
+    const newStock = parseInt(editingStockValue, 10);
+    setEditingStockId(null);
+    if (isNaN(newStock) || newStock === currentStock || newStock < 0) return;
+    const delta = newStock - currentStock;
+    try {
+      const res = await fetch(`/api/admin/products/${productId}/adjust-stock`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adjustment: delta, reason: 'Manual admin set' }),
+      });
+      if (!res.ok) throw new Error();
+      toast.success(`Stock set to ${newStock}`);
+      fetchProducts();
+    } catch { toast.error('Failed to update stock'); }
   };
 
   const fetchProducts = async () => {
@@ -629,9 +649,38 @@ function AdminProductsContent() {
                         >
                           <Minus size={14} />
                         </button>
-                        <span className={`min-w-[3rem] text-center text-sm font-semibold ${stockStatus.color}`}>
-                          {inventory?.stock ?? 0}
-                        </span>
+
+                        {/* Click stock number to type exact value */}
+                        {editingStockId === product.id ? (
+                          <input
+                            autoFocus
+                            type="number"
+                            min="0"
+                            value={editingStockValue}
+                            onChange={e => setEditingStockValue(e.target.value)}
+                            onBlur={() => handleSetStock(product.id, inventory?.stock ?? 0)}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter') handleSetStock(product.id, inventory?.stock ?? 0);
+                              if (e.key === 'Escape') setEditingStockId(null);
+                            }}
+                            onClick={e => e.stopPropagation()}
+                            className="w-16 text-center text-sm font-semibold border border-purple-400 rounded-md px-1 py-0.5 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          />
+                        ) : (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingStockId(product.id);
+                              setEditingStockValue(String(inventory?.stock ?? 0));
+                            }}
+                            className={`group/stock min-w-[3rem] text-center text-sm font-semibold px-1 py-0.5 rounded hover:bg-purple-50 hover:text-purple-700 transition-colors flex items-center gap-1 ${stockStatus.color}`}
+                            title="Click to set exact stock amount"
+                          >
+                            {(inventory?.stock ?? 0) > 0 ? inventory?.stock ?? 0 : <span className="text-gray-400 text-xs">0</span>}
+                            <Pencil size={10} className="opacity-0 group-hover/stock:opacity-60 flex-shrink-0" />
+                          </button>
+                        )}
+
                         <button
                           onClick={(e) => { e.stopPropagation(); handleQuickStock(product.id, 1); }}
                           className="w-7 h-7 flex items-center justify-center rounded-md bg-gray-100 hover:bg-green-100 text-gray-600 hover:text-green-700 transition-colors text-sm font-bold"

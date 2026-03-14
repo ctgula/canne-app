@@ -154,7 +154,7 @@ export default function ProductsPresenter() {
             })}
           </div>
           <p className="text-xs text-gray-400 dark:text-gray-500">
-            Your strain preference applies to whichever size you choose
+            All tiers include the same art — the <span className="font-semibold text-gray-500 dark:text-gray-400">only difference is gift size</span>
           </p>
         </div>
       )}
@@ -194,7 +194,8 @@ export default function ProductsPresenter() {
               const effectChips = (product.badges || []).map(effect => {
                 const effectMap: Record<string, string> = {
                   'Focus': 'bg-blue-100 text-blue-800',
-                  'Creative': 'bg-purple-100 text-purple-800', 
+                  'Creative': 'bg-purple-100 text-purple-800',
+                  'Relax': 'bg-teal-100 text-teal-800',
                   'Chill': 'bg-green-100 text-green-800'
                 };
                 return {
@@ -228,6 +229,14 @@ export default function ProductsPresenter() {
                         />
                       )}
                     </div>
+                    {/* Gift size badge — visible immediately on image */}
+                    {product.gift_grams && product.stock > 0 && (
+                      <div className="absolute bottom-3 left-3">
+                        <span className="bg-black/70 backdrop-blur-sm text-white text-sm font-bold px-3 py-1.5 rounded-full tracking-wide">
+                          {product.gift_grams} gift
+                        </span>
+                      </div>
+                    )}
                     {product.stock <= 0 && (
                       <div className="absolute inset-0 flex items-center justify-center">
                         <span className="bg-gray-900/80 text-white text-sm font-bold px-4 py-2 rounded-full tracking-wider uppercase">
@@ -244,7 +253,16 @@ export default function ProductsPresenter() {
                       <span className="px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400 rounded-full text-xs font-semibold">21+</span>
                     </div>
 
-                    <div className="text-3xl font-bold text-gray-900 dark:text-white mb-4">${product.price}</div>
+                    {/* Price + gift size — the two numbers that matter most */}
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="text-3xl font-bold text-gray-900 dark:text-white">${product.price}</div>
+                      {product.gift_grams && (
+                        <div className="flex flex-col items-end">
+                          <span className="text-2xl font-bold text-green-600 dark:text-green-400 leading-none">{product.gift_grams}</span>
+                          <span className="text-xs text-gray-400 dark:text-gray-500 font-medium mt-0.5">complimentary gift</span>
+                        </div>
+                      )}
+                    </div>
 
                     <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 flex-1">{description}</p>
 
