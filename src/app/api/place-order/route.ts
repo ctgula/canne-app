@@ -81,12 +81,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Street address is required' }, { status: 400 });
     }
 
-    // Validate DC ZIP code
+    // Validate launch-zone ZIP codes
+    const LAUNCH_ZIPS = ['20001', '20004', '20005'];
     const zipCode = dd.zipCode;
-    if (!zipCode || !/^20[0-1]\d{2}$/.test(zipCode)) {
+    if (!zipCode || !LAUNCH_ZIPS.includes(zipCode)) {
       return NextResponse.json({ 
         success: false, 
-        error: 'Only Washington DC ZIP codes (20000-20199) are allowed' 
+        error: 'Out-of-zone address \u2014 currently delivering in Downtown DC (20001, 20004, 20005).' 
       }, { status: 400 });
     }
 

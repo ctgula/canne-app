@@ -266,10 +266,11 @@ export default function CheckoutPage() {
     if (phoneErr) { errors.push(phoneErr); setPhoneError(phoneErr); }
     if (!deliveryDetails.address.trim()) errors.push('Street address is required');
     if (!deliveryDetails.city.trim()) errors.push('City is required');
+    const LAUNCH_ZIPS = ['20001', '20004', '20005'];
     if (!deliveryDetails.zipCode.trim()) {
       errors.push('ZIP code is required');
-    } else if (!/^20[0-1]\d{2}$/.test(deliveryDetails.zipCode)) {
-      errors.push('Please enter a valid DC ZIP code (20000-20199)');
+    } else if (!LAUNCH_ZIPS.includes(deliveryDetails.zipCode.trim())) {
+      errors.push('We\u2019re not in your area yet \u2014 currently delivering in Downtown DC (20001, 20004, 20005).');
     }
     if (items.length === 0) errors.push('Your cart is empty. Please add items before checking out.');
     return errors;
@@ -461,7 +462,7 @@ export default function CheckoutPage() {
       if (errorMessage.includes('Price calculation mismatch')) {
         toast.error('Pricing error — please refresh the page and try again.');
       } else if (errorMessage.includes('Out-of-zone address')) {
-        toast.error('We only deliver to Washington DC (ZIP 20000-20199).');
+        toast.error('We\u2019re not in your area yet \u2014 currently delivering in Downtown DC (20001, 20004, 20005).');
       } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
         toast.error('Connection error — please check your internet and try again.');
       } else {
