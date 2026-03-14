@@ -38,9 +38,12 @@ export async function GET(request: NextRequest) {
         ),
         order_items (
           quantity,
+          unit_price,
           products (
             name,
-            price_cents
+            price_cents,
+            tier,
+            gift_grams
           )
         )
       `)

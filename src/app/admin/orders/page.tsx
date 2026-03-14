@@ -29,13 +29,20 @@ interface Order {
   time_preference?: string;
   preferred_time?: string;
   customers: { first_name: string; last_name: string; phone: string; email: string };
-  order_items?: { quantity: number; products: { name: string; price_cents: number } }[];
+  order_items?: { quantity: number; unit_price?: number; products: { name: string; price_cents: number; tier?: string; gift_grams?: string } }[];
   driver?: { id: string; name: string; phone: string };
 }
 
 interface Driver { id: string; name: string; phone: string; is_available: boolean }
 
 const fmt = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
+
+const parseGrams = (g?: string) => parseFloat((g || '0').replace('g', '')) || 0;
+
+const totalGrams = (items?: Order['order_items']): number =>
+  (items || []).reduce((sum, i) => sum + parseGrams(i.products?.gift_grams) * i.quantity, 0);
+
+const fmtGrams = (g: number) => g % 1 === 0 ? `${g}g` : `${g.toFixed(1)}g`;
 
 const timeAgo = (d: string) => {
   if (!d) return '';
@@ -250,12 +257,22 @@ function OrdersContent() {
                     </div>
                   </div>
 
-                  {/* Row 2: items + address/time */}
+                  {/* Row 2: items + grams + address/time */}
                   {((order.order_items && order.order_items.length > 0) || order.delivery_address_line1) && (
                     <div className="flex items-center gap-2 mb-2 min-w-0">
                       {order.order_items && order.order_items.length > 0 && (
                         <span className="text-xs text-gray-500 truncate">
-                          {order.order_items.map(i => `${i.products?.name || 'Item'} ×${i.quantity}`).join(', ')}
+                          {order.order_items.map(i =>
+                            `${i.products?.name || 'Item'} ×${i.quantity}${
+                              i.products?.gift_grams ? ` (${i.quantity > 1 ? fmtGrams(parseGrams(i.products.gift_grams) * i.quantity) : i.products.gift_grams})` : ''
+                            }`
+                          ).join(', ')}
+                        </span>
+                      )}
+                      {/* Total grams badge — key fulfillment number */}
+                      {order.order_items && totalGrams(order.order_items) > 0 && (
+                        <span className="flex-shrink-0 text-xs font-bold text-green-700 bg-green-100 border border-green-200 px-2 py-0.5 rounded-full">
+                          {fmtGrams(totalGrams(order.order_items))} total
                         </span>
                       )}
                       {order.delivery_address_line1 && order.delivery_address_line1 !== 'Pending' && (
