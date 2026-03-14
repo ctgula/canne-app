@@ -164,7 +164,7 @@ export default function Home() {
                 transition={{ duration: 0.6, ease: "easeOut" }}
               >
                 <Image 
-                  src="/images/canne_cone.svg"
+                  src="/images/canne_logo_web.png"
                   alt="Cannè Art Collective" 
                   width={300} 
                   height={360} 
