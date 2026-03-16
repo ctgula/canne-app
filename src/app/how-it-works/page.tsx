@@ -214,7 +214,7 @@ export default function HowItWorksPage() {
                     <h3 className="font-bold text-xl mb-2 bg-gradient-to-r from-pink-400 to-pink-600 text-transparent bg-clip-text">Starter</h3>
                     <p className="text-2xl font-bold mb-1">$25</p>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Sativa or Indica (18-22% THC)</p>
-                    <p className="text-sm">Single digital print + complimentary top-shelf gift (3.5g)</p>
+                    <p className="text-sm">1 digital print + complimentary top-shelf gift (3.5g)</p>
                   </motion.div>
                   
                   {/* Classic Tier */}
@@ -222,7 +222,7 @@ export default function HowItWorksPage() {
                     <h3 className="font-bold text-xl mb-2 bg-gradient-to-r from-violet-400 to-violet-600 text-transparent bg-clip-text">Classic</h3>
                     <p className="text-2xl font-bold mb-1">$45</p>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Hybrid or Sativa (20-24% THC)</p>
-                    <p className="text-sm">Double art series + two curated gifts (7g)</p>
+                    <p className="text-sm">1 digital print + complimentary top-shelf gift (7g)</p>
                   </motion.div>
                   
                   {/* Black Tier */}
@@ -230,15 +230,15 @@ export default function HowItWorksPage() {
                     <h3 className="font-bold text-xl mb-2 bg-gradient-to-r from-gray-700 to-gray-900 text-transparent bg-clip-text">Black</h3>
                     <p className="text-2xl font-bold mb-1">$75</p>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Premium Indica/Hybrid (24-28% THC)</p>
-                    <p className="text-sm">Limited collection prints + four premium gifts (14g)</p>
+                    <p className="text-sm">1 digital print + complimentary top-shelf gift (14g)</p>
                   </motion.div>
                   
                   {/* Ultra Tier */}
                   <motion.div variants={item} className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
                     <h3 className="font-bold text-xl mb-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-transparent bg-clip-text">Ultra</h3>
-                    <p className="text-2xl font-bold mb-1">$140</p>
+                    <p className="text-2xl font-bold mb-1">$125</p>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Elite Quality (28-32% THC)</p>
-                    <p className="text-sm">Premium digital art with 28g high-grade gift</p>
+                    <p className="text-sm">1 digital print + complimentary top-shelf gift (28g)</p>
                   </motion.div>
                 </div>
               </motion.div>
