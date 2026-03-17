@@ -262,13 +262,13 @@ function UnlockPageClient({ orderId }: { orderId: string }) {
             >
               <div className="bg-gray-900/90 backdrop-blur-xl border border-gray-800 rounded-3xl overflow-hidden">
                 {/* Print preview */}
-                <div className="aspect-square bg-gradient-to-br from-gray-800 to-gray-900 relative flex items-center justify-center">
+                <div className="aspect-square bg-white relative flex items-center justify-center">
                   {print.preview_url ? (
                     <Image
                       src={print.preview_url}
                       alt={print.title}
                       fill
-                      className="object-cover"
+                      className="object-contain p-2"
                       unoptimized
                     />
                   ) : (
