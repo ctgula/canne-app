@@ -108,10 +108,10 @@ export default function DriversPage() {
               Apply Now
             </a>
             <a
-              href="sms:2028522281"
+              href="sms:2028971672"
               className="px-8 py-4 bg-white dark:bg-gray-800 text-purple-600 dark:text-purple-400 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl border-2 border-purple-200 dark:border-purple-700 hover:border-purple-300 transition-all"
             >
-              📱 Text 202-852-2281
+              📱 Text 202-897-1672
             </a>
           </div>
         </motion.section>
@@ -403,7 +403,7 @@ export default function DriversPage() {
             </span>
           </h3>
           <p className="text-gray-700 dark:text-gray-300 mb-6 text-lg">
-            Text us at <a href="sms:2028522281" className="font-bold text-purple-600 hover:text-purple-700 dark:text-purple-400">202-852-2281</a>
+            Text us at <a href="sms:2028971672" className="font-bold text-purple-600 hover:text-purple-700 dark:text-purple-400">202-897-1672</a>
           </p>
           <p className="text-sm text-gray-600 dark:text-gray-400">
             Discrete. Local. Reliable.
