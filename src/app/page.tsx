@@ -203,14 +203,15 @@ export default function Home() {
                 className="text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-2 font-medium px-2"
                 variants={itemVariants}
               >
-                Premium Digital Art with Complimentary Gifts
+                Premium Digital Art with{' '}
+                <span className="text-emerald-500 dark:text-emerald-400 font-semibold">Complimentary 🌿 Gifts</span>
               </motion.p>
               
               <motion.p 
                 className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-6 sm:mb-8 max-w-2xl px-2"
                 variants={itemVariants}
               >
-                I-71 compliant · 21+ only · Washington, DC · Collectible print with every order
+                I-71 compliant · 21+ only · Washington, DC · <span className="text-emerald-500 dark:text-emerald-400">🌿 top-shelf botanical gift</span> + collectible print with every order
               </motion.p>
               
               {/* Mobile-Optimized CTA Section */}
@@ -280,7 +281,8 @@ export default function Home() {
                 How It Works
               </h2>
               <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
-                Simple, seamless, and I-71 compliant — art purchases with complimentary gifts
+                Simple, seamless, and I-71 compliant — art purchases with{' '}
+                <span className="text-emerald-500 dark:text-emerald-400 font-medium">complimentary 🌿 botanical gifts</span>
               </p>
             </motion.div>
             
@@ -365,20 +367,20 @@ export default function Home() {
                   viewport={{ once: true }}
                 >
                   <motion.div 
-                    className="relative flex justify-center items-center mx-auto mb-6 w-20 h-20 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/50 dark:to-indigo-900/50 rounded-full shadow-lg group-hover:shadow-xl transition-all duration-300"
+                    className="relative flex justify-center items-center mx-auto mb-6 w-20 h-20 bg-gradient-to-br from-emerald-100 to-green-100 dark:from-emerald-900/50 dark:to-green-900/50 rounded-full shadow-lg group-hover:shadow-xl transition-all duration-300"
                     whileHover={{ scale: 1.1, rotate: 5 }}
                     transition={{ type: "spring", stiffness: 300, damping: 20 }}
                   >
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-200/50 to-indigo-200/50 dark:from-blue-800/50 dark:to-indigo-800/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-200/50 to-green-200/50 dark:from-emerald-800/50 dark:to-green-800/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     <div className="relative flex items-center justify-center w-14 h-14 bg-white/90 dark:bg-gray-800/90 rounded-full shadow-md backdrop-blur-sm">
-                      <Package className="h-7 w-7 text-blue-500" />
+                      <Package className="h-7 w-7 text-emerald-500" />
                     </div>
-                    <div className="absolute -top-1 -right-1 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                    <div className="absolute -top-1 -right-1 w-6 h-6 bg-emerald-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
                       3
                     </div>
                   </motion.div>
-                  <h3 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-3">We Gift the Vibe</h3>
-                  <p className="text-gray-600 dark:text-gray-400 text-base leading-relaxed max-w-xs">Our courier hands you the complimentary cannabis.</p>
+                  <h3 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-3">We Gift the Vibe 🌿</h3>
+                  <p className="text-gray-600 dark:text-gray-400 text-base leading-relaxed max-w-xs">Our courier personally delivers your{' '}<span className="text-emerald-500 dark:text-emerald-400 font-medium">complimentary top-shelf botanical gift</span> — discreet, fresh, and I-71 legal.</p>
                 </motion.div>
                 
                 {/* Step 4 */}
