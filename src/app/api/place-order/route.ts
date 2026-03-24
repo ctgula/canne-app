@@ -43,6 +43,10 @@ interface OrderData {
 }
 
 export async function POST(request: NextRequest) {
+  if (process.env.NEXT_PUBLIC_PAUSE_ORDERS === 'true') {
+    return NextResponse.json({ success: false, error: 'Orders are temporarily paused. Please check back soon.' }, { status: 503 });
+  }
+
   try {
     const orderData = await request.json();
 
