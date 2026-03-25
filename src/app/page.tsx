@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Header from '@/components/Header';
 import { motion, Variants, useScroll, useTransform } from 'framer-motion';
 import { Brush, CreditCard, Package, Sparkles, ArrowDown, Star, Shield, Zap, MapPin } from 'lucide-react';
+import { ORDERS_PAUSED } from '@/lib/site-flags';
 
 // Lazy load heavy components for better performance
 const ProductsPresenter = lazy(() => import('@/components/ProductsPresenter'));
@@ -139,7 +140,7 @@ export default function Home() {
       <Header scrollToCollection={scrollToCollection} />
       <main className="overflow-x-hidden pt-16">
         {/* Announcement Banner */}
-        {process.env.NEXT_PUBLIC_PAUSE_ORDERS === 'true' ? (
+        {ORDERS_PAUSED ? (
           <div className="relative z-40 bg-gray-950 border-b border-white/5 text-white">
             <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-center gap-3">
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse flex-shrink-0" />

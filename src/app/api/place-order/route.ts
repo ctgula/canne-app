@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 export const runtime = 'nodejs';
 import { supabaseAdmin as supabase } from '@/lib/supabase-admin';
+import { ORDERS_PAUSED } from '@/lib/site-flags';
 
 // Type definitions
 interface OrderItem {
@@ -43,7 +44,7 @@ interface OrderData {
 }
 
 export async function POST(request: NextRequest) {
-  if (process.env.NEXT_PUBLIC_PAUSE_ORDERS === 'true') {
+  if (ORDERS_PAUSED) {
     return NextResponse.json({ success: false, error: 'Orders are temporarily paused. Please check back soon.' }, { status: 503 });
   }
 

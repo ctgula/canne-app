@@ -17,6 +17,7 @@ import ApplePayButton from '@/components/ApplePayButton';
 
 import CheckoutFAQ from './components/CheckoutFAQ';
 import Footer from '@/components/Footer';
+import { ORDERS_PAUSED } from '@/lib/site-flags';
 
 // Types for checkout
 interface DeliveryDetails {
@@ -1030,7 +1031,7 @@ export default function CheckoutPage() {
                 />
               )}
               
-              {process.env.NEXT_PUBLIC_PAUSE_ORDERS === 'true' ? (
+              {ORDERS_PAUSED ? (
                 <div className="w-full rounded-2xl border border-amber-200 bg-amber-50 dark:bg-amber-950/40 dark:border-amber-800/60 px-6 py-5 text-center">
                   <p className="text-amber-800 dark:text-amber-300 font-semibold text-sm mb-1">New orders are temporarily paused</p>
                   <p className="text-amber-700/70 dark:text-amber-400/70 text-xs">We&apos;re handling some administrative updates and will be back shortly. Thank you for your patience.</p>
