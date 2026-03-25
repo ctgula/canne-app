@@ -141,13 +141,13 @@ export default function Home() {
         {/* Launch Zone Announcement Banner */}
         <div className="relative z-40 bg-gray-950 text-white">
           <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-center gap-2.5">
-            <MapPin className="w-3.5 h-3.5 text-purple-400 flex-shrink-0" />
+            <span className="text-amber-400 flex-shrink-0">⏸</span>
             <p className="text-xs sm:text-sm font-medium tracking-wide">
-              Now delivering in Downtown DC
+              Orders are temporarily paused
               <span className="hidden sm:inline text-white/60"> — </span>
-              <span className="hidden sm:inline text-white/80">beginning with Mount Vernon Square, Gallery Place, and nearby areas</span>
+              <span className="hidden sm:inline text-white/80">we&apos;re handling some updates and will be back very soon</span>
             </p>
-            <span className="hidden md:inline-flex items-center px-2 py-0.5 bg-purple-500/20 border border-purple-500/30 rounded-full text-purple-300 text-xs font-medium">Live Now</span>
+            <span className="hidden md:inline-flex items-center px-2 py-0.5 bg-amber-500/20 border border-amber-500/30 rounded-full text-amber-300 text-xs font-medium">Coming Soon</span>
           </div>
         </div>
 
