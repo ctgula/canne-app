@@ -150,18 +150,6 @@ export default function RootLayout({
       >
         {/* Client-side theme script that runs immediately after hydration */}
         <ThemeScript />
-        {ORDERS_PAUSED && (
-          <div className="fixed top-0 left-0 right-0 z-[9999] bg-amber-950 border-b border-amber-800/60">
-            <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-center gap-3">
-              <span className="text-amber-400 text-sm">⏸</span>
-              <p className="text-amber-100 text-xs sm:text-sm font-medium text-center leading-snug">
-                <span className="font-semibold">New orders are temporarily paused</span>
-                <span className="hidden sm:inline text-amber-300/80"> — we&apos;re handling some administrative updates and will be back shortly.</span>
-              </p>
-              <span className="text-amber-400 text-sm">⏸</span>
-            </div>
-          </div>
-        )}
         <ThemeProvider>
           <Toaster />
           <CartHydration />

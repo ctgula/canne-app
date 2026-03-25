@@ -138,18 +138,30 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-br from-white via-pink-50/10 to-purple-50/20 dark:from-gray-900 dark:via-purple-900/10 dark:to-indigo-900/20">
       <Header scrollToCollection={scrollToCollection} />
       <main className="overflow-x-hidden pt-16">
-        {/* Launch Zone Announcement Banner */}
-        <div className="relative z-40 bg-gray-950 text-white">
-          <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-center gap-2.5">
-            <span className="text-amber-400 flex-shrink-0">⏸</span>
-            <p className="text-xs sm:text-sm font-medium tracking-wide">
-              Orders are temporarily paused
-              <span className="hidden sm:inline text-white/60"> — </span>
-              <span className="hidden sm:inline text-white/80">we&apos;re handling some updates and will be back very soon</span>
-            </p>
-            <span className="hidden md:inline-flex items-center px-2 py-0.5 bg-amber-500/20 border border-amber-500/30 rounded-full text-amber-300 text-xs font-medium">Coming Soon</span>
+        {/* Announcement Banner */}
+        {process.env.NEXT_PUBLIC_PAUSE_ORDERS === 'true' ? (
+          <div className="relative z-40 bg-gray-950 border-b border-white/5 text-white">
+            <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-center gap-3">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse flex-shrink-0" />
+              <p className="text-xs sm:text-sm tracking-wide text-white/70">
+                <span className="text-white font-medium">Cannè is taking a brief pause.</span>
+                <span className="hidden sm:inline"> New orders will resume shortly — thank you for your patience.</span>
+              </p>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="relative z-40 bg-gray-950 border-b border-white/5 text-white">
+            <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-center gap-2.5">
+              <MapPin className="w-3.5 h-3.5 text-purple-400 flex-shrink-0" />
+              <p className="text-xs sm:text-sm font-medium tracking-wide">
+                Now delivering in Downtown DC
+                <span className="hidden sm:inline text-white/60"> — </span>
+                <span className="hidden sm:inline text-white/80">Mount Vernon Square, Gallery Place, and nearby areas</span>
+              </p>
+              <span className="hidden md:inline-flex items-center px-2 py-0.5 bg-purple-500/20 border border-purple-500/30 rounded-full text-purple-300 text-xs font-medium">Live Now</span>
+            </div>
+          </div>
+        )}
 
         {/* Hero Section - Mobile Optimized */}
         <section className="relative min-h-[calc(100dvh-4rem)] flex items-center justify-center px-4">
