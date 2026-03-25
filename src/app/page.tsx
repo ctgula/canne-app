@@ -141,13 +141,14 @@ export default function Home() {
       <main className="overflow-x-hidden pt-16">
         {/* Announcement Banner */}
         {ORDERS_PAUSED ? (
-          <div className="relative z-40 bg-gray-950 border-b border-white/5 text-white">
+          <div className="relative z-40 bg-red-600 text-white">
             <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-center gap-3">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse flex-shrink-0" />
-              <p className="text-xs sm:text-sm tracking-wide text-white/70">
-                <span className="text-white font-medium">Cannè is taking a brief pause.</span>
-                <span className="hidden sm:inline"> New orders will resume shortly — thank you for your patience.</span>
+              <span className="inline-block w-2 h-2 rounded-full bg-white animate-pulse flex-shrink-0" />
+              <p className="text-xs sm:text-sm font-semibold tracking-wide uppercase">
+                Orders Temporarily Paused
+                <span className="hidden sm:inline font-normal normal-case"> — New orders resume shortly. Thank you for your patience.</span>
               </p>
+              <span className="inline-block w-2 h-2 rounded-full bg-white animate-pulse flex-shrink-0" />
             </div>
           </div>
         ) : (
